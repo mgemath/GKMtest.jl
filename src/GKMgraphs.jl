@@ -1,6 +1,6 @@
 function gkm_graph(
   g::Graph,
-  labels::Vector{Symbol},
+  labels::Vector{String},
   M::AbstractAlgebra.Generic.FreeModule{ZZRingElem}, # character group
   w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}; 
   check::Bool=true
@@ -10,6 +10,7 @@ function gkm_graph(
     @req length(labels) == n_vertices(g) "The number of labels does not match the number of fixed points"
     @req all(e -> parent(w[e]) === M, edges(g)) "Character group mismatch"
     @req Set(edges(g)) == keys(w) "The axial function is not well defined"
+    @req all(v -> length(all_neighbors(g, 1)) == length(all_neighbors(g, v)), 2:n_vertices(g)) "The valency is not the same for all vertices"
   end
   for e in edges(g)
     w[reverse(e)] = -w[e]
@@ -65,6 +66,45 @@ function GKMproj_space(dim::Int; label::String = "x_")
   for e in edges(g)
     w[e] = gens(M)[src(e)]-gens(M)[dst(e)]
   end
-  labels = [Symbol(label*"$i") for i in 0:dim]
+  labels = [label*"$i" for i in 0:dim]
   return gkm_graph(g, labels, M, w)
+end
+
+function is3_indep(G::AbstractGKM_graph)
+
+  @req valency(G) > 2 "valency is too low"
+  
+  for v in 1:n_vertices(G.g)
+    for (a, b, c) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v), all_neighbors(G.g, v))
+      (a >= b || b >= c) && continue
+
+      if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]; G.w[Edge(v, c)]])) < 3
+        return false
+      end
+
+    end
+  end
+
+  return true
+end
+
+
+function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem})
+
+  @req (s in G.labels) "Source not found"
+  @req (d in G.labels) "Destination not found"
+  @req parent(weight) === G.M "The group of characters is not correct"
+
+  sd = indexin([s, d], G.labels)
+
+  Oscar.add_edge!(G.g, sd[1], sd[2])
+  G.w[Edge(sd[1], sd[2])] = weight
+  G.w[Edge(sd[2], sd[1])] = -weight
+
+end
+
+function empty_gkm_graph(n::Int, val::Int, labels::Vector{String})
+
+  return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, val), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
+  
 end
