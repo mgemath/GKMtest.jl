@@ -43,21 +43,10 @@ function Base.show(io::IO, ::MIME"text/plain", G::AbstractGKM_graph)
   end
 end
 
-
-function equivariant_cohomology_ring(G::AbstractGKM_graph)
-    
-end
-
 function rank_torus(G::AbstractGKM_graph)
   return rank(G.M)
 end
 
-function connection(G::AbstractGKM_graph, e::Edge)
-
-  # return a dictionary edges(g) -> (Edge, ZZ) where for each edge e_i containing src(e), connection[e_i] = (e', a_i) such that 
-  # w[e', dst(e)] = w[e_i, src(e)] - a_i * w[e, src(e)]
-  return   
-end
 
 function GKMproj_space(dim::Int; label::String = "x_")
   g = complete_graph(dim+1)
@@ -70,21 +59,58 @@ function GKMproj_space(dim::Int; label::String = "x_")
   return gkm_graph(g, labels, M, w)
 end
 
+function is2_indep(G::AbstractGKM_graph)
+  return _indep(G, 2)
+  # @req valency(G) > 1 "valency is too low"
+
+  # for v in 1:n_vertices(G.g)
+  #   for (a, b) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v))
+  #     (a >= b) && continue
+
+  #     if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]])) < 2
+  #       return false
+  #     end
+
+  #   end
+  # end
+
+  # return true
+
+end
+
 function is3_indep(G::AbstractGKM_graph)
-
-  @req valency(G) > 2 "valency is too low"
+  return _indep(G, 3)
+  # @req valency(G) > 2 "valency is too low"
   
-  for v in 1:n_vertices(G.g)
-    for (a, b, c) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v), all_neighbors(G.g, v))
-      (a >= b || b >= c) && continue
+  # for v in 1:n_vertices(G.g)
+  #   for (a, b, c) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v), all_neighbors(G.g, v))
+  #     (a >= b || b >= c) && continue
 
-      if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]; G.w[Edge(v, c)]])) < 3
+  #     if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]; G.w[Edge(v, c)]])) < 3
+  #       return false
+  #     end
+
+  #   end
+  # end
+
+  # return true
+end
+
+function _indep(G::AbstractGKM_graph, k::Int64)
+  
+  @req valency(G) >= k "valency is too low"
+
+  for v in 1:n_vertices(G.g)
+    for tup in Iterators.product([all_neighbors(G.g, v) for _ in 1:k]...)
+      any(i-> tup[i-1] >= tup[i], 2:k) && continue
+      
+      if rank(matrix([G.w[Edge(v, tup[i])] for i in 1:k])) < k
         return false
       end
 
     end
   end
-
+  
   return true
 end
 
@@ -106,5 +132,4 @@ end
 function empty_gkm_graph(n::Int, val::Int, labels::Vector{String})
 
   return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, val), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
-  
 end

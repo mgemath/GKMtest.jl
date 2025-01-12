@@ -5,11 +5,15 @@
 
 module GKMtest
 
-using Oscar
+using Oscar, Combinatorics
 
 include("exports.jl")
 include("Types.jl")
 include("GKMgraphs.jl")
+include("GKMconnections.jl")
+include("cohomology.jl")
+
+include("GW/includes.jl")
 
 greet() = print("GKMtest loaded")
 
