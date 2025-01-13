@@ -89,7 +89,7 @@ function b(u::QQMPolyRingElem, w::QQMPolyRingElem, a::ZZRingElem, C::QQMPolyRing
       res = res // (w - j*u)
     end
   else 
-    for j in (-a-1):1 # This was wrong in Daniel's code
+    for j in 1:(-a-1) # This was wrong in Daniel's code
       res = res // (w + j*u)
     end
   end

@@ -7,8 +7,10 @@ export rank_torus
 export connection
 export GKMproj_space
 export is3_indep
+export is2_indep
 export GKMadd_edge!
 export empty_gkm_graph
+export flag_gkm_graph
 
 # GKMconnections.jl
 export build_GKM_connection
