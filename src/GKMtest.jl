@@ -14,6 +14,7 @@ include("GKMconnections.jl")
 include("cohomology.jl")
 include("flag.jl")
 include("toric.jl")
+include("product.jl")
 
 include("GW/includes.jl")
 
