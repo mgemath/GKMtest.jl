@@ -48,7 +48,7 @@ function flag_gkm_graph(s::Vector{Int64})
   end
 
     # labels = [prod(i -> c[i]>9 ? "|$(c[i])|" : "$(c[i])", 1:K[end-1]) for c in accepted_perm]
-  labels = [prod(i -> d[n][i]>9 ? "|$(d[n][i])|" : "$(d[n][i])", 1:K[end-1]) for n in 1:nv] # Q: should this be K[end] to display the full permutation?
+  labels = [prod(i -> d[n][i]>9 ? "|$(d[n][i])|" : "$(d[n][i])", 1:K[end-1]) for n in 1:nv] 
 
     # for e in edges(g)
     #     v = src(e); w = dst(e);
