@@ -11,7 +11,7 @@ function bettiNumbers(gkm::AbstractGKM_graph)
 
   for counter in 1:10^8 # arbitrary maximum number of attempts to avoid "while true"
 
-    xi = ZZ.(rand(Int, n_vertices(gkm.g)))
+    xi = ZZ.(rand(Int, n_vertices(gkm.g)))  #TODO: find something without using random numbers
     wxi = Dict{Edge, ZZRingElem}() # wxi stands for weight[e](xi)
     isPolarizing = true
 
