@@ -16,6 +16,7 @@ include("flag.jl")
 include("toric.jl")
 include("betti.jl")
 include("GKMsubgraphs.jl")
+include("product.jl")
 
 include("GW/includes.jl")
 
