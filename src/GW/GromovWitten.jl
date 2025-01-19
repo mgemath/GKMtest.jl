@@ -3,7 +3,7 @@ Create a decorated tree corresponding to the given GKM graph from the given data
 """
 function decoratedTree(
   gkm::AbstractGKM_graph,
-  tree::Graph{Undirected},
+  tree::Graph,
   vDict::Dict{Int, Int},
   edgeMult::Dict{Edge, Int},
   marks::Vector{Int};

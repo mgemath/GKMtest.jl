@@ -1,5 +1,5 @@
 
-import Base: zero
+import Base: zero, *, ^
 
 """
     equivariant_cohomology_ring(G::AbstractGKM_graph)
@@ -71,6 +71,29 @@ Return the equivariant Poincare dual of the given fixed point
 function pointClass(vertex::Int, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   return eulerClass(vertex, R) * gens(R.cohomRing)[vertex]
 end 
+
+"""
+    PDClass(gkmSub::AbstractGKM_subgraph, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+
+Return the equivariant Poincare dual cohomology class of the GKM subgraph.
+"""
+function PDClass(gkmSub::AbstractGKM_subgraph, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+
+  res = zero(R.cohomRing)
+
+  for v in gkmSub.vDict
+    vContrib = R.coeffRing(1)
+    for w in all_neighbors(gkmSub.super.g, v)
+      e = Edge(v,w)
+      if !has_edge(gkmSub, e)
+        vContrib *= weightClass(e, R)
+      end
+    end
+    res += vContrib * gens(R.cohomRing)[v]
+  end
+
+  return res
+end
 
 """
     weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
@@ -150,6 +173,14 @@ end
 
 function multiply(a::FreeModElem{QQMPolyRingElem}, b::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   return R.cohomRing([a[i] * b[i] for i in 1:n_vertices(R.gkm.g)])
+end
+
+function *(a::FreeModElem{T}, b::FreeModElem{T})::FreeModElem{T} where T <: RingElem
+  return parent(a)([a[i] * b[i] for i in 1:rank(parent(a))])
+end
+
+function ^(a::FreeModElem{T}, n::Int64)::FreeModElem{T} where T <: RingElem
+  return parent(a)([a[i]^n for i in 1:rank(parent(a))])
 end
 
 function Base.show(io::IO, R::GKM_cohomology_ring)
