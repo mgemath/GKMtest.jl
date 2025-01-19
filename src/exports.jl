@@ -11,12 +11,25 @@ export is2_indep
 export GKMadd_edge!
 export empty_gkm_graph
 export flag_gkm_graph
+export GKM_isValid
 
 # GKMconnections.jl
 export build_GKM_connection
+export connection_a_from_con
+export connection_map_from_a
+export GKM_isValidConnection
 
 # cohomology.jl
 export equivariant_cohomology_ring
 export isGKMclass
 export weightClass
-export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, integrateGKMClass
+export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, integrateGKMClass, PDClass
+
+# betti.jl
+export bettiNumbers
+
+# GKMsubgraphs.jl
+export GKMsubgraph_from_vertices
+export GKMsubgraph_from_edges
+export GKM_isValidSubgraph
+export isCompatible

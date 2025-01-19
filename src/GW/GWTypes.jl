@@ -1,6 +1,6 @@
 struct GW_decorated_tree
     gkm::AbstractGKM_graph
-    tree::Graph{Undirected}
+    tree::Graph
     vDict::Dict{Int, Int} # map vertices of tree to vertices of gkm.g
     edgeMult::Dict{Edge, Int} # each edge of tree has a non-negative multiplicity
     marks::Vector{Int} # vector of marked vertices of the tree 

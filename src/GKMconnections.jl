@@ -1,6 +1,5 @@
 """
   Return the GKM_connection of the given GKM graph if it is unique.
-  If it is not unique, return nothing.
 """
 function build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   
@@ -11,9 +10,7 @@ function build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   end
 
   # assign to each edges e & e_i with src(e)=src(e_i) an edge e'_i with src(e'_i)=dst(e).
-  con = Dict{Edge, Dict{Edge, Edge}}()
-  # w[e'_i] = w [e_i] - a_i * w[e]
-  a = Dict{Edge, Dict{Edge, ZZRingElem}}()
+  con = Dict{Tuple{Edge, Edge}, Edge}()
 
   # iterate over all unoriented edges
   for e in edges(gkm.g)
@@ -22,10 +19,6 @@ function build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
 
     s1 = src(e)
     s2 = dst(e)
-    eCon = Dict{Edge, Edge}()
-    eA = Dict{Edge, ZZRingElem}()
-    eRevCon = Dict{Edge, Edge}() # calculate connection for reversed edges too
-    eRevA = Dict{Edge, ZZRingElem}()
     eW = gkm.w[e]
 
     # get all edges at src(e)
@@ -38,30 +31,165 @@ function build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
         
         if rank(matrix([ wdif; eW ])) == 1 # if true, epi belongs to ei.
 
-          ai::ZZRingElem = ZZ(0) # divide wdiv by eW. Is this already implemented somewhere for FreeModuleElem{ZZRingElem}?
-          for j in 1:rank(gkm.M)
-            if eW[j] != 0
-              ai = div(wdif[j],eW[j]) # type is again ZZRingElem
-              break
-            end
-          end
-          eCon[ei] = epi
-          eRevCon[epi] = ei
-          eA[ei] = ai
-          eRevA[epi] = ai
-
+          con[(e, ei)] = epi
+          con[(reverse(e), epi)] = ei
           break
         end
       end
     end
-
-    con[e] = eCon
-    a[e] = eA
-    con[reverse(e)] = eRevCon
-    a[reverse(e)] = eRevA
   end
 
+  return build_GKM_connection(gkm, con)
+end
+
+"""
+Return the GKM connection object (including information of the ai's) determined by the given connection map.
+Warning: This function does not check whether the given connection map is valid.
+"""
+function build_GKM_connection(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}) :: GKM_connection
+  a = connection_a_from_con(gkm, con)
   return GKM_connection(gkm, con, a)
+end
+
+function build_GKM_connection(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem}) :: GKM_connection
+  con = connection_map_from_a(gkm, a)
+  return GKM_connection(gkm, con, a)
+end
+
+"""
+Return the ai's belonging to the given GKM connection.
+Warning: This function does not check whether the given connection map is valid.
+"""
+function connection_a_from_con(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}; check::Bool = true)::Dict{Tuple{Edge, Edge}, ZZRingElem}
+
+  a = Dict{Tuple{Edge, Edge}, ZZRingElem}()
+  for e in edges(gkm.g)
+    
+    @req !is_zero(gkm.w[e]) "Weight zero edge found."
+
+    s1 = src(e)
+    s2 = dst(e)
+    eW = gkm.w[e]
+
+    for ei in [Edge(s1,v) for v in all_neighbors(gkm.g, s1)]
+      
+      epi = con[(e, ei)]
+      wdif = gkm.w[ei] - gkm.w[epi]
+
+      if check
+        @req rank(matrix([ wdif; eW ])) == 1 "connection is incompatible with GKM graph"
+      end
+
+      ai::ZZRingElem = ZZ(0)
+
+      for j in 1:rank(gkm.M)
+        if eW[j] != 0
+          ai = div(wdif[j],eW[j]) # type is again ZZRingElem
+          break
+        end
+      end
+
+      a[(e, ei)] = ai
+      a[(reverse(e), epi)] = ai
+    end
+  end
+  return a
+end
+
+"""
+Build the connection map from the given collection of a's [cf. Liu--Sheshmani 2.(b) on p.4]
+Warning: The returned value is only unique if the GKM has no repeated weights at any vertex (which is required for it to be valid).
+"""
+function connection_map_from_a(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem})::Dict{Tuple{Edge, Edge}, Edge}
+
+  con = Dict{Tuple{Edge, Edge}, Edge}()
+  for e in edges(gkm.g)
+    for ei in [Edge(src(e),v) for v in all_neighbors(gkm.g, src(e))]
+
+      ai = a[(e, ei)]
+      wEpi = gkm.w[ei] - ai * gkm.w[e] # following [Liu--Sheshmani 2.(b) on p.4]
+
+      resultFound = false
+
+      for epi in [Edge(dst(e),v) for v in all_neighbors(gkm.g, dst(e))]
+
+        if wEpi == gkm.w[epi]
+
+          con[(e, ei)] = epi
+          con[(reverse(e), epi)] = ei
+          resultFound = true
+          break
+        end
+      end
+      @req resultFound "No edge found for ($e,$ei) using connection a's"
+    end
+  end
+  return con
+end
+
+"""
+Return true if the given GKM connection is valid. This holds if and only if all of the following hold:
+  1. con and a are set for all (Edge(v,w), Edge(v,u)) where vw and vu are connected in the graph
+  2. con maps every (e,e) to reverse(e)
+  3. a maps every (e,e) to 2
+  4. Every pair (e,ei) with same source satisfies the relation of the associated a's, i.e. w[ei'] = w[ei] - a[(e,ei)] * w[e]
+"""
+function GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true)::Bool
+
+  for e in edges(con.gkm.g)
+    if !haskey(con.con, (e,e))
+      printDiagnostics && println("Connection misses key (e,e) for e=$e.")
+      return false
+    elseif !haskey(con.a, (e,e))
+      printDiagnostics && println("Connection misses a(e,e) for e=$e.")
+      return false
+    elseif !haskey(con.con, (reverse(e),reverse(e)))
+        printDiagnostics && println("Connection misses key (e,e) for e=$(reverse(e)).")
+        return false
+    elseif !haskey(con.a, (reverse(e),reverse(e)))
+        printDiagnostics && println("Connection misses a(e,e) for e=$(reverse(e)).")
+        return false
+    elseif con.con[(e,e)] != reverse(e)
+      printDiagnostics && println("Connection doesn't map (e,e) to reverse(e) for e=$e.")
+      return false
+    elseif con.con[(reverse(e),reverse(e))] != e
+      printDiagnostics && println("Connection doesn't map (e,e) to reverse(e) for e=$e.")
+      return false
+    elseif con.a[(e,e)] != ZZ(2)
+      printDiagnostics && println("Connection does not satisfy a(e,e)=2 for e=$e.")
+      return false
+    elseif con.a[(reverse(e), reverse(e))] != ZZ(2)
+      printDiagnostics && println("Connection does not satisfy a(e,e)=2 for e=$(reverse(e)).")
+      return false 
+    end
+  end
+
+  for v in 1:n_vertices(con.gkm.g)
+    for w in 1:n_vertices(con.gkm.g)
+      (v == w) && continue
+      e = Edge(v,w)
+      if has_edge(con.gkm.g, e)
+        for u in all_neighbors(con.gkm.g, v)
+
+          ei = Edge(v, u)
+          if !haskey(con.con, (e, ei))
+            printDiagnostics && println("Connection map misses value for ($e, $ei).")
+            return false
+          elseif !haskey(con.a, (e, ei))
+            printDiagnostics && println("Connection misses value for a($e, $ei).")
+            return false
+          end
+          epi = con.con[(e,ei)]
+          ai = con.a[(e,ei)]
+          if con.gkm.w[epi] != con.gkm.w[ei] - ai * con.gkm.w[e]
+            printDiagnostics && println("Connection map and a(e,ei) is inconsistent for (e, ei)=($e, $ei).")
+            return false
+          end
+        end
+      end
+    end
+  end
+  return true
 end
 
 function Base.show(io::IO, con::GKM_connection)

@@ -1,3 +1,6 @@
+#TODO: This only calculates one contribution, right?
+# * It should probably take the GKM connection as input
+# * Note that Euler_inv does not divide by |Aut(tree)|, so we need to do this here, as in Giosue's original code.
 function integrateGKM(G::AbstractGKM_graph, classes::Vector{FreeModElem{QQMPolyRingElem}})
   con = build_GKM_connection(G)
   R = equivariant_cohomology_ring(G)
