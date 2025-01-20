@@ -3,7 +3,8 @@ function gkm_graph(
   labels::Vector{String},
   M::AbstractAlgebra.Generic.FreeModule{ZZRingElem}, # character group
   w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}; 
-  check::Bool=true
+  check::Bool=true,
+  checkLabels::Bool=true
 )
   # construct the GKM_graph
   if check
@@ -12,6 +13,10 @@ function gkm_graph(
     @req Set(edges(g)) == keys(w) "The axial function is not well defined"
     @req all(v -> length(all_neighbors(g, 1)) == length(all_neighbors(g, v)), 2:n_vertices(g)) "The valency is not the same for all vertices"
     @req length(unique(labels)) == length(labels) "Labels must be unique"
+  end
+  if checkLabels
+    # reserve characters <,[,] for vertex labels of blowups
+    @req all(v -> !contains(labels[v], ">") && !contains(labels[v], "[") && !contains(labels[v], "]"), 1:n_vertices(g)) "Characters >,[,] are forbidden for vertex labels"
   end
   for e in edges(g)
     w[reverse(e)] = -w[e]
