@@ -33,3 +33,6 @@ export GKMsubgraph_from_vertices
 export GKMsubgraph_from_edges
 export GKM_isValidSubgraph
 export isCompatible
+
+# blowup.jl
+export blowupGKM

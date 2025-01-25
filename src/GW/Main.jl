@@ -15,7 +15,7 @@ function integrateGKM(G::AbstractGKM_graph, classes::Vector{FreeModElem{QQMPolyR
   res = zero(R.coeffRing)
   println(res)
 
-  max_n_vert::Int64 = 2 #TODO find the maximal number of vertices
+  max_n_vert::Int64 = 3 #TODO find the maximal number of vertices
 
   n_marks = length(classes)
   for ls in Iterators.flatten([TreeIt(i) for i in 2:max_n_vert]) # generation of level sequences
@@ -66,7 +66,7 @@ function integrateGKM(G::AbstractGKM_graph, classes::Vector{FreeModElem{QQMPolyR
   println(res)
 end
 
-function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input)
+function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
   con = build_GKM_connection(G)
   R = equivariant_cohomology_ring(G)
   P = P_input.func
@@ -75,13 +75,13 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input)
   # this part is needed for the generation of colorings
   nc::Dict{Int64,Vector{Int64}} = Dict{Int64,Vector{Int64}}()
   for v in 1:n_vertices(G.g)
-    nc[v] = sort!(copy(all_neighbors(G.g, v)))
+    nc[v] = sort(all_neighbors(G.g, v))
   end
   #########
   res = zero(R.coeffRing)
-  println(res)
+  # println(res)
 
-  max_n_vert::Int64 = 2 #TODO find the maximal number of vertices
+  max_n_vert::Int64 = beta + 1 #TODO find the maximal number of vertices
 
   # n_marks = length(classes)
   for ls in Iterators.flatten([TreeIt(i) for i in 2:max_n_vert]) # generation of level sequences
@@ -89,25 +89,36 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input)
 
     CI, parents, subgraph_ends = col_it_init(ls, nc) # generation of colorings
     for col in CI   # colorings Iterator
+      top_aut::Int64 = count_iso(ls, col)
       vDict = Dict{Int, Int}([i for i in 1:n_vertices(tree)] .=> col) # TODO use directly col[i] instead of vDict[i]
 
+      Multi = multi(G, tree, beta)
+
       for m_inv in Combinatorics.with_replacement_combinations(1:nv(tree), n_marks)
-        euler = zero(R.coeffRing)
-        for m in Combinatorics.multiset_permutations(m_inv, n_marks) #generation of all marks
+        
+        aut = count_iso(ls, col, m_inv)
 
-          tree_iso = count_iso(ls, col, m)  # isomorphism of the tree with coloring and marks
+        for edgeMult_array in Multi # all_ones_multip(G, tree)   # multiplicities
+          PROD = prod(edgeMult_array)
+          euler = zero(R.coeffRing)
 
-          for edgeMult in all_ones_multip(G, tree)   # multiplicities
+          edgeMult = Dict{Edge, Int}(edges(tree) .=> edgeMult_array)
+          
 
-            PROD = prod(e -> edgeMult[e], keys(edgeMult))
+          for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
+
+            
             dt = decoratedTree(G, tree, vDict, edgeMult, m)
 
+            Class = Base.invokelatest(P, dt)
+
+            Class == zero(R.coeffRing) && continue
+
             if euler == zero(R.coeffRing)
-              euler = Euler_inv(dt, R, con)//(PROD * tree_iso)
+              euler = Euler_inv(dt, R, con)//(PROD * aut)
             end
             # println(euler)
             
-            Class = Base.invokelatest(P, dt)
             res += Class*euler
             # println(Class)
             # if col == (1, 4, 3)
@@ -123,6 +134,7 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input)
       end
     end
   end
+  println(res)
   return res
   # println("Daniel example is:\n$DanielResult")
 end
