@@ -1,6 +1,6 @@
 name = "GKMtest"
 uuid = "f0a7beec-ce01-462c-9058-91af0b9134dc"
-authors = ["Giosuè Muratore <muratore.g.e@gmail.com >"]
+authors = ["Giosuè Muratore <muratore.g.e@gmail.com >", "Daniel Holmes <daniel.holmes@ist.ac.at>"]
 version = "0.1.0"
 
 [deps]
