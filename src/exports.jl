@@ -36,3 +36,6 @@ export isCompatible
 
 # blowup.jl
 export blowupGKM
+
+# curveClasses.jl
+export GKM_second_homology
