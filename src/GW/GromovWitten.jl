@@ -6,7 +6,8 @@ function decoratedTree(
   tree::Graph,
   vDict::Dict{Int, Int},
   edgeMult::Dict{Edge, Int},
-  marks::Vector{Int};
+  marks::Vector{Int},
+  R;
   check::Bool=true)::GW_decorated_tree
 
   nv = n_vertices(tree)
@@ -21,7 +22,7 @@ function decoratedTree(
     @req all([0 < edgeMult[e] for e in edges(tree)]) "non-positive edge multiplicity"
   end
 
-  return GW_decorated_tree(gkm, tree, vDict, edgeMult, marks)
+  return GW_decorated_tree(gkm, tree, vDict, edgeMult, marks, R)
 end
 
 """
