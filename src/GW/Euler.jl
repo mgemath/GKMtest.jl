@@ -16,10 +16,10 @@ function Euler_inv(
   
   res = C(1)//C(1)
 
-  for e in edges(dt.tree)
-    de = dt.edgeMult[e]
-    res = res * h(imageOf(e, dt), de, con, R) // de
-  end
+  # for e in edges(dt.tree)
+  #   de = dt.edgeMult[e]
+  #   res = res * h(imageOf(e, dt), de, con, R) #// de
+  # end
 
   for v in vertices(dt.tree)
 

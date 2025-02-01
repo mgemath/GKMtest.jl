@@ -16,3 +16,14 @@ P = ev(1, c1);
 
 P = ev(1, c1)*ev(2, c1)*ev(3, c2)
 @test integrateGKM(P1, 3, P, 1) == 1
+
+@test integrateGKM(P1, 0, class_one(), 3) == 0
+@test integrateGKM(P1, 2, class_one(), 3) == 0
+
+P = Psi(1)
+@test integrateGKM(P1, 1, P, 1) == -2
+
+P = Psi(1, 1)
+@test integrateGKM(P1, 2, P, 1) == 2
+P = Psi(2, 2)
+@test integrateGKM(P1, 2, P, 2) == 5//4

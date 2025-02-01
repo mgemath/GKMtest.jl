@@ -78,6 +78,11 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
     nc[v] = sort(all_neighbors(G.g, v))
   end
   #########
+
+  #########
+  # Dict in order to store H
+  h_dict::Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}} = Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}() # Lambda_gamma_e_dict
+  ########
   res = zero(R.coeffRing)
   # println(res)
 
@@ -93,6 +98,7 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
       vDict = Dict{Int, Int}([i for i in 1:n_vertices(tree)] .=> col) # TODO use directly col[i] instead of vDict[i]
 
       Multi = multi(G, tree, beta)
+      
 
       for m_inv in Combinatorics.with_replacement_combinations(1:nv(tree), n_marks)
         
@@ -108,7 +114,7 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             
-            dt = decoratedTree(G, tree, vDict, edgeMult, m)
+            dt = decoratedTree(G, tree, vDict, edgeMult, m, R)
 
             Class = Base.invokelatest(P, dt)
 
@@ -116,25 +122,24 @@ function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
 
             if euler == zero(R.coeffRing)
               euler = Euler_inv(dt, R, con)//(PROD * aut)
+              for e in edges(tree)
+                triple = (edgeMult[e], min(col[src(e)], col[dst(e)]), max(col[src(e)], col[dst(e)]))
+                if !haskey(h_dict, triple)
+                    h_dict[triple] = h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
+                end
+                euler *= h_dict[triple]
+              end
             end
+            # println("ls = $(ls), col = $(col), aut = $(aut), PRODW = $(PROD), m=$(m), E = $(euler)")
             # println(euler)
             
             res += Class*euler
-            # println(Class)
-            # if col == (1, 4, 3)
-            #   if m == [1, 1, 2]
-            #     println("euler: \n", euler)
-            #     println("class: \n", Class)
-            #     println("Product: \n", euler*Class)
-            #     # DanielResult = euler
-            #   end
-            # end  
           end
         end
       end
     end
   end
-  println(res)
+  # println(res)
   return res
   # println("Daniel example is:\n$DanielResult")
 end
