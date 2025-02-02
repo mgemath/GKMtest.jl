@@ -41,3 +41,4 @@ export blowupGKM
 # curveClasses.jl
 export GKM_second_homology
 export edgeCurveClass
+export all_classes

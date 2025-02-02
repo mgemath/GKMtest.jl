@@ -166,3 +166,13 @@ function _multiplicities(
 
   return (e0 + k(K([v[i] for i in 1:rk])) for v in lpts)
 end
+
+function all_classes(G::AbstractGKM_graph)
+  H2 = GKM_second_homology(G);
+
+  return [edgeCurveClass(H2, e) for e in edges(G.g)]
+  # d = Dict()
+  # for e in edges(G.g)
+  #   d[]
+  # end
+end

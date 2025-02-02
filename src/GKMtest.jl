@@ -21,7 +21,10 @@ include("blowup.jl")
 include("curveClasses.jl")
 
 include("GW/includes.jl")
+include("curveClasses.jl")
 
-greet() = print("GKMtest loaded")
+# files in the definitive format
+# include("standard_constructions.jl")
+# include("betti_numbers.jl")
 
 end # module GKMtest
