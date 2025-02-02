@@ -116,4 +116,53 @@ function Base.show(io::IO, ::MIME"text/plain",  h2::GKM_H2)
   print(io, "Curve classes in H_2 for $(h2.gkm): $(h2.H2)")
 end
 
-# TODO (Daniel): iterate over multiplicities for given beta and given edges.
+"""
+  Return the second homology class represented by the given edge.
+"""
+function edgeCurveClass(H2::GKM_H2, e::Edge)
+  i = H2.edgeToGenIndex[e]
+  return H2.quotientMap(gens(H2.edgeLattice)[i])
+end
+
+"""
+Return an iterator over the multiplicities for the given edges that sum to the second homology class beta.
+"""
+function _multiplicities(
+  H2::GKM_H2,
+  edges::Vector{Edge},
+  beta::AbstractAlgebra.Generic.QuotientModuleElem{ZZRingElem};
+  check::Bool = true
+)
+  if check
+    @req parent(beta) == H2.H2 "Beta must be element of H2.H2"
+  end
+
+  nTreeEdges = length(edges)
+  T = free_module(ZZ, nTreeEdges)
+  t = ModuleHomomorphism(T, H2.edgeLattice, [gens(H2.edgeLattice)[H2.edgeToGenIndex[e]] for e in edges])
+  q = compose(t, H2.quotientMap)
+
+  e0 = nothing
+  try
+    e0 = preimage(q, beta)
+    #println("e0: $e0")
+  catch err
+    if isa(err, ArgumentError)
+      # In this case, beta cannot be expressed in terms of the given edges.
+      #println("beta not in span of edge classes.")
+      return Vector{}()
+    else
+      rethrow(err)
+    end
+  end
+
+  K, k = kernel(q)
+  rk = rank(K)
+  mk = transpose(matrix(k)) # columns are images of generators
+  #println("mk: $mk")
+
+  P = polyhedron(-mk, [e0[i] for i in 1:nTreeEdges])
+  lpts = interior_lattice_points(P)
+
+  return (e0 + k(K([v[i] for i in 1:rk])) for v in lpts)
+end

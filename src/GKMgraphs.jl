@@ -204,3 +204,11 @@ function GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
 
   return true
 end
+
+function edgeFromLabels(G::AbstractGKM_graph, s::String, d::String)::Edge
+  @req s in G.labels "source $s is not a vertex in $G."
+  @req d in G.labels "destination $d is not a vertex in $G."
+
+  sd = indexin([s, d], G.labels)
+  return Edge(sd[1], sd[2])
+end
