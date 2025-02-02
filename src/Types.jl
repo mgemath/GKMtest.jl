@@ -58,3 +58,21 @@ mutable struct GKM_connection
     return new(gkm, con, a)
   end
 end
+
+mutable struct GKM_H2
+  gkm::AbstractGKM_graph
+  edgeLattice::AbstractAlgebra.Generic.FreeModule{ZZRingElem}
+  H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem} # quotient of edgeLattice by relations in H_2.
+  edgeToGenIndex::Dict{Edge, Int64}
+  quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from edgeLattice to H2
+
+  function GKM_H2(
+    gkm::AbstractGKM_graph,
+    edgeLattice::AbstractAlgebra.Generic.FreeModule{ZZRingElem},
+    H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem},
+    edgeToGenIndex::Dict{Edge, Int64},
+    quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}
+  )
+    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap)
+  end
+end

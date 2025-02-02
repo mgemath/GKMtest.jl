@@ -12,6 +12,7 @@ export GKMadd_edge!
 export empty_gkm_graph
 export flag_gkm_graph
 export GKM_isValid
+export edgeFromLabels
 
 # GKMconnections.jl
 export build_GKM_connection
@@ -36,3 +37,7 @@ export isCompatible
 
 # blowup.jl
 export blowupGKM
+
+# curveClasses.jl
+export GKM_second_homology
+export edgeCurveClass

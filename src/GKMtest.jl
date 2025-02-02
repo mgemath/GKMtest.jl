@@ -18,6 +18,7 @@ include("betti.jl")
 include("GKMsubgraphs.jl")
 include("product.jl")
 include("blowup.jl")
+include("curveClasses.jl")
 
 include("GW/includes.jl")
 
