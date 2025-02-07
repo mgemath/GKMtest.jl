@@ -65,14 +65,16 @@ mutable struct GKM_H2
   H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem} # quotient of edgeLattice by relations in H_2.
   edgeToGenIndex::Dict{Edge, Int64}
   quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from edgeLattice to H2
+  dualConeRaySum::RayVector{QQFieldElem} # sum of rays of the dual cone of the edgeCurveClasses, normalized so that the minimum of pairings with edge curve classes is 1.
 
   function GKM_H2(
     gkm::AbstractGKM_graph,
     edgeLattice::AbstractAlgebra.Generic.FreeModule{ZZRingElem},
     H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem},
     edgeToGenIndex::Dict{Edge, Int64},
-    quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}
+    quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem},
+    dualConeRaySum::RayVector{QQFieldElem}
   )
-    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap)
+    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum)
   end
 end

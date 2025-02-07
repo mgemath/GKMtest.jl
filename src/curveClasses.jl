@@ -45,7 +45,28 @@ function GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
   edgeLattice = M
   quotientMap = compose(q1, q2)
 
-  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap)
+  # generate dual cone of effective cone in H2.
+  rkH2 = length(gens(H2))
+  ImodElts = [ quotientMap(gens(edgeLattice)[i]) for i in 1:nEdges]
+  I = [[v[j] for j in 1:rkH2] for v in ImodElts]
+  C = cone_from_inequalities(-I) # this is the dual cone of the T-invariant curve classes
+  s = sum(rays(C))
+  
+  # normalize s so that the minimum of edgeCurveClasses evaluated on s is 1.
+  minEval = QQ(-1)
+  for e in edges(G.g)
+    eClass = quotientMap(gens(edgeLattice)[edgeToGenIndex[e]])
+    se = sum([s[i] * eClass[i] for i in 1:rkH2])
+
+    @req se > 0 "Edge curve class evaluates negatively on positive cone element s!"
+
+    if se < minEval || minEval < 0
+      minEval = se
+    end
+  end
+  dualConeRaySum = (1//minEval) * s
+
+  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum)
 end
 
 """
@@ -175,4 +196,15 @@ function all_classes(G::AbstractGKM_graph)
   # for e in edges(G.g)
   #   d[]
   # end
+end
+
+"""
+Return an upper bound for the number of edges that can be used to represent beta.
+This is calculated by taking inner product with the sum of the rays of the dual cone of all edge curve classes.
+If beta is not representable as positive sum of edge curve classes then this might be negative.
+"""
+function _max_n_edges(H2::GKM_H2, beta::AbstractAlgebra.Generic.QuotientModuleElem{ZZRingElem})
+  rkH2 = length(gens(H2.H2))
+  s = sum([H2.dualConeRaySum[i] * beta[i] for i in 1:rkH2])
+  return ZZ(floor(s))
 end
