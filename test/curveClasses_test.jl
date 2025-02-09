@@ -7,6 +7,8 @@ edges = [Edge(1, 2), Edge(2, 3), Edge(2,1)]
 ms = GKMtest._multiplicities(H2, edges, beta)
 
 println("Multiplicities for P3 with beta=$beta and edges: $edges")
+println("Dual cone ray sum: $(H2.dualConeRaySum)")
+println("Max number of edges: $(GKMtest._max_n_edges(H2, beta))")
 for m in ms
   println(m)
 end
@@ -27,6 +29,8 @@ push!(edges, edgeFromLabels(X, "x_0,x_0", "x_0,x_1")) # this edge represents c2
 ms = GKMtest._multiplicities(H2, edges, beta)
 
 println("Multiplicities for P2xP2 with beta=$beta and edges: $edges")
+println("Dual cone ray sum: $(H2.dualConeRaySum)")
+println("Max number of edges: $(GKMtest._max_n_edges(H2, beta))")
 for m in ms
   println(m)
 end
@@ -47,6 +51,8 @@ push!(edges, edgeFromLabels(F, "234", "231")) # this edge also represents a3
 ms = GKMtest._multiplicities(H2, edges, beta)
 
 println("Multiplicities for Flag(C^4) with beta=$beta and edges: $edges")
+println("Dual cone ray sum: $(H2.dualConeRaySum)")
+println("Max number of edges: $(GKMtest._max_n_edges(H2, beta))")
 for m in ms
   println(m)
 end

@@ -21,7 +21,6 @@ include("blowup.jl")
 include("curveClasses.jl")
 
 include("GW/includes.jl")
-include("curveClasses.jl")
 
 # files in the definitive format
 # include("standard_constructions.jl")
