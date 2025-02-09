@@ -67,39 +67,10 @@ end
 
 function is2_indep(G::AbstractGKM_graph)
   return _indep(G, 2)
-  # @req valency(G) > 1 "valency is too low"
-
-  # for v in 1:n_vertices(G.g)
-  #   for (a, b) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v))
-  #     (a >= b) && continue
-
-  #     if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]])) < 2
-  #       return false
-  #     end
-
-  #   end
-  # end
-
-  # return true
-
 end
 
 function is3_indep(G::AbstractGKM_graph)
   return _indep(G, 3)
-  # @req valency(G) > 2 "valency is too low"
-  
-  # for v in 1:n_vertices(G.g)
-  #   for (a, b, c) in Iterators.product(all_neighbors(G.g, v), all_neighbors(G.g, v), all_neighbors(G.g, v))
-  #     (a >= b || b >= c) && continue
-
-  #     if rank(matrix([G.w[Edge(v, a)]; G.w[Edge(v, b)]; G.w[Edge(v, c)]])) < 3
-  #       return false
-  #     end
-
-  #   end
-  # end
-
-  # return true
 end
 
 function _indep(G::AbstractGKM_graph, k::Int64)

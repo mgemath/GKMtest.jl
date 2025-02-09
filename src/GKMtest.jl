@@ -5,7 +5,7 @@
 
 module GKMtest
 
-using Oscar, Combinatorics
+using Oscar, Combinatorics, ProgressMeter
 
 include("exports.jl")
 include("Types.jl")

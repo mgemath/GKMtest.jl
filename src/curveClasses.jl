@@ -206,5 +206,5 @@ If beta is not representable as positive sum of edge curve classes then this mig
 function _max_n_edges(H2::GKM_H2, beta::AbstractAlgebra.Generic.QuotientModuleElem{ZZRingElem})
   rkH2 = length(gens(H2.H2))
   s = sum([H2.dualConeRaySum[i] * beta[i] for i in 1:rkH2])
-  return ZZ(floor(s))
+  return Int64(ZZ(floor(s)))
 end
