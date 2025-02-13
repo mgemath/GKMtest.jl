@@ -96,6 +96,7 @@ function b(u::QQMPolyRingElem, w::QQMPolyRingElem, a::ZZRingElem, C::QQMPolyRing
   return res
 end
 
+# Warning: (TODO) Since h classes were removed from Euler_inv, this does not multiply by h classes anymore!
 function GWTreeContribution(
   dt::GW_decorated_tree,
   R::GKM_cohomology_ring,
