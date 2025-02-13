@@ -185,7 +185,6 @@ end
     # iterate maps from tree to G.g:
     for col in CI   # colorings Iterator
       top_aut::Int64 = count_iso(ls, col)
-      vDict = Dict{Int, Int}([i for i in 1:n_vertices(tree)] .=> col) # TODO use directly col[i] instead of vDict[i]
 
       Multi = _multiplicities(H2, [Edge(col[src(e)], col[dst(e)]) for e in edges(tree)], beta)
 
@@ -207,7 +206,7 @@ end
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             
-            dt = decoratedTree(G, tree, vDict, edgeMult, m, R)
+            dt = decoratedTree(G, tree, col, edgeMult, m, R)
             
             Class = Base.invokelatest(P, dt)
 

@@ -9,14 +9,14 @@ add_edge!(tree, 1, 2);
 # add_edge!(tree, 2, 3);
 add_edge!(tree, 1, 3);
 
-vDict = Dict(1=>1, 2=>4, 3=>3);
+vDict = [1, 4, 3];
 
 # edgeMult = Dict(Edge(1, 2) => 1, Edge(2, 3) => 1);
 edgeMult = Dict(Edge(1, 2) => 1, Edge(1, 3) => 1);
 
 marks = [1, 1, 2];
 
-dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
+dt = decoratedTree(P3, tree, vDict, edgeMult, marks, R);
 
 C = R.coeffRing;
 (t1, t2, t3, t4) = gens(C);

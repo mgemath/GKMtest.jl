@@ -4,7 +4,7 @@ Create a decorated tree corresponding to the given GKM graph from the given data
 function decoratedTree(
   gkm::AbstractGKM_graph,
   tree::Graph,
-  vDict::Dict{Int, Int},
+  vDict::Union{Vector{Int}, Tuple{Vararg{Int}}},
   edgeMult::Dict{Edge, Int},
   marks::Vector{Int},
   R;
