@@ -5,7 +5,11 @@ S2 = GKMsubgraph_from_edges(G, [Edge(1, 2), Edge(2, 3), Edge(3,4), Edge(4, 1)]) 
 
 PDS2 = PDClass(S2, R)
 for i in 1:rank(R.cohomRing)
-  println(factor(PDS2[i]))
+  if PDS2[i] != 0
+    println(factor(PDS2[i]))
+  else
+    println(0)
+  end
 end
 
 @test pointClass(1, R) == PDClass(GKMsubgraph_from_vertices(G, [1]), R)

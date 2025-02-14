@@ -27,7 +27,3 @@ beta=d*H+e*E;
 
 P= prod(i -> ev(i, pointClass(1, R)), 1:(2*d+e));
 println(integrateGKM(X, H2, beta, 2*d+e, P, show_bar = false));
-
-# I got error when E = (-1,1) and d=-e.
-# I got error when E = (1,0) and d=-e.
-# both error are solved after adding lines 195-197 in Main

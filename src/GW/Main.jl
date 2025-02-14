@@ -167,46 +167,46 @@ function integrateGKM(G::AbstractGKM_graph, H2, beta, n_marks::Int64, P_input; s
 
   if show_bar #set up progress data
     number_trees = A000055(max_n_vert)
+    # Count the number of trees with at most max_n_vert vertices and a graph homomorphism to
+    # G.g, also counting ways to distribute the marked points among the vertices.
+    # This does not cound the edge multiplicities.
     threshold = sum(vert -> number_trees[vert] * n_vertices(G.g) * ((length(nc[1]))^(vert - 1)) * binomial(vert+n_marks-1, n_marks), 2:max_n_vert)
     progress_bar::Progress = Progress(threshold, barglyphs=BarGlyphs("[=> ]"), color=:green)
     current_graph = 0
 end
 
   # n_marks = length(classes)
+  # iterate undecorated trees:
   for ls in Iterators.flatten([TreeIt(i) for i in 2:max_n_vert]) # generation of level sequences
     tree = LStoGraph(ls) # from level sequence to graph
     tree_aut = count_iso(ls)
 
     CI, parents, subgraph_ends = col_it_init(ls, nc) # generation of colorings
+    # iterate maps from tree to G.g:
     for col in CI   # colorings Iterator
       top_aut::Int64 = count_iso(ls, col)
-      vDict = Dict{Int, Int}([i for i in 1:n_vertices(tree)] .=> col) # TODO use directly col[i] instead of vDict[i]
 
       Multi = _multiplicities(H2, [Edge(col[src(e)], col[dst(e)]) for e in edges(tree)], beta)
 
-
+      # iterate location of marks on the tree
       for m_inv in Combinatorics.with_replacement_combinations(1:nv(tree), n_marks)
         
         aut = count_iso(ls, col, m_inv)
 
-        for edgeMult_array2 in Multi
-          edgeMult_array = [Int64(edgeMult_array2[i]) for i in 1:ne(tree)]
+        # iterate edge multiplicities
+        for edgeMult_array in Multi
 
-          if any(i -> i<1, edgeMult_array) 
-            # println(edgeMult_array)
-            continue
-          end
-          
           PROD = prod(edgeMult_array)
           euler = zero(R.coeffRing)
 
           edgeMult = Dict{Edge, Int}(edges(tree) .=> edgeMult_array)
           
-
+          # iterate numbering of the marks on the tree
+          # TODO: Q(Daniel): Why do we filter here? What does is_min check?
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             
-            dt = decoratedTree(G, tree, vDict, edgeMult, m, R)
+            dt = decoratedTree(G, tree, col, edgeMult, m, R)
             
             Class = Base.invokelatest(P, dt)
 

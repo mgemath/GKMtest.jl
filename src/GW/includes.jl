@@ -24,4 +24,4 @@ include("Rules.jl")
 include("Trees.jl")
 
 include("exports.jl")
-include("GromovWitten.jl")
+include("DecoratedTrees.jl")

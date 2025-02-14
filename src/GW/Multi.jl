@@ -1,4 +1,4 @@
-#TODO implement an Iterator of multiplicities
+#TODO do we still need this now that we have _multiplicities() in curveClasses.jl?
 
 function all_ones_multip(G::AbstractGKM_graph, tree::Graph)
 

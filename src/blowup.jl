@@ -66,7 +66,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
         continue
       end
       weight = gkmSub.super.w[Edge(vDict[v], j)] - gkmSub.super.w[Edge(vDict[v], i)]
-      newEdge = Edge(intVindex(v, c, i, normalNeighbors), intVindex(v, c, j, normalNeighbors))
+      newEdge = Edge(_intVindex(v, c, i, normalNeighbors), _intVindex(v, c, j, normalNeighbors))
       GKMadd_edge!(gkmBlowup, src(newEdge), dst(newEdge), weight)
       push!(exceptionalEdges, newEdge)
 
@@ -74,8 +74,8 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
       # build connection for newEdge & its reverse
       for k in normalNeighbors[v]
         if k == i
-          eiDst = extFlagToIndex(gkmSub, Edge(i, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
-          epiDst = extFlagToIndex(gkmSub, Edge(j, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
+          eiDst = _extFlagToIndex(gkmSub, Edge(i, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
+          epiDst = _extFlagToIndex(gkmSub, Edge(j, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
           ei = Edge(src(newEdge), eiDst)
           epi = Edge(dst(newEdge), epiDst)
           blowupCon[(newEdge, ei)] = epi
@@ -86,7 +86,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
           blowupCon[(reverse(newEdge), reverse(newEdge))] = newEdge
           # println("($newEdge, $newEdge) -> $(reverse(newEdge))")
         else
-          vertKInd = intVindex(v, c, k, normalNeighbors)
+          vertKInd = _intVindex(v, c, k, normalNeighbors)
           ei = Edge(src(newEdge), vertKInd)
           epi = Edge(dst(newEdge), vertKInd)
           blowupCon[(newEdge, ei)] = epi
@@ -104,8 +104,8 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
         nb = con.con[(vn, vj)]
         a = dst(na)
         b = dst(nb)
-        naInd = intVindex(n, c, a, normalNeighbors)
-        nbInd = intVindex(n, c, b, normalNeighbors)
+        naInd = _intVindex(n, c, a, normalNeighbors)
+        nbInd = _intVindex(n, c, b, normalNeighbors)
         ei = Edge(src(newEdge), naInd)
         epi = Edge(dst(newEdge), nbInd)
         blowupCon[(newEdge, ei)] = epi
@@ -118,7 +118,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
   # println("Connection from old edges:")
 
   # need this data to translate connection to new edges coming from original edges
-  flagBij = flagBijections(gkmSub, con, normalNeighbors, c, externalVertices, nvBlowup)
+  flagBij = _flagBijections(gkmSub, con, normalNeighbors, c, externalVertices, nvBlowup)
 
   # add edges coming from original edges
   for e in edges(gkmSub.super.g)
@@ -127,11 +127,11 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
     
     if !has_edge(gkmSub, e)
 
-      sInd = extFlagToIndex(gkmSub, e, normalNeighbors, externalVertices, nvBlowup, c)
-      dInd = extFlagToIndex(gkmSub, reverse(e), normalNeighbors, externalVertices, nvBlowup, c)
+      sInd = _extFlagToIndex(gkmSub, e, normalNeighbors, externalVertices, nvBlowup, c)
+      dInd = _extFlagToIndex(gkmSub, reverse(e), normalNeighbors, externalVertices, nvBlowup, c)
       w = gkmSub.super.w[e]
       GKMadd_edge!(gkmBlowup, sInd, dInd, w)
-      addToConnection!(blowupCon, con, e, Edge(sInd, dInd), flagBij)
+      _addToConnection!(blowupCon, con, e, Edge(sInd, dInd), flagBij)
     else
 
       sSubInd = indexin(s, vDict)[1]
@@ -140,12 +140,12 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
 
         ei = Edge(s, n)
         epi = con.con[(e, ei)]
-        sIndi = extFlagToIndex(gkmSub, ei, normalNeighbors, externalVertices, nvBlowup, c)
-        dIndi = extFlagToIndex(gkmSub, epi, normalNeighbors, externalVertices, nvBlowup, c)
+        sIndi = _extFlagToIndex(gkmSub, ei, normalNeighbors, externalVertices, nvBlowup, c)
+        dIndi = _extFlagToIndex(gkmSub, epi, normalNeighbors, externalVertices, nvBlowup, c)
         w = gkmSub.super.w[e]
 
         GKMadd_edge!(gkmBlowup, sIndi, dIndi, w)
-        addToConnection!(blowupCon, con, e, Edge(sIndi, dIndi), flagBij)
+        _addToConnection!(blowupCon, con, e, Edge(sIndi, dIndi), flagBij)
         push!(exceptionalEdges, Edge(sIndi, dIndi))
       end
     end
@@ -163,7 +163,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
 
 end
 
-function addToConnection!(blowupCon::Dict{Tuple{Edge, Edge}, Edge}, con::GKM_connection, oldE::Edge, newE::Edge, flagBij::Array{Dict{Int64, Int64}})
+function _addToConnection!(blowupCon::Dict{Tuple{Edge, Edge}, Edge}, con::GKM_connection, oldE::Edge, newE::Edge, flagBij::Array{Dict{Int64, Int64}})
   newS = src(newE)
   newD = dst(newE)
   for (e,ei) in keys(con.con)
@@ -180,7 +180,7 @@ end
 """
 For each vertex of the blowup graph, this returns a dictionary from neighbors in the original graph to neighbors in the new graph.
 """
-function flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, normalNeighbors::Vector{Vector{Int64}}, c::Int64, externalVertices::Vector{Int64}, nvBlowup::Int64)
+function _flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, normalNeighbors::Vector{Vector{Int64}}, c::Int64, externalVertices::Vector{Int64}, nvBlowup::Int64)
 
   res = Array{Dict{Int64, Int64}}(undef, nvBlowup)
   vDict = gkmSub.vDict
@@ -189,10 +189,10 @@ function flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, norma
   for v in externalVertices
     resV = Dict{Int64, Int64}()
     for n in all_neighbors(gkmSub.super.g, v)
-      nInd = extFlagToIndex(gkmSub, Edge(n, v), normalNeighbors, externalVertices, nvBlowup, c)
+      nInd = _extFlagToIndex(gkmSub, Edge(n, v), normalNeighbors, externalVertices, nvBlowup, c)
       resV[n] = nInd
     end
-    vInd = extVindex(v, nvBlowup, externalVertices)
+    vInd = _extVindex(v, nvBlowup, externalVertices)
     res[vInd] = resV
   end
 
@@ -202,9 +202,9 @@ function flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, norma
       resVn = Dict{Int64, Int64}()
       for w in normalNeighbors[v]
         if n == w
-          resVn[w] = extFlagToIndex(gkmSub, Edge(n, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
+          resVn[w] = _extFlagToIndex(gkmSub, Edge(n, vDict[v]), normalNeighbors, externalVertices, nvBlowup, c)
         else
-          resVn[w] = intVindex(v, c, w, normalNeighbors)
+          resVn[w] = _intVindex(v, c, w, normalNeighbors)
         end
       end
       for u in all_neighbors(gkmSub.self.g, v)
@@ -212,9 +212,9 @@ function flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, norma
         ei = Edge(vDict[v], n)
         epi = con.con[(e, ei)]
         m = dst(epi)
-        resVn[vDict[u]] = intVindex(u, c, m, normalNeighbors)
+        resVn[vDict[u]] = _intVindex(u, c, m, normalNeighbors)
       end
-      vnInd = intVindex(v, c, n, normalNeighbors)
+      vnInd = _intVindex(v, c, n, normalNeighbors)
       res[vnInd] = resVn
     end
   end
@@ -222,11 +222,11 @@ function flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, norma
   return res
 end
 
-function intVindex(v::Int64, c::Int64, i::Int64, normalNeighbors::Vector{Vector{Int64}})
+function _intVindex(v::Int64, c::Int64, i::Int64, normalNeighbors::Vector{Vector{Int64}})
   return (v-1)*c + indexin(i, normalNeighbors[v])[1]
 end
 
-function extVindex(v::Int64, nvBlowup::Int64, externalVertices::Vector{Int64})
+function _extVindex(v::Int64, nvBlowup::Int64, externalVertices::Vector{Int64})
   i::Int64 =  indexin(v, externalVertices)[1]
   return nvBlowup - length(externalVertices) + i
 end
@@ -234,14 +234,14 @@ end
 """
 For an external flag at src(e), return the index of the source of that flag in the bowup.
 """
-function extFlagToIndex(gkmSub::AbstractGKM_subgraph, e::Edge, normalNeighbors::Vector{Vector{Int64}}, externalVertices::Vector{Int64}, nvBlowup::Int64, c::Int64)::Int64
+function _extFlagToIndex(gkmSub::AbstractGKM_subgraph, e::Edge, normalNeighbors::Vector{Vector{Int64}}, externalVertices::Vector{Int64}, nvBlowup::Int64, c::Int64)::Int64
   s = src(e)
   d = dst(e)
   if has_vertex(gkmSub, s)
     sInSub = indexin(s, gkmSub.vDict)[1]
-    sInd = intVindex(sInSub, c, d, normalNeighbors)
+    sInd = _intVindex(sInSub, c, d, normalNeighbors)
     return sInd
   else
-    return extVindex(s, nvBlowup, externalVertices)
+    return _extVindex(s, nvBlowup, externalVertices)
   end
 end
