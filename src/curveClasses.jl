@@ -66,7 +66,7 @@ function GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
   end
   dualConeRaySum = (1//minEval) * s
 
-  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum)
+  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, C)
 end
 
 """
@@ -143,6 +143,19 @@ end
 function edgeCurveClass(H2::GKM_H2, e::Edge)
   i = H2.edgeToGenIndex[e]
   return H2.quotientMap(gens(H2.edgeLattice)[i])
+end
+
+"""
+Return whether beta is in the GW effective cone, i.e. whether it is a non-negative
+linear combination of edge curve classes. Note that we consider the effective cone to be 
+closed and hence zero is also considered effective.
+"""
+function isEffectiveCurveClass(
+  H2::GKM_H2,
+  beta::AbstractAlgebra.Generic.QuotientModuleElem{ZZRingElem}
+)::Bool
+  rkH2 = length(gens(H2.H2))
+  return all(r -> sum([beta[i] * r[i] for i in 1:rkH2 ]) >= 0, rays(H2.dualCone))
 end
 
 """

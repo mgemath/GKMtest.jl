@@ -143,6 +143,13 @@
 # end
 
 function integrateGKM(G::AbstractGKM_graph, H2, beta, n_marks::Int64, P_input; show_bar = true)
+
+  @req beta != zero(H2.H2) "zero classes not yet supported. (TODO.)"
+
+  if !isEffectiveCurveClass(H2, beta)
+    return 0
+  end
+
   con = build_GKM_connection(G)
   R = equivariant_cohomology_ring(G)
   P = P_input.func
