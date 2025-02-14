@@ -201,8 +201,8 @@ end
 
           edgeMult = Dict{Edge, Int}(edges(tree) .=> edgeMult_array)
           
-          # iterate numbering of the marks on the tree
-          # TODO: Q(Daniel): Why do we filter here? What does is_min check?
+          # Iterate numbering of the marks on the tree, picking only one per isomorphism class
+          # Details here have to do with the colors iterator from Colors.jl.
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             

@@ -1,3 +1,4 @@
+# Warning: This is not actually the inverse of the Euler class, as the h classes will be multiplied later.
 function Euler_inv(
   dt::GW_decorated_tree,
   R::GKM_cohomology_ring,
@@ -37,12 +38,6 @@ function Euler_inv(
 
     res = res * tmpSum^( valv - 3 +  count(i -> i==v, dt.marks) )
   end
-
-#   for i in 1:length(dt.marks)
-#     v = imageOf(dt.marks[i], dt)
-#     pullback = classes[i][v] # pull back input class at i^th marked point to the fixed point v
-#     res = res * pullback
-#   end
 
   return res
 end
@@ -96,25 +91,22 @@ function b(u::QQMPolyRingElem, w::QQMPolyRingElem, a::ZZRingElem, C::QQMPolyRing
   return res
 end
 
-# Warning: (TODO) Since h classes were removed from Euler_inv, this does not multiply by h classes anymore!
 function GWTreeContribution(
   dt::GW_decorated_tree,
   R::GKM_cohomology_ring,
   con::GKM_connection,
-  classes::Vector{FreeModElem{QQMPolyRingElem}};
+  P_input;
   check::Bool=true)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
-  
-  if check
-    @req length(dt.marks) == length(classes) "incompatible numbers of marked points and cohomology classes"
-  end
 
   res = Euler_inv(dt, R, con; check)
 
-  for i in 1:length(dt.marks)
-    v = imageOf(dt.marks[i], dt)
-    pullback = classes[i][v] # pull back input class at i^th marked point to the fixed point v
-    res = res * pullback
+  # multiply by h classes
+  for e in edges(dt.tree)
+    res *= h(imageOf(e, dt), edgeMult(e, dt), con, R; check)
   end
+
+  #multiply by input class
+  res *= Base.invokelatest(P_input.func, dt)
 
   return res
 end
