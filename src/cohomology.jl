@@ -155,6 +155,32 @@ function integrateGKMClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomolog
 end
 
 """
+Return the equivariant first chern class of the GKM space of which R is the cohomology ring.
+"""
+function firstChernClass(R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+  res = zero(R)
+  for v in vertices(R.gkm.g)
+    localFactor = zero(R.coeffRing)
+    for w in all_neighbors(R.gkm.g, v)
+      localFactor += weightClass(Edge(v, w), R)
+    end
+    res += localFactor * gens(R.cohomRing)[v]
+  end
+  return res
+end
+
+"""
+Integrate the cohomology class over the curve represented by the GKM graph edge.
+"""
+function integrateOverEdge(
+  class::FreeModElem{QQMPolyRingElem},
+  R::GKM_cohomology_ring,
+  e::Edge
+)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+  return (class[src(e)] - class[dst(e)]) // weightClass(e, R)
+end
+
+"""
     integrateClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
 Integrate the cohomology class, yielding an element of the fraction field of the equivariant coefficient ring.

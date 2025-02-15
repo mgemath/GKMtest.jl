@@ -25,6 +25,7 @@ export equivariant_cohomology_ring
 export isGKMclass
 export weightClass
 export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, integrateGKMClass, PDClass
+export firstChernClass
 
 # betti.jl
 export bettiNumbers
@@ -42,3 +43,5 @@ export blowupGKM
 export GKM_second_homology
 export edgeCurveClass
 export all_classes
+export isEffectiveCurveClass
+export chernNumber

@@ -67,6 +67,7 @@ mutable struct GKM_H2
   quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from edgeLattice to H2
   dualConeRaySum::RayVector{QQFieldElem} # sum of rays of the dual cone of the edgeCurveClasses, normalized so that the minimum of pairings with edge curve classes is 1.
   dualCone::Cone{QQFieldElem} # dual cone of the cone of effective curve classes
+  chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from H2 to ZZ, giving the curve class evaluated on the first chern class of the tangent bundle of the space.
 
   function GKM_H2(
     gkm::AbstractGKM_graph,
@@ -75,8 +76,9 @@ mutable struct GKM_H2
     edgeToGenIndex::Dict{Edge, Int64},
     quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem},
     dualConeRaySum::RayVector{QQFieldElem},
-    dualCone::Cone{QQFieldElem}
+    dualCone::Cone{QQFieldElem},
+    chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}
   )
-    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone)
+    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber)
   end
 end
