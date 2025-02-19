@@ -1,7 +1,32 @@
 """
-  Return the GKM_connection of the given GKM graph if it is unique.
+Return the GKM_connection of the given GKM graph if it is unique or has been set manually.
+If it is unique and hasn't been calculated, it is saved in the gkm object.
+If the connection is not unique and hasn't been defined manually, return nothing.
 """
-function build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
+function get_GKM_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
+  if isnothing(gkm.connection)
+    if (valency(gkm) >= 3 && is3_indep(gkm)) || (valency(gkm) == 2 && is2_indep(gkm)) || (valency(gkm)==1)
+      gkm.connection = _build_GKM_connection(gkm)
+    end
+  end
+  return gkm.connection
+end
+
+function set_GKM_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
+  @req gkm == con.gkm "Connection belongs to the wrong GKM graph!"
+  @req GKM_isValidConnection(con) "GKM connection is invalid!"
+  
+  gkm.connection = con
+end
+
+"""
+Return the freshly calculated GKM_connection of the given GKM graph if it is unique.
+
+Warning:
+  1. This does not save the newly calculated GKM connection in the gkm object.
+  2. If the connection is unique or was set before, one should instead use get_GKM_connection().
+"""
+function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   
   if valency(gkm) >= 3
     @req is3_indep(gkm) "GKM graph has valency >= 3 is not 3-independent"
@@ -44,13 +69,18 @@ end
 
 """
 Return the GKM connection object (including information of the ai's) determined by the given connection map.
-Warning: This function does not check whether the given connection map is valid.
+Warning:
+  1. This function does not check whether the given connection map is valid.
+  2. This does not save the new connection to the gkm object.
 """
 function build_GKM_connection(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}) :: GKM_connection
   a = connection_a_from_con(gkm, con)
   return GKM_connection(gkm, con, a)
 end
 
+"""
+Warning: this does not save the new connection to the gkm object.
+"""
 function build_GKM_connection(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem}) :: GKM_connection
   con = connection_map_from_a(gkm, a)
   return GKM_connection(gkm, con, a)

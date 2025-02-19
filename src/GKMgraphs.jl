@@ -1,3 +1,10 @@
+"""
+Create a GKM graph from the given data.
+Warnings:
+ 1. Do not change the number of verices after this.
+ 2. After you have added all edges using GKMadd_edge!(), use GKM_initialize!() to calculate
+    the GKM connection (if it is unique) and the curve classes.
+"""
 function gkm_graph(
   g::Graph,
   labels::Vector{String},
@@ -8,6 +15,7 @@ function gkm_graph(
 )
   # construct the GKM_graph
   if check
+    @req n_vertices(g) >= 1 "GKM graph needs at least one vertex"
     @req length(labels) == n_vertices(g) "The number of labels does not match the number of fixed points"
     @req all(e -> parent(w[e]) === M, edges(g)) "Character group mismatch"
     @req Set(edges(g)) == keys(w) "The axial function is not well defined"
@@ -21,7 +29,29 @@ function gkm_graph(
   for e in edges(g)
     w[reverse(e)] = -w[e]
   end
-  return AbstractGKM_graph(g, labels, M, w)
+
+  gkm = AbstractGKM_graph(g, labels, M, w, nothing, nothing, nothing)
+  gkm.equivariantCohomology = _equivariant_cohomology_ring(gkm)
+
+  return gkm
+end
+
+"""
+Call this as soon as all edges have been added to the GKM graph to calculate the GKM connection
+(if unique) and the curve classes of the gkm graph.
+This will set the fields gkm.connection and gkm.curveClasses that are initially nothing.
+If you don't call this, these fields will be initialized later if possible, which might take some time
+(especially for curveClasses).
+If any of those fields are already set, this will not overwrite them.
+"""
+function GKM_initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveClasses::Bool=true)
+
+  if connection
+    get_GKM_connection(gkm)
+  end
+  if curveClasses
+    GKM_second_homology(gkm)
+  end
 end
 
 function valency(G::AbstractGKM_graph)
@@ -91,7 +121,11 @@ function _indep(G::AbstractGKM_graph, k::Int64)
   return true
 end
 
-
+"""
+Warning: Add all edges immediately after creation.
+Any curve class or cohomology functionality should only be used after all edges have been added.
+The same holds for GKM_initialize().
+"""
 function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem})
 
   @req (s in G.labels) "Source label not found"
@@ -129,6 +163,8 @@ Return true if the GKM graph is valid. This means:
   5. There are the right number of vertex labels
   6. If the valency is at least two, the weights of the graph are 2-independent.
   7. Vertex labels must be unique
+  8. The equivariant cohomology ring has rank = number of vertices of graph
+  9. The coefficient ring of the equivariant cohomology ring has number of generators = torus rank.
 """
 function GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
 
@@ -171,6 +207,16 @@ function GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
 
   if (valency(gkm) > 2 && !is3_indep(gkm))
     printDiagnostics && println("GKM graph is valid but not 3-independent, so connections may not be unique.")
+  end
+
+  if length(gens(gkm.equivariantCohomology.coeffRing)) != rank_torus(gkm)
+    printDiagnostics && println("Coefficient ring of equivariant cohomology has wrong rank.")
+    return false
+  end
+
+  if length(gens(gkm.equivariantCohomology.cohomRing)) != n_vertices(gkm.g)
+    printDiagnostics && println("Equivariant cohomology ring should have rank = number of vertices.")
+    return false
   end
 
   return true

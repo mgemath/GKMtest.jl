@@ -1,7 +1,5 @@
 # example for P^3
 P3 = GKMproj_space(3);
-R = equivariant_cohomology_ring(P3);
-con = build_GKM_connection(P3);
 
 # build decorated tree, which is 1-2-3, mapping 1 -> 1, 2-> 4, 3->3, and marked points (1, 2) at 1, and (3) at 2.
 tree = Graph{Undirected}(2);
@@ -18,20 +16,18 @@ edgeMult = Dict(Edge(1, 2) => 1)
 
 marks = [1, 2]
 
-dt = decoratedTree(P3, tree, vDict, edgeMult, marks, R);
+dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
 
-C = R.coeffRing;
-(t1, t2, t3, t4) = gens(C);
-P = ev(1, pointClass(1, R)) * ev(2, pointClass(4, R))
+P = ev(1, pointClass(1, P3)) * ev(2, pointClass(4, P3))
 
 println("Contribution of Edge(1,4) with d=1 in P3:")
-println(GWTreeContribution(dt, R, con, P))
+println(GWTreeContribution(dt, P))
 
 
 println("Contribution of Edge(1,4) with d=2 in P3:")
 edgeMult = Dict(Edge(1, 2) => 1)
-dt = decoratedTree(P3, tree, vDict, edgeMult, marks, R);
-println(GWTreeContribution(dt, R, con, P))
+dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
+println(GWTreeContribution(dt, P))
 
 
 #Warning: the example below does not work because vertices(G) throws an error for graphs G without edges.
@@ -40,5 +36,6 @@ println("Contribution of single point as decorated tree:")
 marks = [1, 1]
 tree = Graph{Undirected}(1)
 vDict = [1]
-dt = decoratedTree(P3, tree, vDict, edgeMult, marks, R);
-println(GWTreeContribution(dt, R, con, P))
+dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
+println(GWTreeContribution(dt, P))
+# TODO: Fix this here, where euler class is zero??

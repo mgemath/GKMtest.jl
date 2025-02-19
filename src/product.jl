@@ -1,6 +1,9 @@
-function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph)
+function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::Bool=true, calculateConnection::Bool=true)::AbstractGKM_graph
   
     n1 = n_vertices(G1.g)
+    n2 = n_vertices(G2.g)
+    ne1 = n_edges(G1.g)
+    ne2 = n_edges(G2.g)
     nv = n1 * n_vertices(G2.g)
   
     g = Graph{Undirected}(nv)
@@ -10,35 +13,136 @@ function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph)
     W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
     labels = Vector{String}(undef, nv)
   
-    for e in edges(G1.g)
-      v, w = src(e), dst(e)
-      for _e in edges(G2.g)
-        _v, _w = src(_e), dst(_e)
-        
-        V1 = v + (_v-1)*n1
-        V2 = v + (_w-1)*n1
-        V3 = w + (_v-1)*n1
-        V4 = w + (_w-1)*n1
-  
-        add_edge!(g, V1, V2)
-        add_edge!(g, V1, V3)
-        
-        add_edge!(g, V2, V4)
-        add_edge!(g, V3, V4)
-        
-  
-        W[Edge(max(V1, V3), min(V1, V3))] = f1(G1.w[e])
-        W[Edge(max(V2, V4), min(V2, V4))] = f1(G1.w[e])
-  
-        W[Edge(max(V1, V2), min(V1, V2))] = f2(G2.w[_e])
-        W[Edge(max(V3, V4), min(V3, V4))] = f2(G2.w[_e])
-  
-        labels[V1] = G1.labels[v]*","*G2.labels[_v]
-        labels[V2] = G1.labels[v]*","*G2.labels[_w]
-        labels[V3] = G1.labels[w]*","*G2.labels[_v]
-        labels[V4] = G1.labels[w]*","*G2.labels[_w]
+    if calculateConnection
+      # connection for product:
+      con1 = get_GKM_connection(G1)
+      con2 = get_GKM_connection(G2)
+      if isnothing(con1) || isnothing(con2)
+        calculateConnection = false
+      else
+        newCon = Dict{Tuple{Edge, Edge}, Edge}()
       end
     end
-  
-    return gkm_graph(g, labels, M, W)
+
+    # only needed if calculateCurveClasses==true
+    if calculateCurveClasses
+
+      G1curveClasses = GKM_second_homology(G1)
+      G2curveClasses = GKM_second_homology(G2)
+
+      edgeLattice1 = G1curveClasses.edgeLattice
+      edgeLattice2 = G2curveClasses.edgeLattice
+      G1H2 = G1curveClasses.H2
+      G2H2 = G2curveClasses.H2
+      q1 = G1curveClasses.quotientMap
+      q2 = G2curveClasses.quotientMap
+
+      # first all G1-edges for each vertex of G2, then vice versa.
+      edgeLattice, _, _ = direct_sum(vcat(repeat([edgeLattice1], n2), repeat([edgeLattice2], n1)))
+      H2, _, _ = direct_sum(G1H2, G2H2)
+      qMatrix = vcat(repeat([q1 Int(0)], n2), repeat([Int(0) q2], n1))
+      q = ModuleHomomorphism(edgeLattice, H2, qMatrix) # direct sum of morphisms
+      
+      edgeToGenIndex = Dict{Edge, Int64}()
+    end
+
+    # labels
+    for v in 1:n1
+      for _v in 1:n2
+        V = v + (_v-1)*n1
+        labels[V] = G1.labels[v]*","*G2.labels[_v]
+      end
+    end
+
+    # edges from G1
+    for e in edges(G1.g)
+      v, w = src(e), dst(e)
+      for _v in 1:n2
+        V1 = v + (_v-1)*n1
+        V2 = w + (_v-1)*n1
+        add_edge!(g, V1, V2)
+        E = Edge(V1, V2)
+        W[E] = f1(G1.w[e])        
+        if calculateCurveClasses
+          # here we assume that Oscar's direct sum preserves the order of generators
+          edgeToGenIndex[E] = G1curveClasses.edgeToGenIndex[e] + (_v-1)*ne1
+          edgeToGenIndex[reverse(E)] = edgeToGenIndex[E]
+        end
+        if calculateConnection
+          #first, copy old connection:
+          for u in all_neighbors(G1.g, v)
+            ei = Edge(v, u)
+            epi = con1.con[(e, ei)]
+            U1 = u + (_v-1)*n1
+            U2 = dst(epi) + (_v-1)*n1
+            Ei = Edge(V1, U1)
+            Epi = Edge(V2, U2)
+            newCon[(E, Ei)] = Epi
+            newCon[(reverse(E), Epi)] = Ei
+          end
+          #second, add trivial connection in normal direction:
+          for _u in all_neighbors(G2.g, _v)
+            U1 = v + (_u-1)*n1
+            U2 = w + (_u-1)*n1
+            Ei = Edge(V1, U1)
+            Epi = Edge(V2, U2)
+            newCon[(E, Ei)] = Epi
+            newCon[(reverse(E), Epi)] = Ei
+          end
+        end
+      end
+    end
+
+    # edges from G2
+    offset = ne1 * n2
+    for e in edges(G2.g)
+      _v, _w = src(e), dst(e)
+      for v in 1:n1
+        V1 = v + (_v-1)*n1
+        V2 = v + (_w-1)*n1
+        add_edge!(g, V1, V2)
+        E = Edge(V1, V2)
+        W[E] = f2(G2.w[e])
+        if calculateCurveClasses
+           # here we assume that Oscar's direct sum preserves the order of generators
+           edgeToGenIndex[E] = offset + G2curveClasses.edgeToGenIndex[e] + (v-1)*ne2
+           edgeToGenIndex[reverse(E)] = edgeToGenIndex[E]
+        end
+        if calculateConnection
+          #first, copy old connection:
+          for _u in all_neighbors(G2.g, _v)
+            ei = Edge(_v, _u)
+            epi = con2.con[(e, ei)]
+            U1 = v + (_u-1)*n1
+            U2 = v + (dst(epi)-1)*n1
+            Ei = Edge(V1, U1)
+            Epi = Edge(V2, U2)
+            newCon[(E, Ei)] = Epi
+            newCon[(reverse(E), Epi)] = Ei
+          end
+          #second, add trivial connection in normal direction:
+          for u in all_neighbors(G1.g, v)
+            U1 = u + (_v-1)*n1
+            U2 = u + (_w-1)*n1
+            Ei = Edge(V1, U1)
+            Epi = Edge(V2, U2)
+            newCon[(E, Ei)] = Epi
+            newCon[(reverse(E), Epi)] = Ei
+          end
+        end
+      end
+    end
+
+    res = gkm_graph(g, labels, M, W)
+
+    if calculateCurveClasses
+      dualConeRaySum, C, H2ToCN = _finish_GKM_H2(edgeLattice, H2, q, res, edgeToGenIndex)
+      res.curveClasses = GKM_H2(res, edgeLattice, H2, edgeToGenIndex, q, dualConeRaySum, C, H2ToCN)
+    end
+    if calculateConnection
+      newConObj = build_GKM_connection(res, newCon)
+      set_GKM_connection!(res, newConObj)
+    end
+
+    return res
   end

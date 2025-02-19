@@ -45,6 +45,7 @@ function flag(::Type{gkm_graph}, s::Vector{Int64})
     labels = [prod(i -> d[n][i]>9 ? "|$(d[n][i])|" : "$(d[n][i])", 1:K[end-1]) for n in 1:nv] 
 
     return gkm_graph(g, labels, M, W)
+    # TODO: Construct connection of flag variety, as it is generally not 3-independent.
   end
   
   

@@ -142,18 +142,19 @@
 #   return res
 # end
 
-function integrateGKM(G::AbstractGKM_graph, H2, beta, n_marks::Int64, P_input; show_bar = true)
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input; show_bar::Bool = true)
 
-  @req beta != zero(H2.H2) "zero classes not yet supported. (TODO.)"
+  @req beta != zero(parent(beta)) "zero classes not yet supported. (TODO.)"
 
+  H2 = GKM_second_homology(G)
   if !isEffectiveCurveClass(H2, beta)
     return 0
   end
 
-  con = build_GKM_connection(G)
-  R = equivariant_cohomology_ring(G)
+  R = G.equivariantCohomology
   P = P_input.func
-  # H2 = GKM_second_homology(G)
+  con = get_GKM_connection(G)
+  @req !isnothing(con) "GKM graph needs a connection!"
 
   ########
   # this part is needed for the generation of colorings
@@ -213,18 +214,18 @@ end
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             
-            dt = decoratedTree(G, tree, col, edgeMult, m, R)
+            dt = decoratedTree(G, tree, col, edgeMult, m)
             
             Class = Base.invokelatest(P, dt)
 
             Class == zero(R.coeffRing) && continue
 
             if euler == zero(R.coeffRing)
-              euler = Euler_inv(dt, R, con)//(PROD * aut)
+              euler = Euler_inv(dt)//(PROD * aut)
               for e in edges(tree)
                 triple = (edgeMult[e], min(col[src(e)], col[dst(e)]), max(col[src(e)], col[dst(e)]))
                 if !haskey(h_dict, triple)
-                    h_dict[triple] = h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
+                    h_dict[triple] = _h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
                 end
                 euler *= h_dict[triple]
               end

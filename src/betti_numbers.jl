@@ -54,7 +54,7 @@ function betti_numbers(G::AbstractGKM_graph)
 
   for counter in 1:10^8 # arbitrary maximum number of attempts to avoid "while true"
   
-  xi = ZZ.(rand(Int, n_vertices(G.g)))  #TODO: find something without using random numbers
+  xi = ZZ.(rand(Int, rank_torus(G)))  #TODO: find something without using random numbers
     wxi = Dict{Edge, ZZRingElem}() # wxi stands for weight[e](xi)
     isPolarizing = true
   
@@ -79,7 +79,7 @@ function betti_numbers(G::AbstractGKM_graph)
     #betti = Dict{Int, Int}([i => 0 for i in 0:valency(G)])
     betti = zeros(ZZRingElem, valency(G)+1)
   
-    for v in vertices(G.g)
+    for v in 1:n_vertices(G.g)
   
       i = count(w -> wxi[Edge(v,w)] < 0, all_neighbors(G.g, v) )
       betti[i+1] += ZZ(1)
