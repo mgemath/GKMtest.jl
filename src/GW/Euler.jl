@@ -1,4 +1,6 @@
 # Warning: This is not actually the inverse of the Euler class, as the h classes will be multiplied later.
+# Note: this throws an error if the decorated tree is a single vertex with less than 3 vertices.
+# But GW_decorated_tree() checks this during construction, so no check is done here.
 function Euler_inv(dt::GW_decorated_tree)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
   C = dt.gkm.equivariantCohomology.coeffRing
@@ -7,7 +9,13 @@ function Euler_inv(dt::GW_decorated_tree)::AbstractAlgebra.Generic.FracFieldElem
   for v in 1:n_vertices(dt.tree)
 
     valv = degree(dt.tree, v)
-    res = res * (eulerClass(imageOf(v, dt), dt.gkm))^(valv - 1)
+    e = eulerClass(imageOf(v, dt), dt.gkm)
+    #println("e = $e, val = $valv")
+    if valv >= 1
+      res = res * e^(valv - 1)
+    else
+      res = res // e
+    end
 
     tmpSum = C(0)//C(1)
 
@@ -18,7 +26,12 @@ function Euler_inv(dt::GW_decorated_tree)::AbstractAlgebra.Generic.FracFieldElem
       tmpSum = tmpSum + 1//wev
     end
 
-    res = res * tmpSum^( valv - 3 +  count(i -> i==v, dt.marks) )
+    e =  valv - 3 +  count(i -> i==v, dt.marks)
+    if e >= 0
+      res = res * tmpSum^e
+    else 
+      res = res // (tmpSum^(-e))
+    end
   end
 
   return res

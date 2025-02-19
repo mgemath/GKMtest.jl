@@ -25,7 +25,7 @@ println(GWTreeContribution(dt, P))
 
 
 println("Contribution of Edge(1,4) with d=2 in P3:")
-edgeMult = Dict(Edge(1, 2) => 1)
+edgeMult = Dict(Edge(1, 2) => 2)
 dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
 println(GWTreeContribution(dt, P))
 
@@ -33,9 +33,10 @@ println(GWTreeContribution(dt, P))
 #Warning: the example below does not work because vertices(G) throws an error for graphs G without edges.
 #Conclusion: We always need special treetment for beta = zero.
 println("Contribution of single point as decorated tree:")
-marks = [1, 1]
+marks = [1, 1, 1]
 tree = Graph{Undirected}(1)
 vDict = [1]
+P = class_one()
 dt = decoratedTree(P3, tree, vDict, edgeMult, marks);
-println(GWTreeContribution(dt, P))
-# TODO: Fix this here, where euler class is zero??
+res = GWTreeContribution(dt, P)
+println(res)
