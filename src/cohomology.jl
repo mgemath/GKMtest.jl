@@ -8,9 +8,22 @@ Return the equivariant cohomology ring of the GKM graph. This function is called
 construction of the GKm graph.
 """
 function _equivariant_cohomology_ring(G::AbstractGKM_graph)::GKM_cohomology_ring
-  coeffRing, _ = polynomial_ring(QQ, rank_torus(G), :t)
+  coeffRing, _ = polynomial_ring(QQ, ["t$i" for i in 1:rank_torus(G)])
   cohomRing = free_module(coeffRing, n_vertices(G.g))
-  return GKM_cohomology_ring(G, coeffRing, cohomRing)
+  edgeWeightClasses = Dict{Edge, QQMPolyRingElem}()
+  pointEulerClasses = QQMPolyRingElem[]
+  sizehint!(pointEulerClasses, n_vertices(G.g))
+
+  res = GKM_cohomology_ring(G, coeffRing, cohomRing, edgeWeightClasses, pointEulerClasses)
+
+  for e in edges(G.g)
+    res.edgeWeightClasses[e] = _weightClass(e, res)
+    res.edgeWeightClasses[reverse(e)] = _weightClass(reverse(e), res)
+  end
+  for v in 1:n_vertices(G.g)
+    push!(res.pointEulerClasses, _eulerClass(v, res))
+  end
+  return res
 end
 
 """
@@ -141,7 +154,10 @@ end
 Return the weight of the edge e as an element of the coefficient ring of the equivariant cohomology theory.
 """
 function weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
+  return R.edgeWeightClasses[e]
+end
 
+function _weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
   w = R.gkm.w[e]
   rk = rank_torus(R.gkm)
   coeffs = R.coeffRing
@@ -169,6 +185,10 @@ end
 Return the euler class of the normal bundle of the fixed point v.
 """
 function eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem
+  return R.pointEulerClasses[vertex]
+end
+
+function _eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem
   res = R.coeffRing(1)
   for i in all_neighbors(R.gkm.g, vertex)
     res = mul!(res, weightClass(Edge(vertex, i), R))

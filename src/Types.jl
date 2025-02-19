@@ -49,13 +49,17 @@ struct GKM_cohomology_ring <: AbstractGKM_cohomology_ring
   gkm::AbstractGKM_graph
   coeffRing::QQMPolyRing # H_T^*(point;Q)
   cohomRing::FreeMod{QQMPolyRingElem} # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl)
+  edgeWeightClasses::Dict{Edge, QQMPolyRingElem}
+  pointEulerClasses::Vector{QQMPolyRingElem}
 
   function GKM_cohomology_ring(
     gkm::AbstractGKM_graph,
     coeffRing::QQMPolyRing,
-    cohomRing::FreeMod{QQMPolyRingElem}
+    cohomRing::FreeMod{QQMPolyRingElem},
+    edgeWeightClasses::Dict{Edge, QQMPolyRingElem},
+    pointEulerClasses::Vector{QQMPolyRingElem}
   )
-    return new(gkm, coeffRing, cohomRing)
+    return new(gkm, coeffRing, cohomRing, edgeWeightClasses, pointEulerClasses)
   end
 end
 
