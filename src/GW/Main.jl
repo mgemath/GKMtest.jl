@@ -142,17 +142,27 @@
 #   return res
 # end
 
-function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input; show_bar::Bool = true)
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true)
+  return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar)[1]
+end
 
-  @req beta != zero(parent(beta)) "zero classes not yet supported. (TODO.)"
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true)
+
+  inputLength = length(P_input)
+  inputSize = size(P_input)
+  inputKeys = keys(P_input)
+  @req inputLength > 0 "integrateGKM needs at least one input for P_input..."
+
+  @req beta != zero(parent(beta)) "Beta must be non-zero"
 
   H2 = GKM_second_homology(G)
+  R = G.equivariantCohomology
+  res = zeros(R.coeffRingLocalized, inputSize...)
   if !isEffectiveCurveClass(H2, beta)
-    return 0
+    return res
   end
 
-  R = G.equivariantCohomology
-  P = P_input.func
+  P = [P_input[k].func for k in inputKeys]
   con = get_GKM_connection(G)
   @req !isnothing(con) "GKM graph needs a connection!"
 
@@ -168,8 +178,6 @@ function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int6
   # Dict in order to store H
   h_dict::Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}} = Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}() # Lambda_gamma_e_dict
   ########
-  res = zero(R.coeffRing)
-  # println(res)
 
   max_n_vert::Int64 = _max_n_edges(H2, beta) + 1
 
@@ -216,9 +224,10 @@ end
             
             dt = decoratedTree(G, tree, col, edgeMult, m)
             
-            Class = Base.invokelatest(P, dt)
-
-            Class == zero(R.coeffRing) && continue
+            Class = [Base.invokelatest(P[k], dt) for k in inputKeys]
+            #println("Tree($(dt.vDict)), Marks($(dt.marks)), Mult($(dt.edgeMult)):")
+            #println(Class)
+            all(c -> c==0, Class) && continue
 
             if euler == zero(R.coeffRing)
               euler = Euler_inv(dt)//(PROD * aut)
@@ -232,8 +241,7 @@ end
             end
             # println("ls = $(ls), col = $(col), aut = $(aut), PRODW = $(PROD), m=$(m), E = $(euler)")
             # println(euler)
-            
-            res += Class*euler
+            res += Class.*euler
           end
         end
 

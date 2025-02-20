@@ -9,21 +9,13 @@ construction of the GKm graph.
 """
 function _equivariant_cohomology_ring(G::AbstractGKM_graph)::GKM_cohomology_ring
   coeffRing, _ = polynomial_ring(QQ, ["t$i" for i in 1:rank_torus(G)])
+  coeffRingLocalized = fraction_field(coeffRing)
   cohomRing = free_module(coeffRing, n_vertices(G.g))
+  cohomRingLocalized = free_module(coeffRingLocalized, n_vertices(G.g))
   edgeWeightClasses = Dict{Edge, QQMPolyRingElem}()
-  pointEulerClasses = QQMPolyRingElem[]
-  sizehint!(pointEulerClasses, n_vertices(G.g))
+  pointEulerClasses = vcat(Union{Nothing, QQMPolyRingElem}[], repeat([nothing], n_vertices(G.g)))
 
-  res = GKM_cohomology_ring(G, coeffRing, cohomRing, edgeWeightClasses, pointEulerClasses)
-
-  for e in edges(G.g)
-    res.edgeWeightClasses[e] = _weightClass(e, res)
-    res.edgeWeightClasses[reverse(e)] = _weightClass(reverse(e), res)
-  end
-  for v in 1:n_vertices(G.g)
-    push!(res.pointEulerClasses, _eulerClass(v, res))
-  end
-  return res
+  return GKM_cohomology_ring(G, coeffRing, coeffRingLocalized, cohomRing, cohomRingLocalized, edgeWeightClasses, pointEulerClasses)
 end
 
 """
@@ -154,7 +146,17 @@ end
 Return the weight of the edge e as an element of the coefficient ring of the equivariant cohomology theory.
 """
 function weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
-  return R.edgeWeightClasses[e]
+  try
+    return R.edgeWeightClasses[e]
+  catch err
+    if isa(err, KeyError)
+      res = _weightClass(e, R)
+      R.edgeWeightClasses[e] = res
+      return res
+    else
+      rethrow(err)
+    end
+  end
 end
 
 function _weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
@@ -185,7 +187,12 @@ end
 Return the euler class of the normal bundle of the fixed point v.
 """
 function eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem
-  return R.pointEulerClasses[vertex]
+  res = R.pointEulerClasses[vertex]
+  if isnothing(res)
+    res = _eulerClass(vertex, R)
+    R.pointEulerClasses[vertex] = res
+  end
+  return res
 end
 
 function _eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem

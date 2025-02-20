@@ -1,6 +1,7 @@
 include("Arithmetic.jl")
 include("GWTypes.jl")
 
+include("Rules.jl")
 include("Main.jl")
 
 # include("Checks.jl")
@@ -19,9 +20,10 @@ include("Psi_class.jl")
 # include("push_ev_class.jl")
 # include("push_omega_class.jl")
 # include("R1_ev_class.jl")
-include("Rules.jl")
 
 include("Trees.jl")
 
 include("exports.jl")
 include("DecoratedTrees.jl")
+
+include("QH.jl")

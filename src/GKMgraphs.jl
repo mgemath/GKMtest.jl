@@ -30,7 +30,9 @@ function gkm_graph(
     w[reverse(e)] = -w[e]
   end
 
-  gkm = AbstractGKM_graph(g, labels, M, w, nothing, nothing, nothing)
+  GW_structure_consts = Dict{CurveClass_type, Array{Any, 3}}()
+
+  gkm = AbstractGKM_graph(g, labels, M, w, nothing, nothing, nothing, GW_structure_consts, false)
   gkm.equivariantCohomology = _equivariant_cohomology_ring(gkm)
 
   return gkm

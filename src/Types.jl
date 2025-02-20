@@ -9,6 +9,8 @@ abstract type AbstractGKM_H2 end
 abstract type AbstractGKM_connection end
 abstract type AbstractGKM_cohomology_ring end
 
+CurveClass_type = AbstractAlgebra.FPModuleElem{ZZRingElem}
+
 @attributes mutable struct AbstractGKM_graph
   g::Graph
   labels::Vector{String}
@@ -21,6 +23,11 @@ abstract type AbstractGKM_cohomology_ring end
   curveClasses::Union{Nothing, AbstractGKM_H2} # actual type will be Union{Nothing, GKM_H2}
   # Use get_GKM_connection() to access this:
   connection::Union{Nothing, AbstractGKM_connection} # actual type will be Union{Nothing, GKM_connection}
+  # Use QH_structure_constants() to access this.
+  QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}}
+  # This should be set to true if the GKM graph is strictly NEF and all relevant
+  # QH cohomology structure constants are calculated and stored in QH_structure_consts.
+  know_all_QH_structure_consts::Bool
 
   function AbstractGKM_graph(
     g::Graph,
@@ -29,9 +36,11 @@ abstract type AbstractGKM_cohomology_ring end
     w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}},
     equivariantCohomology::Union{Nothing, AbstractGKM_cohomology_ring},
     curveClasses::Union{Nothing, AbstractGKM_H2},
-    connection::Union{Nothing, AbstractGKM_connection}
+    connection::Union{Nothing, AbstractGKM_connection},
+    QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}},
+    know_all_QH_structure_consts::Bool
   )
-    return new(g, labels, M, w, equivariantCohomology, curveClasses, connection)
+    return new(g, labels, M, w, equivariantCohomology, curveClasses, connection, QH_structure_consts, know_all_QH_structure_consts)
   end
 end
 
@@ -48,18 +57,22 @@ end
 struct GKM_cohomology_ring <: AbstractGKM_cohomology_ring
   gkm::AbstractGKM_graph
   coeffRing::QQMPolyRing # H_T^*(point;Q)
+  coeffRingLocalized
   cohomRing::FreeMod{QQMPolyRingElem} # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl)
+  cohomRingLocalized # H_T^*(X;Q) tensored with the fraction field of H_T^*(point).
   edgeWeightClasses::Dict{Edge, QQMPolyRingElem}
-  pointEulerClasses::Vector{QQMPolyRingElem}
+  pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
 
   function GKM_cohomology_ring(
     gkm::AbstractGKM_graph,
     coeffRing::QQMPolyRing,
+    coeffRingLocalized,
     cohomRing::FreeMod{QQMPolyRingElem},
+    cohomRingLocalized,
     edgeWeightClasses::Dict{Edge, QQMPolyRingElem},
-    pointEulerClasses::Vector{QQMPolyRingElem}
+    pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
   )
-    return new(gkm, coeffRing, cohomRing, edgeWeightClasses, pointEulerClasses)
+    return new(gkm, coeffRing, coeffRingLocalized, cohomRing, cohomRingLocalized, edgeWeightClasses, pointEulerClasses)
   end
 end
 
@@ -100,5 +113,3 @@ mutable struct GKM_H2 <: AbstractGKM_H2
     return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber)
   end
 end
-
-CurveClass_type = AbstractAlgebra.FPModuleElem{ZZRingElem}
