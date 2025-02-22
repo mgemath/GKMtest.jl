@@ -8,3 +8,7 @@ export decoratedTree
 export GWTreeContribution
 export Euler_inv
 export _ev
+
+# QH.jl
+export quantumProduct
+export QH_structure_constants

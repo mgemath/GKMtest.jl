@@ -4,20 +4,43 @@
 #
 ###############################################################################
 
+# We introduce abstract types so that we can 
+abstract type AbstractGKM_H2 end
+abstract type AbstractGKM_connection end
+abstract type AbstractGKM_cohomology_ring end
+
+CurveClass_type = AbstractAlgebra.FPModuleElem{ZZRingElem}
 
 @attributes mutable struct AbstractGKM_graph
   g::Graph
   labels::Vector{String}
   M::AbstractAlgebra.Generic.FreeModule{ZZRingElem} # character group
   w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}} # weight of the T-action
+  # This should always be set and can be accessed directly:
+  # It should not be changed.
+  equivariantCohomology::Union{Nothing, AbstractGKM_cohomology_ring} # actual type will be Union{Nothing, GKM_cohomology_ring}
+  # Use GKM_second_homology() to access this:
+  curveClasses::Union{Nothing, AbstractGKM_H2} # actual type will be Union{Nothing, GKM_H2}
+  # Use get_GKM_connection() to access this:
+  connection::Union{Nothing, AbstractGKM_connection} # actual type will be Union{Nothing, GKM_connection}
+  # Use QH_structure_constants() to access this.
+  QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}}
+  # This should be set to true if the GKM graph is strictly NEF and all relevant
+  # QH cohomology structure constants are calculated and stored in QH_structure_consts.
+  know_all_QH_structure_consts::Bool
 
   function AbstractGKM_graph(
     g::Graph,
     labels::Vector{String},
     M::AbstractAlgebra.Generic.FreeModule{ZZRingElem}, # character group
-    w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}
+    w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}},
+    equivariantCohomology::Union{Nothing, AbstractGKM_cohomology_ring},
+    curveClasses::Union{Nothing, AbstractGKM_H2},
+    connection::Union{Nothing, AbstractGKM_connection},
+    QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}},
+    know_all_QH_structure_consts::Bool
   )
-    return new(g, labels, M, w)
+    return new(g, labels, M, w, equivariantCohomology, curveClasses, connection, QH_structure_consts, know_all_QH_structure_consts)
   end
 end
 
@@ -31,21 +54,29 @@ end
   end
 end
 
-struct GKM_cohomology_ring
+struct GKM_cohomology_ring <: AbstractGKM_cohomology_ring
   gkm::AbstractGKM_graph
   coeffRing::QQMPolyRing # H_T^*(point;Q)
+  coeffRingLocalized
   cohomRing::FreeMod{QQMPolyRingElem} # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl)
+  cohomRingLocalized # H_T^*(X;Q) tensored with the fraction field of H_T^*(point).
+  edgeWeightClasses::Dict{Edge, QQMPolyRingElem}
+  pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
 
   function GKM_cohomology_ring(
     gkm::AbstractGKM_graph,
     coeffRing::QQMPolyRing,
-    cohomRing::FreeMod{QQMPolyRingElem}
+    coeffRingLocalized,
+    cohomRing::FreeMod{QQMPolyRingElem},
+    cohomRingLocalized,
+    edgeWeightClasses::Dict{Edge, QQMPolyRingElem},
+    pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
   )
-    return new(gkm, coeffRing, cohomRing)
+    return new(gkm, coeffRing, coeffRingLocalized, cohomRing, cohomRingLocalized, edgeWeightClasses, pointEulerClasses)
   end
 end
 
-mutable struct GKM_connection
+mutable struct GKM_connection <: AbstractGKM_connection
   gkm::AbstractGKM_graph
   con::Dict{Tuple{Edge, Edge}, Edge} # assigns to each edges e & e_i with src(e)=src(e_i) an edge e'_i with src(e'_i)=dst(e).
   a::Dict{Tuple{Edge, Edge}, ZZRingElem} # w[e'_i] = w [e_i] - a_i * w[e]
@@ -59,22 +90,26 @@ mutable struct GKM_connection
   end
 end
 
-mutable struct GKM_H2
+mutable struct GKM_H2 <: AbstractGKM_H2
   gkm::AbstractGKM_graph
-  edgeLattice::AbstractAlgebra.Generic.FreeModule{ZZRingElem}
-  H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem} # quotient of edgeLattice by relations in H_2.
+  edgeLattice::AbstractAlgebra.FPModule{ZZRingElem}
+  H2::AbstractAlgebra.FPModule{ZZRingElem} # quotient of edgeLattice by relations in H_2.
   edgeToGenIndex::Dict{Edge, Int64}
   quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from edgeLattice to H2
   dualConeRaySum::RayVector{QQFieldElem} # sum of rays of the dual cone of the edgeCurveClasses, normalized so that the minimum of pairings with edge curve classes is 1.
+  dualCone::Cone{QQFieldElem} # dual cone of the cone of effective curve classes
+  chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from H2 to ZZ, giving the curve class evaluated on the first chern class of the tangent bundle of the space.
 
   function GKM_H2(
     gkm::AbstractGKM_graph,
-    edgeLattice::AbstractAlgebra.Generic.FreeModule{ZZRingElem},
-    H2::AbstractAlgebra.Generic.QuotientModule{ZZRingElem},
+    edgeLattice::AbstractAlgebra.FPModule{ZZRingElem},
+    H2::AbstractAlgebra.FPModule{ZZRingElem},
     edgeToGenIndex::Dict{Edge, Int64},
     quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem},
-    dualConeRaySum::RayVector{QQFieldElem}
+    dualConeRaySum::RayVector{QQFieldElem},
+    dualCone::Cone{QQFieldElem},
+    chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}
   )
-    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum)
+    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber)
   end
 end

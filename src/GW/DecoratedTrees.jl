@@ -1,16 +1,21 @@
 """
 Create a decorated tree corresponding to the given GKM graph from the given data.
+If the tree has a single vertex, it must have at least three marked points.
+Warning: This does not check if the given tree is actually a tree.
 """
 function decoratedTree(
   gkm::AbstractGKM_graph,
   tree::Graph,
   vDict::Union{Vector{Int}, Tuple{Vararg{Int}}},
   edgeMult::Dict{Edge, Int},
-  marks::Vector{Int},
-  R;
+  marks::Vector{Int};
   check::Bool=true)::GW_decorated_tree
 
   nv = n_vertices(tree)
+
+  if check && nv == 1 && degree(tree, 1) == 0
+    @req length(marks) >= 3 "Single vertex tree must have at least three marked points"
+  end
 
   for e in keys(edgeMult)
     edgeMult[reverse(e)] = edgeMult[e]
@@ -22,7 +27,7 @@ function decoratedTree(
     @req all([0 < edgeMult[e] for e in edges(tree)]) "non-positive edge multiplicity"
   end
 
-  return GW_decorated_tree(gkm, tree, vDict, edgeMult, marks, R)
+  return GW_decorated_tree(gkm, tree, vDict, edgeMult, marks)
 end
 
 """

@@ -4,6 +4,7 @@ import Oscar.has_vertex
 """
 Return the GKM subgraph induced by the given vertices
 This does not check if the result is a valid GKM graph.
+If possible, the subgraph will be endowed with the connection induced from the supergraph.
 """
 function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
 
@@ -30,24 +31,68 @@ function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int6
       GKMadd_edge!(subGKM, sd[1], sd[2], gkm.w[e])
     end
   end
-  return AbstractGKM_subgraph(gkm, subGKM, vDict)
+  res = AbstractGKM_subgraph(gkm, subGKM, vDict)
+  _infer_GKM_connection!(res)
+  return res
+end
+
+
+"""
+If the supergraph's connection is compatible with the subgraph, infer it to the subgraph and return true.
+Else return false. False is also returned if the subgraph's connection is already set.
+"""
+function _infer_GKM_connection!(gkmSub::AbstractGKM_subgraph)::Bool
+
+  con = get_GKM_connection(gkmSub.super)
+  if !isnothing(con) && isCompatible(gkmSub, con; printDiagnostics=false)
+
+    oldCon = con.con
+    oldA = con.a
+    newCon = Dict{Tuple{Edge, Edge}, Edge}()
+    newA = Dict{Tuple{Edge, Edge}, ZZRingElem}()
+    vDict = gkmSub.vDict
+
+    for v in 1:n_vertices(gkmSub.self.g)
+      for w in all_neighbors(gkmSub.self.g, v)
+        for u in all_neighbors(gkmSub.self.g, v)
+          e = Edge(v, w)
+          ei = Edge(v, u)
+          eSup = Edge(vDict[v], vDict[w])
+          eiSup = Edge(vDict[v], vDict[u])
+          epiSup = oldCon[(eSup, eiSup)]
+          epi = Edge(w, _vertex_preimage(gkmSub, dst(epiSup)))
+          newCon[(e, ei)] = epi
+          newA[(e, ei)] = oldA[(eSup, eiSup)]
+        end
+      end
+    end
+
+    newConObj = GKM_connection(gkmSub.self, newCon, newA)
+    set_GKM_connection!(gkmSub.self, newConObj)
+    return true
+  end
+  return false
 end
 
 """
 Return the GKM subgraph induced by the given vertex labels
 This does not check if the result is a valid GKM graph.
+If possible, the subgraph will be endowed with the connection of the supergraph.
 """
 function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
   for l in vertexLabels
     @req l in gkm.labels "Label $l not found"
   end
   vertices::Vector{Int64} = indexin(vertexLabels, gkm.labels) # need to specify Vector{Int64} as indexin returns vector of Union{Nothing, Int64}.
-  return GKMsubgraph_from_vertices(gkm, vertices)
+  res = GKMsubgraph_from_vertices(gkm, vertices)
+  _infer_GKM_connection!(res)
+  return res
 end
 
 """
 Return the GKM subgraph induced by the given edges
 This does not check if the result is a valid GKM graph.
+If possible, the subgraph will be endowed with the connection induced from the supergraph.
 """
 function GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: AbstractGKM_subgraph
   
@@ -71,7 +116,9 @@ function GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: 
     sd = indexin([src(e), dst(e)], vDict)
     GKMadd_edge!(subGKM, sd[1], sd[2], gkm.w[e])
   end
-  return AbstractGKM_subgraph(gkm, subGKM, vDict)
+  res = AbstractGKM_subgraph(gkm, subGKM, vDict)
+  _infer_GKM_connection!(res)
+  return res
 end
 
 """
@@ -83,6 +130,10 @@ function has_edge(gkmSub::AbstractGKM_subgraph, e::Edge)::Bool
   end
   sd = indexin([src(e), dst(e)], gkmSub.vDict)
   return has_edge(gkmSub.self.g, Edge(sd[1], sd[2]))
+end
+
+function _vertex_preimage(gkmSub::AbstractGKM_subgraph, v::Int64)::Int64
+  return indexin([v], gkmSub.vDict)[1]
 end
 
 """
@@ -162,6 +213,8 @@ Return true if the given GKM subgraph is valid. This holds if and only if all of
   2. The subgraph is mathematically a subgraph of the supergraph
   3. The edge weights of the subgraph match that of the supergraph
   4. The vertex labels of the subgraph and the supergraph match.
+Warning: If a connection for the supergraph is set, this does not check if it is compatible with the subgraph.
+Use isCompatible() for this.
 """
 function GKM_isValidSubgraph(gkmsub::AbstractGKM_subgraph; printDiagnostics::Bool = true)::Bool
   if !GKM_isValid(gkmsub.super; printDiagnostics)

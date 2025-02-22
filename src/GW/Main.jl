@@ -142,11 +142,29 @@
 #   return res
 # end
 
-function integrateGKM(G::AbstractGKM_graph, H2, beta, n_marks::Int64, P_input; show_bar = true)
-  con = build_GKM_connection(G)
-  R = equivariant_cohomology_ring(G)
-  P = P_input.func
-  # H2 = GKM_second_homology(G)
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true)
+  return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar)[1]
+end
+
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true)
+
+  inputLength = length(P_input)
+  inputSize = size(P_input)
+  inputKeys = keys(P_input)
+  @req inputLength > 0 "integrateGKM needs at least one input for P_input..."
+
+  @req beta != zero(parent(beta)) "Beta must be non-zero"
+
+  H2 = GKM_second_homology(G)
+  R = G.equivariantCohomology
+  res = zeros(R.coeffRingLocalized, inputSize...)
+  if !isEffectiveCurveClass(H2, beta)
+    return res
+  end
+
+  P = [P_input[k].func for k in inputKeys]
+  con = get_GKM_connection(G)
+  @req !isnothing(con) "GKM graph needs a connection!"
 
   ########
   # this part is needed for the generation of colorings
@@ -160,8 +178,6 @@ function integrateGKM(G::AbstractGKM_graph, H2, beta, n_marks::Int64, P_input; s
   # Dict in order to store H
   h_dict::Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}} = Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}() # Lambda_gamma_e_dict
   ########
-  res = zero(R.coeffRing)
-  # println(res)
 
   max_n_vert::Int64 = _max_n_edges(H2, beta) + 1
 
@@ -201,31 +217,31 @@ end
 
           edgeMult = Dict{Edge, Int}(edges(tree) .=> edgeMult_array)
           
-          # iterate numbering of the marks on the tree
-          # TODO: Q(Daniel): Why do we filter here? What does is_min check?
+          # Iterate numbering of the marks on the tree, picking only one per isomorphism class
+          # Details here have to do with the colors iterator from Colors.jl.
           for m in Base.Iterators.filter(mul_per -> top_aut == 1 || isempty(mul_per) || maximum(mul_per) < 3 || ismin(ls, col, mul_per, parents, subgraph_ends), multiset_permutations(m_inv, n_marks))
 
             
-            dt = decoratedTree(G, tree, col, edgeMult, m, R)
+            dt = decoratedTree(G, tree, col, edgeMult, m)
             
-            Class = Base.invokelatest(P, dt)
-
-            Class == zero(R.coeffRing) && continue
+            Class = [Base.invokelatest(P[k], dt) for k in inputKeys]
+            #println("Tree($(dt.vDict)), Marks($(dt.marks)), Mult($(dt.edgeMult)):")
+            #println(Class)
+            all(c -> c==0, Class) && continue
 
             if euler == zero(R.coeffRing)
-              euler = Euler_inv(dt, R, con)//(PROD * aut)
+              euler = Euler_inv(dt)//(PROD * aut)
               for e in edges(tree)
                 triple = (edgeMult[e], min(col[src(e)], col[dst(e)]), max(col[src(e)], col[dst(e)]))
                 if !haskey(h_dict, triple)
-                    h_dict[triple] = h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
+                    h_dict[triple] = _h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
                 end
                 euler *= h_dict[triple]
               end
             end
             # println("ls = $(ls), col = $(col), aut = $(aut), PRODW = $(PROD), m=$(m), E = $(euler)")
             # println(euler)
-            
-            res += Class*euler
+            res += Class.*euler
           end
         end
 

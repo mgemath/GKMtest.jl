@@ -1,12 +1,18 @@
 """
-Return (GKM graph of blowup, GKM graph of exceptional divisor, connection on blown-up graph)
+Return (GKM graph of blowup, GKM graph of exceptional divisor)
 from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded as AbstractGKM_subgraph.
-This follows [Guillemin--Zara, section 2.2.1]
+Note that the GKM graph needs to have the connection field set. The returned blowup graph and subgraph
+will also have the connection field set, but not the curveClasses field.
+(It will be calculated automatically on demand via GKM_second_homology())
+Mathematically, this follows [Guillemin--Zara, section 2.2.1]
 
 Warning: This will build an Undirected graph. Behaviour with directed graphs as input is not tested.
 """
-function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{AbstractGKM_subgraph, GKM_connection}
+function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   
+  con = get_GKM_connection(gkmSub.super)
+  @req !isnothing(con) "Supergraph needs a connection"
+
   @req GKM_isValidSubgraph(gkmSub) "invalid graph/subgraph pair"
   @req GKM_isValidConnection(con) "invalid connection"
   @req isCompatible(gkmSub, con) "connection incompatible with subgraph"
@@ -151,15 +157,16 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph, con::GKM_connection)::Tuple{Abs
     end
   end
 
+  set_GKM_connection!(gkmBlowup, build_GKM_connection(gkmBlowup, blowupCon))
   gkmSubgraphBlowup = GKMsubgraph_from_edges(gkmBlowup, exceptionalEdges)
+  
   # Base.show(stdout, MIME"text/plain"(), gkmSubgraphBlowup)
   #println("Resulting connection dict:")
-  for k in keys(blowupCon)
+  #for k in keys(blowupCon)
     #println("$k -> $(blowupCon[k])")
-  end
-  fullBlowupConnection = build_GKM_connection(gkmBlowup, blowupCon)
+  #end
 
-  return (gkmSubgraphBlowup, fullBlowupConnection)
+  return gkmSubgraphBlowup
 
 end
 
