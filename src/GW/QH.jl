@@ -39,7 +39,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
   
     if beta == zero(parent(beta))
       for i in 1:nv
-        res[i, i, i] = one(R)
+        res[i, i, i] = (eulerClass(i, G)//1)^2
       end
       G.QH_structure_consts[beta] = res
       return res
@@ -60,8 +60,8 @@ end
 function quantumProduct(
   G::AbstractGKM_graph,
   beta::CurveClass_type,
-  class1::FreeModElem{QQMPolyRingElem},
-  class2::FreeModElem{QQMPolyRingElem};
+  class1, #class1 and class2 should be free module elements over the coefficient ring (or its frac field)
+  class2;
   useStructureConstants::Bool = true
 )
   if beta == 0
@@ -85,4 +85,34 @@ function quantumProduct(
   GW_invts = integrateGKM(G, beta, 3, P_input)
 
   return sum([GW_invts[i] * gens(G.equivariantCohomology.cohomRingLocalized)[i] for i in 1:nv])
+end
+
+function QH_Structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
+  s = size(b)
+  @req s[1] == s[2] "Base matrix must be square"
+  @req s[1] == n_vertices(G.g) "dimension of basis elements must be number of vertices of GKM graph"
+
+  FF = G.equivariantCohomology.coeffRingLocalized
+  nv = n_vertices(G.g)
+  bMatrix = zero_matrix(FF, nv, nv)
+  for k in keys(b)
+    bMatrix[k] = FF(b[k])
+  end
+  @req is_invertible(bMatrix) "Base matrix must be invertible over fraction field"
+  bMatrixInv = inv(transpose(bMatrix))
+
+  res = Dict{CurveClass_type, Array{Any, 3}}()
+  g = gens(G.equivariantCohomology.cohomRingLocalized)
+  baseClasses = [sum([bMatrix[i,j] * g[j] for j in 1:nv]) for i in 1:nv]
+  for beta in keys(G.QH_structure_consts)
+    resBeta = zeros(G.equivariantCohomology.coeffRingLocalized, (nv, nv, nv)...)
+    for i in 1:nv, j in 1:nv
+      prodIJ = quantumProduct(G, beta, baseClasses[i], baseClasses[j])
+      prodIJVect = [prodIJ[k] for k in 1:nv]
+      inBasis = bMatrixInv * prodIJVect
+      resBeta[i,j,:] = inBasis
+    end
+    res[beta] = resBeta
+  end
+  return res
 end
