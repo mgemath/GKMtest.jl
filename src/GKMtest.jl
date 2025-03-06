@@ -19,6 +19,7 @@ include("GKMsubgraphs.jl")
 include("product.jl")
 include("blowup.jl")
 include("curveClasses.jl")
+include("GP.jl")
 
 include("GW/includes.jl")
 
