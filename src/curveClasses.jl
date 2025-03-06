@@ -37,13 +37,14 @@ function _GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
   cycles = _calculate_graph_cycles(G, edgeList, M)
   relations = Vector{AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
   sizehint!(relations, r * length(cycles))
-  
+  cwd = _common_weight_denominator(G)
+
   for c in cycles
     for i in 1:r
       rel = zero(M)
       for (e,mult) in c
         edgeIndex = indexin([e], edgeList)[1]
-        rel += mult * G.w[e][i] * gens(M)[edgeIndex]
+        rel += mult * ZZ(cwd * G.w[e][i]) * gens(M)[edgeIndex]
       end
       push!(relations, rel)
     end

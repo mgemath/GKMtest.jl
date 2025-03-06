@@ -1,5 +1,10 @@
 function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::Bool=true, calculateConnection::Bool=true)::AbstractGKM_graph
   
+  @req G1.weightType == G2.weightType "GKM graphs must have the same weight type to be able to take their products"
+  @req base_ring(G1.M) == base_ring(G2.M) "GKM graphs must have the same character lattice base ring to be able to take their products"
+  weightType = G1.weightType
+  baseRing = base_ring(G1.M)
+
     n1 = n_vertices(G1.g)
     n2 = n_vertices(G2.g)
     ne1 = n_edges(G1.g)
@@ -7,10 +12,10 @@ function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::
     nv = n1 * n_vertices(G2.g)
   
     g = Graph{Undirected}(nv)
-    M = free_module(ZZ, rank(G1.M)+rank(G2.M)) # direct_sum(G1.M, G2.M)
+    M = free_module(baseRing, rank(G1.M)+rank(G2.M)) # direct_sum(G1.M, G2.M)
     f1 = hom(G1.M, M, [gens(M)[i] for i in 1:rank(G1.M)])
     f2 = hom(G2.M, M, [gens(M)[i + rank(G1.M)] for i in 1:rank(G2.M)])
-    W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
+    W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{weightType}}()
     labels = Vector{String}(undef, nv)
   
     if calculateConnection

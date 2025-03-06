@@ -114,7 +114,9 @@ function connection_a_from_con(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edg
 
       for j in 1:rank(gkm.M)
         if eW[j] != 0
-          ai = div(wdif[j],eW[j]) # type is again ZZRingElem
+          tmp = wdif[j] // eW[j]
+          @req denominator(tmp) == 1 "GKM connection's a_i's must be integers!" # Assumption: x//y is integer if and only if denominator(x//y) == 1 in Oscar.
+          ai = ZZ(tmp)
           break
         end
       end
@@ -211,7 +213,7 @@ function GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true)
           end
           epi = con.con[(e,ei)]
           ai = con.a[(e,ei)]
-          if con.gkm.w[epi] != con.gkm.w[ei] - ai * con.gkm.w[e]
+          if con.gkm.w[epi] != con.gkm.w[ei] - base_ring(con.gkm.M)(ai) * con.gkm.w[e]
             printDiagnostics && println("Connection map and a(e,ei) is inconsistent for (e, ei)=($e, $ei).")
             return false
           end
