@@ -1,22 +1,48 @@
 export generalized_flag
 export generalized_flag2
-# export _generator_matrix
+export generalized_gkm_flag
 
-function generalized_flag(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem[])
 
-  (fams, ordering) = root_system_type_with_ordering(rt)
+@doc raw"""
+    generalized_gkm_flag(R::RootSystem; S::Vector{RootSpaceElem}=RootSpaceElem[]) -> AbstractGKM_graph{QQFieldElem}
+
+Given a root system ``R`` and a subset ``S`` of the set of simple roots, it construct  the 
+generalized flag variety ``G/P``. Here ``G`` is the simple connected complex Lie group 
+with root system ``R``, and ``P`` is the parabolic subgroup with root system ``S``.
+
+!!! warning
+    Computing this function with root systems of type ``E6``, ``E7``, and ``E8`` may be very slow.
+
+# Examples
+```jldoctest
+julia> R = root_system([(:A, 1), (:G, 2)])
+Root system of rank 3
+  of type A1 x G2
+
+julia> S = simple_roots(R)[3];
+
+julia> gp = generalized_gkm_flag(R, [S]);
+
+julia> rank_torus(gp)
+5
+
+```
+"""
+function generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem[])
+
+  (fams, ordering) = root_system_type_with_ordering(R)
 
   #TODO add test for different ordering
 
-  W = weyl_group(rt) # Weyl group of the root system
+  W = weyl_group(R) # Weyl group of the root system
   WP = [one(W)] # embedding of W_P into W, called WP
 
   if !isempty(S)
 
     #define the Weyl group W_P of the subroot system
-    s = simple_roots(rt);
+    s = simple_roots(R);
     indeces_of_S = findall(j -> s[j] in S, eachindex(s))
-    cartan_submatrix = cartan_matrix(rt)[indeces_of_S, indeces_of_S]
+    cartan_submatrix = cartan_matrix(R)[indeces_of_S, indeces_of_S]
 
     #embedding of W_P into W, called WP
     WP = [prod(i -> reflection(s[indeces_of_S[i]]), word(a); init = one(W)) for a in weyl_group(cartan_submatrix)]
@@ -36,53 +62,31 @@ function generalized_flag(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem
     index == length(cosets) && break
   end
 
-  ## Find a representative of minimal length for each coset 
-  # reprs = [reduce((x, y) -> length(x) <= length(y) ? x : y,  c) for c in cosets]
-
-  ## Involutions of W
-  # involutions = [reflection(t) for t in positive_roots(rt)] # alternatives [b for b in W if (order(b) == 2)], [b for b in W if (order(b) == 2 && !(b in WP))]
-
-  # D = Dict{WeylGroupElem, Vector{Tuple{WeylGroupElem, WeylGroupElem}}}()
-  # for i in 1:length(reprs)
-  #   r1 = reprs[i]
-  #   D[r1] = Tuple{WeylGroupElem, WeylGroupElem}[]
-  #   for invol in involutions
-  #     j = findfirst(index -> (index > i) && (r1*invol in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
-  #     j === nothing && continue
-  #     r2 = reprs[j]
-  #     push!(D[r1], (r2, invol))
-  #   end
-  # end
-  # println(D)
-
   labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
   M = free_module(QQ, mapreduce(_dimension_ambient, +, fams))
   W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{QQFieldElem}}()
 
-  gen_matrix = block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
-  if any(i -> ordering[i] != i, eachindex(ordering))
-    gen_matrix = sub(gen_matrix, ordering, 1:number_of_columns(gen_matrix))
-  end
-  # gen_matrix = sub(block_diagonal_matrix([_generator_matrix(fam) for fam in fams]), ordering, ordering)
+  gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
 
   for i in 1:length(reprs)
     r1 = reprs[i]
-    # D[r1] = Tuple{WeylGroupElem, WeylGroupElem}[]
-    for t in positive_roots(rt)
-      # invol = reflection(t)
-      j = findfirst(index -> (index > i) && (reflection(t)*r1 in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
+    for t in positive_roots(R)
+      new_rep = reflection(t)*r1
+      j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
       j === nothing && continue
       add_edge!(g, j, i)
       vec = coefficients(t)*gen_matrix
-      # vec = sub(sub(coefficients(t), [1], ordering)*gen_matrix, [1], Vector(perm(ordering)^(-1), rank(M)))
       W[Edge(j,i)] = (-1)*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
     end
   end
-  # println(labs)
-  # return (g, labs) #D
-  return W
 
+  return gkm_graph(g, labs, M, W)
+  # return W
+
+end
+
+function generalized_gkm_flag(R::RootSystem, S::Vector{Int64}=Int64[])
 end
 
 function generalized_flag2(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem[])
@@ -120,25 +124,6 @@ function generalized_flag2(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceEle
     index == length(reprs) && break
   end
 
-  ## Find a representative of minimal length for each coset 
-  # reprs = [reduce((x, y) -> length(x) <= length(y) ? x : y,  c) for c in cosets]
-
-  ## Involutions of W
-  # involutions = [reflection(t) for t in positive_roots(rt)] # alternatives [b for b in W if (order(b) == 2)], [b for b in W if (order(b) == 2 && !(b in WP))]
-
-  # D = Dict{WeylGroupElem, Vector{Tuple{WeylGroupElem, WeylGroupElem}}}()
-  # for i in 1:length(reprs)
-  #   r1 = reprs[i]
-  #   D[r1] = Tuple{WeylGroupElem, WeylGroupElem}[]
-  #   for invol in involutions
-  #     j = findfirst(index -> (index > i) && (r1*invol in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
-  #     j === nothing && continue
-  #     r2 = reprs[j]
-  #     push!(D[r1], (r2, invol))
-  #   end
-  # end
-  # println(D)
-
   labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
   M = free_module(QQ, mapreduce(_dimension_ambient, +, fams))
@@ -148,6 +133,8 @@ function generalized_flag2(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceEle
   if any(i -> ordering[i] != i, eachindex(ordering))
     gen_matrix = sub(gen_matrix, ordering, 1:number_of_columns(gen_matrix))
   end
+#gen_matrix = perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
+
 
   for i in 1:length(reprs)
     r1 = reprs[i]

@@ -48,11 +48,11 @@
 # generalized_flag(root_system(NC))
 
 # generalized_flag(root_system([(:A, 1), (:A, 2)]))
-# NC=sub(cartan_matrix(root_system([(:A, 1), (:A, 2)])), [3,1,2] , [3,1,2]);
-# generalized_flag(root_system(NC))
+NC=sub(cartan_matrix(root_system([(:A, 1), (:A, 2)])), [3,1,2] , [3,1,2]);
+generalized_flag(root_system(NC))
 
-generalized_flag(root_system([(:A, 1), (:A, 4)])); #0.510605 seconds (4.39 M allocations: 196.455 MiB, 13.31% gc time)
-generalized_flag2(root_system([(:A, 1), (:A, 4)])); #0.773291 seconds (6.86 M allocations: 333.550 MiB, 17.70% gc time)
+# generalized_flag(root_system([(:A, 1), (:A, 4)])); #0.510605 seconds (4.39 M allocations: 196.455 MiB, 13.31% gc time)
+# generalized_flag2(root_system([(:A, 1), (:A, 4)])); #0.773291 seconds (6.86 M allocations: 333.550 MiB, 17.70% gc time)
 
 # generalized_flag(root_system([(:A, 1)]))
 # generalized_flag2(root_system([(:A, 1)]))
