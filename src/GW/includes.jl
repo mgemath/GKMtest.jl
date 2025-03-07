@@ -27,3 +27,4 @@ include("exports.jl")
 include("DecoratedTrees.jl")
 
 include("QH.jl")
+include("QHArithmetic.jl")

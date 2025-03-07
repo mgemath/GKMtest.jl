@@ -180,6 +180,16 @@ end
 """
   Return the second homology class represented by the given edge.
 """
+function edgeCurveClass(G::AbstractGKM_graph, src::String, dst::String)
+  @req src in G.labels "Source vertex not found for label $src"
+  @req dst in G.labels "Destination vertex not found for label $dst"
+  sd = indexin([src, dst], G.labels)
+  return edgeCurveClass(G, Edge(sd[1], sd[2]))
+end
+
+"""
+  Return the second homology class represented by the given edge.
+"""
 function edgeCurveClass(G::AbstractGKM_graph, e::Edge)
   return edgeCurveClass(GKM_second_homology(G), e)
 end

@@ -59,9 +59,11 @@ end
 struct GKM_cohomology_ring <: AbstractGKM_cohomology_ring
   gkm::AbstractGKM_graph
   coeffRing::QQMPolyRing # H_T^*(point;Q)
-  coeffRingLocalized # TODO: Add type!
-  cohomRing::FreeMod{QQMPolyRingElem} # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl)
-  cohomRingLocalized # H_T^*(X;Q) tensored with the fraction field of H_T^*(point).
+  coeffRingLocalized::AbstractAlgebra.Generic.FracField{QQMPolyRingElem}
+  # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl):
+  cohomRing::FreeMod{QQMPolyRingElem}
+  # H_T^*(X;Q) tensored with the fraction field of H_T^*(point):
+  cohomRingLocalized::AbstractAlgebra.Generic.FreeModule{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}
   edgeWeightClasses::Dict{Edge, QQMPolyRingElem}
   pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
 

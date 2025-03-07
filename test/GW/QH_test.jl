@@ -45,3 +45,9 @@ SB2 = GKMtest.QH_Structure_constants_in_basis(P2, base)
 
 H = [u0, u1, u2]
 quantumProduct(P2, beta, H.-u1, (H.-u2).*(H.-u0)) # evaluates to one, as required!
+#New notation for this:
+H = QH_class(P2, H)
+println((H-u0)*(H-u1)*(H-u2))
+
+# Check conjecture O:
+println(conjecture_O_eigenvalues(P2))
