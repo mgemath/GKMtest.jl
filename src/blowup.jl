@@ -61,7 +61,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
     push!(labels, gkmSub.super.labels[v])
   end
 
-  gkmBlowup = gkm_graph(Graph{Undirected}(nvBlowup), labels, M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}(); checkLabels=false)
+  gkmBlowup = gkm_graph(Graph{Undirected}(nvBlowup), labels, M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{gkmSub.super.weightType}}(); checkLabels=false)
   exceptionalEdges = Edge[]
   blowupCon = Dict{Tuple{Edge, Edge}, Edge}()
 

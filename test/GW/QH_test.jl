@@ -20,4 +20,34 @@ Sfactored = Dict{GKMtest.CurveClass_type, Any}()
 for beta in keys(S)
   println("Structure constants for beta=$beta:")
   Sfactored[beta] = [S[beta][k] == 0 ? 0 : factor(numerator(S[beta][k])) for k in keys(S[beta])]
+  println(Sfactored[beta])
 end
+
+# P1 example in nice base:
+
+P1 = GKMproj_space(1)
+beta1 = edgeCurveClass(P1, Edge(1, 2))
+u0, u1 = gens(P1.equivariantCohomology.coeffRing)
+S1 = GKMtest.QH_structure_constants(P1)
+
+base1 = [1 1; u0-u1 0 ]
+SB1 = GKMtest.QH_Structure_constants_in_basis(P1, base1)
+
+# P2 example in nice base:
+
+P2 = GKMproj_space(2)
+beta = edgeCurveClass(P2, Edge(1, 2))
+u0, u1, u2 = gens(P2.equivariantCohomology.coeffRing)
+S2 = GKMtest.QH_structure_constants(P2)
+
+base = [1 1 1 ; u0-u2 u1-u2 0 ; (u0-u1)*(u0-u2) 0 0 ]
+SB2 = GKMtest.QH_Structure_constants_in_basis(P2, base)
+
+H = [u0, u1, u2]
+quantumProduct(P2, beta, H.-u1, (H.-u2).*(H.-u0)) # evaluates to one, as required!
+#New notation for this:
+H = QH_class(P2, H)
+println((H-u0)*(H-u1)*(H-u2))
+
+# Check conjecture O:
+println(conjecture_O_eigenvalues(P2))

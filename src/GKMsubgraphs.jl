@@ -23,7 +23,7 @@ function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int6
 
   subnv = length(vDict)
   labels = [gkm.labels[vDict[i]] for i in 1:subnv]
-  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()) # use the same character lattice
+  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{gkm.weightType}}()) # use the same character lattice
   
   for e in edges(gkm.g)
     if src(e) in vDict && dst(e) in vDict
@@ -110,7 +110,7 @@ function GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: 
 
   subnv = length(vDict)
   labels = [gkm.labels[vDict[i]] for i in 1:subnv]
-  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}(); checkLabels=false) # use the same character lattice
+  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{gkm.weightType}}(); checkLabels=false) # use the same character lattice
   
   for e in edges
     sd = indexin([src(e), dst(e)], vDict)

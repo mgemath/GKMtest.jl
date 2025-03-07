@@ -8,11 +8,11 @@ Warnings:
 function gkm_graph(
   g::Graph,
   labels::Vector{String},
-  M::AbstractAlgebra.Generic.FreeModule{ZZRingElem}, # character group
-  w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}; 
+  M::AbstractAlgebra.Generic.FreeModule{R}, # character group
+  w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}}; 
   check::Bool=true,
   checkLabels::Bool=true
-)
+) where R <: GKM_weight_type
   # construct the GKM_graph
   if check
     @req n_vertices(g) >= 1 "GKM graph needs at least one vertex"
@@ -60,6 +60,21 @@ function valency(G::AbstractGKM_graph)
   return length(all_neighbors(G.g, 1))
 end
 
+function _common_weight_denominator(G::AbstractGKM_graph)::ZZRingElem
+  if G.weightType <: ZZRingElem
+    return ZZ(1)
+  elseif G.weightType <: QQFieldElem
+    res::ZZRingElem = ZZ(1)
+    rk = rank_torus(G)
+    for e in edges(G.g)
+      for i in 1:rk
+        res = lcm(res, denominator(G.w[e][i]))
+      end
+    end
+    return res
+  end
+  @req false "Ony ZZRingElem and QQFieldElem are supported as weight types so far."
+end
 
 function Base.show(io::IO, G::AbstractGKM_graph)
 
@@ -128,7 +143,7 @@ Warning: Add all edges immediately after creation.
 Any curve class or cohomology functionality should only be used after all edges have been added.
 The same holds for GKM_initialize().
 """
-function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem})
+function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
 
   @req (s in G.labels) "Source label not found"
   @req (d in G.labels) "Destination label not found"
@@ -139,7 +154,7 @@ function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::Abstra
 
 end
 
-function GKMadd_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem})
+function GKMadd_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
   
   @req (s in 1:n_vertices(G.g)) "Source $s not found"
   @req (d in 1:n_vertices(G.g)) "Destination $d not found"

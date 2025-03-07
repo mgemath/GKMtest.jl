@@ -37,13 +37,14 @@ function _GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
   cycles = _calculate_graph_cycles(G, edgeList, M)
   relations = Vector{AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
   sizehint!(relations, r * length(cycles))
-  
+  cwd = _common_weight_denominator(G)
+
   for c in cycles
     for i in 1:r
       rel = zero(M)
       for (e,mult) in c
         edgeIndex = indexin([e], edgeList)[1]
-        rel += mult * G.w[e][i] * gens(M)[edgeIndex]
+        rel += mult * ZZ(cwd * G.w[e][i]) * gens(M)[edgeIndex]
       end
       push!(relations, rel)
     end
@@ -174,6 +175,16 @@ end
 # detailed show
 function Base.show(io::IO, ::MIME"text/plain",  h2::GKM_H2)
   print(io, "Curve classes in H_2 for $(h2.gkm): $(h2.H2)")
+end
+
+"""
+  Return the second homology class represented by the given edge.
+"""
+function edgeCurveClass(G::AbstractGKM_graph, src::String, dst::String)
+  @req src in G.labels "Source vertex not found for label $src"
+  @req dst in G.labels "Destination vertex not found for label $dst"
+  sd = indexin([src, dst], G.labels)
+  return edgeCurveClass(G, Edge(sd[1], sd[2]))
 end
 
 """

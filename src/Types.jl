@@ -10,12 +10,14 @@ abstract type AbstractGKM_connection end
 abstract type AbstractGKM_cohomology_ring end
 
 CurveClass_type = AbstractAlgebra.FPModuleElem{ZZRingElem}
+GKM_weight_type = Union{ZZRingElem, QQFieldElem}
 
-@attributes mutable struct AbstractGKM_graph
+@attributes mutable struct AbstractGKM_graph{R <: GKM_weight_type}
   g::Graph
   labels::Vector{String}
-  M::AbstractAlgebra.Generic.FreeModule{ZZRingElem} # character group
-  w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}} # weight of the T-action
+  weightType::DataType
+  M::AbstractAlgebra.Generic.FreeModule{R} # character group
+  w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}} # weight of the T-action
   # This should always be set and can be accessed directly:
   # It should not be changed.
   equivariantCohomology::Union{Nothing, AbstractGKM_cohomology_ring} # actual type will be Union{Nothing, GKM_cohomology_ring}
@@ -32,15 +34,15 @@ CurveClass_type = AbstractAlgebra.FPModuleElem{ZZRingElem}
   function AbstractGKM_graph(
     g::Graph,
     labels::Vector{String},
-    M::AbstractAlgebra.Generic.FreeModule{ZZRingElem}, # character group
-    w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}},
+    M::AbstractAlgebra.Generic.FreeModule{R}, # character group
+    w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}},
     equivariantCohomology::Union{Nothing, AbstractGKM_cohomology_ring},
     curveClasses::Union{Nothing, AbstractGKM_H2},
     connection::Union{Nothing, AbstractGKM_connection},
     QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}},
     know_all_QH_structure_consts::Bool
-  )
-    return new(g, labels, M, w, equivariantCohomology, curveClasses, connection, QH_structure_consts, know_all_QH_structure_consts)
+  ) where R <: GKM_weight_type
+    return new{R}(g, labels, R, M, w, equivariantCohomology, curveClasses, connection, QH_structure_consts, know_all_QH_structure_consts)
   end
 end
 
@@ -57,9 +59,11 @@ end
 struct GKM_cohomology_ring <: AbstractGKM_cohomology_ring
   gkm::AbstractGKM_graph
   coeffRing::QQMPolyRing # H_T^*(point;Q)
-  coeffRingLocalized
-  cohomRing::FreeMod{QQMPolyRingElem} # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl)
-  cohomRingLocalized # H_T^*(X;Q) tensored with the fraction field of H_T^*(point).
+  coeffRingLocalized::AbstractAlgebra.Generic.FracField{QQMPolyRingElem}
+  # H_T^*(X; Q), but without checks for consistency (see isGKMclass in cohomology.jl):
+  cohomRing::FreeMod{QQMPolyRingElem}
+  # H_T^*(X;Q) tensored with the fraction field of H_T^*(point):
+  cohomRingLocalized::AbstractAlgebra.Generic.FreeModule{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}
   edgeWeightClasses::Dict{Edge, QQMPolyRingElem}
   pointEulerClasses::Vector{Union{Nothing, QQMPolyRingElem}}
 
