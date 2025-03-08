@@ -1,4 +1,4 @@
-"""
+@doc raw"""
 **GKMtest** is a test module for GKM varieties to be included in OSCAR.
 
 """

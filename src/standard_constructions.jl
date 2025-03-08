@@ -7,6 +7,7 @@ Construct the GKM graph of the variety of flags. The dimensions of quotients are
 ```jldoctest
 julia> flag_variety(gkm_graph, [1, 1])
 Normal toric variety
+
 ```
 """
 function flag(::Type{gkm_graph}, s::Vector{Int64})
@@ -91,6 +92,7 @@ Construct the Grassmann variety of `k`-planes in the complex vector space of dim
 ```jldoctest
 julia> projective_space(NormalToricVariety, 2)
 Normal toric variety
+
 ```
 """
 function grassmann(::Type{gkm_graph}, k::Int, n::Int)
@@ -126,6 +128,7 @@ Construct the GKM graph of the (smooth, projective) toric variety `v`.
 ```jldoctest
 julia> projective_space(NormalToricVariety, 2)
 Normal toric variety
+
 ```
 """
 function gkm_graph_of_toric(v::NormalToricVariety)

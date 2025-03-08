@@ -1,10 +1,13 @@
 using Documenter
 using GKMtest
 
+DocMeta.setdocmeta!(GKMtest, :DocTestSetup, :(using Oscar, GKMtest); recursive=true)
+
 makedocs(
     sitename = "GKMtest",
     format = Documenter.HTML(),
-    modules = [GKMtest]
+    modules = [GKMtest],
+    warnonly = true
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

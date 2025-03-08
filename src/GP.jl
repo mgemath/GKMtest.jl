@@ -1,56 +1,104 @@
-export generalized_flag
-export generalized_flag2
 export generalized_gkm_flag
 
 
 @doc raw"""
-    generalized_gkm_flag(R::RootSystem; S::Vector{RootSpaceElem}=RootSpaceElem[]) -> AbstractGKM_graph{QQFieldElem}
+    generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}) -> AbstractGKM_graph
 
-Given a root system ``R`` and a subset ``S`` of the set of simple roots, it construct  the 
+Given a root system ``R`` and a subset ``S`` of the set of simple roots, it constructs  the 
 generalized flag variety ``G/P``. Here ``G`` is the simple connected complex Lie group 
 with root system ``R``, and ``P`` is the parabolic subgroup with root system ``S``.
+If ``S`` is empty, it construct ``G/B`` where ``B`` is a Borel subgroup.
+
+!!! note
+    The character group is of type free ``\mathbb{Z}``-module if ``R`` is of type ``A, B, C, D, G``.
+    It is a free ``\mathbb{Q}``-module if ``R`` is of type ``E`` or ``F``.
 
 !!! warning
-    Computing this function with root systems of type ``E6``, ``E7``, and ``E8`` may be very slow.
+    Computing this function with root systems of very large Weyl groups may be slow.
 
 # Examples
 ```jldoctest
+julia> RC3 = root_system(:C, 3)
+Root system of rank 3
+  of type C3
+
+julia> gp1 = generalized_gkm_flag(RC3);
+
+julia> rank_torus(gp1)
+3
+
 julia> R = root_system([(:A, 1), (:G, 2)])
 Root system of rank 3
   of type A1 x G2
 
-julia> S = simple_roots(R)[3];
+julia> S = [simple_roots(R)[3]];
 
-julia> gp = generalized_gkm_flag(R, [S]);
+julia> gp2 = generalized_gkm_flag(R, S);
 
-julia> rank_torus(gp)
+julia> rank_torus(gp2)
 5
 
 ```
 """
-function generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem[])
+function generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem})
 
-  (fams, ordering) = root_system_type_with_ordering(R)
+  @req all(sr -> sr in simple_roots(R), S) "S must be a set of simple roots of R"
 
-  #TODO add test for different ordering
+  s = simple_roots(R)
 
+  return _generalized_gkm_flag(R, findall(j -> s[j] in S, eachindex(s)))
+end
+
+@doc raw"""
+    generalized_gkm_flag(R::RootSystem; indices_of_S) -> AbstractGKM_graph
+
+Same as before, but indicating the indices of the roots in ``S`` instead of the roots itself.
+
+# Examples
+```jldoctest
+julia> R = root_system(matrix(ZZ, [2 -1 -2; -1 2 0; -1 0 2]))
+Root system of rank 3
+  of type C3 (with non-canonical ordering of simple roots)
+
+julia> gp1 = generalized_gkm_flag(R, 2:3);
+
+julia> valency(gp1)
+7
+
+julia> gp2 = generalized_gkm_flag(R, [1,2]);
+
+julia> rank_torus(gp2)
+3
+
+```
+"""
+function generalized_gkm_flag(R::RootSystem, indices_of_S::Union{UnitRange{Int64}, Vector{Int64}}=Int64[])
+
+  @req isempty(indices_of_S) || (minimum(indices_of_S) > 0 && maximum(indices_of_S) <= rank(R)) "indices of S out of range"
+
+  return _generalized_gkm_flag(R, collect(indices_of_S))
+end
+
+function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
+
+  ## Create WP
   W = weyl_group(R) # Weyl group of the root system
   WP = [one(W)] # embedding of W_P into W, called WP
 
-  if !isempty(S)
+  if !isempty(indices_of_S)
 
-    #define the Weyl group W_P of the subroot system
-    s = simple_roots(R);
-    indeces_of_S = findall(j -> s[j] in S, eachindex(s))
-    cartan_submatrix = cartan_matrix(R)[indeces_of_S, indeces_of_S]
+    #Cartan matrix of P
+    cartan_submatrix = cartan_matrix(R)[indices_of_S, indices_of_S]
 
     #embedding of W_P into W, called WP
-    WP = [prod(i -> reflection(s[indeces_of_S[i]]), word(a); init = one(W)) for a in weyl_group(cartan_submatrix)]
+    s = simple_roots(R)
+    WP = [prod(i -> reflection(s[indices_of_S[i]]), word(a); init = one(W)) for a in weyl_group(cartan_submatrix)]
   end
+  
+  (fams, ordering) = root_system_type_with_ordering(R)
 
-  ## Construct the cosets
-  # cosets = unique(Set.([b .* WP for b in W]))
-
+  type_of_graph = any(fam -> fam[1] in (:E, :F), fams) ? QQFieldElem : ZZRingElem
+  
   cosets = [WP for _ in 1:div(order(W), length(WP))]
   reprs = [one(W) for _ in 1:length(cosets)]
   index = 1
@@ -64,8 +112,8 @@ function generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}=RootSpaceE
 
   labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
-  M = free_module(QQ, mapreduce(_dimension_ambient, +, fams))
-  W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{QQFieldElem}}()
+  M = free_module(parent(zero(type_of_graph)), mapreduce(_dimension_ambient, +, fams))
+  W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{type_of_graph}}()
 
   gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
 
@@ -76,104 +124,32 @@ function generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}=RootSpaceE
       j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
       j === nothing && continue
       add_edge!(g, j, i)
-      vec = coefficients(t)*gen_matrix
+      vec = matrix(parent(zero(type_of_graph)), coefficients(t)*gen_matrix)
       W[Edge(j,i)] = (-1)*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
     end
   end
 
   return gkm_graph(g, labs, M, W)
-  # return W
-
-end
-
-function generalized_gkm_flag(R::RootSystem, S::Vector{Int64}=Int64[])
-end
-
-function generalized_flag2(rt::RootSystem, S::Vector{RootSpaceElem}=RootSpaceElem[])
-
-  (fams, ordering) = root_system_type_with_ordering(rt)
-
-  #TODO add test for different ordering
-
-  W = weyl_group(rt) # Weyl group of the root system
-  WP = [one(W)] # embedding of W_P into W, called WP
-
-  if !isempty(S)
-
-    #define the Weyl group W_P of the subroot system
-    s = simple_roots(rt);
-    indeces_of_S = findall(j -> s[j] in S, eachindex(s))
-    cartan_submatrix = cartan_matrix(rt)[indeces_of_S, indeces_of_S]
-
-    #embedding of W_P into W, called WP
-    WP = [prod(i -> reflection(s[indeces_of_S[i]]), word(a); init = one(W)) for a in weyl_group(cartan_submatrix)]
-  end
-
-  ## Construct the cosets
-  # cosets = unique(Set.([b .* WP for b in W]))
-
-  # cosets = [WP for _ in 1:div(order(W), length(WP))]
-  reprs = [one(W) for _ in 1:div(order(W), length(WP))]
-  index = 1
-  for b in W
-    any(i -> b^(-1)*reprs[i] in WP, 1:index) && continue
-    index += 1
-    # cosets[index] = b .* cosets[index]
-    
-    reprs[index] = b*reduce((x, y) -> length(b*x) <= length(b*y) ? x : y,  WP)
-    index == length(reprs) && break
-  end
-
-  labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
-  g = Graph{Undirected}(length(labs))
-  M = free_module(QQ, mapreduce(_dimension_ambient, +, fams))
-  W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{QQFieldElem}}()
-
-  gen_matrix = block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
-  if any(i -> ordering[i] != i, eachindex(ordering))
-    gen_matrix = sub(gen_matrix, ordering, 1:number_of_columns(gen_matrix))
-  end
-#gen_matrix = perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
-
-
-  for i in 1:length(reprs)
-    r1 = reprs[i]
-    for t in positive_roots(rt)
-      # invol = reflection(t)
-      j = findfirst(index -> ((index > i) && ((reprs[index])^(-1))*reflection(t)*r1 in WP), 1:length(reprs)) #change index != i if you want double ways 
-      j === nothing && continue
-      add_edge!(g, j, i)
-      vec = coefficients(t)*gen_matrix
-      # vec = sub(sub(coefficients(t), [1], ordering)*gen_matrix, [1], Vector(perm(ordering)^(-1), rank(M)))
-      W[Edge(j,i)] = (-1)*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
-    end
-  end
-  # println(labs)
-  # return (g, labs) #D
-  return W
-
 end
 
 function _dimension_ambient(RT::Tuple{Symbol, Int64})::Int64
-  # RT = root_system_type(R)[1]
 
   if RT[1] in (:A, :G)
     return RT[2] + 1
-  elseif RT[1] in (:B, :C, :D, :F)
-    return RT[2]
+  elseif RT[1] == :E
+    return 8
   end
 
-  return 8 # RT[1] == :E
+  return RT[2] 
 
 end
 
 function _generator_matrix(RT::Tuple{Symbol, Int64})::QQMatrix
 
-  # RT = root_system_type(R)[1]
   n_rows = RT[2]
   n_cols = _dimension_ambient(RT)
 
-  if RT[1] == :E # following Hum75 convention
+  if RT[1] == :E # following Hum75 convention, pag 64
     M = zero_matrix(QQ, n_rows, n_cols)
     foreach(i -> M[1, i] = (i==1 || i==8) ? QQ(1)//QQ(2) : QQ(-1)//QQ(2), 1:n_cols)
     M[2, 1] = QQ(1)
