@@ -1,5 +1,6 @@
 # This file contains all exports statements for the GKMtest module.
 
+export GKM_graph #abstract type
 export gkm_graph
 export GKM_initialize!
 export valency
@@ -10,7 +11,7 @@ export is3_indep
 export is2_indep
 export GKMadd_edge!
 export empty_gkm_graph
-export flag_gkm_graph
+# export flag_gkm_graph
 export GKM_isValid
 export edgeFromLabels
 

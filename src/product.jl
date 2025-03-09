@@ -1,8 +1,40 @@
+@doc raw"""
+    *(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::Bool=true, calculateConnection::Bool=true) -> AbstractGKM_graph
+
+It constructs the product of two GKM graphs.
+
+# Examples
+```jldoctest
+julia> G = generalized_gkm_flag(root_system(:A, 1))
+GKM graph with 2 nodes, valency 1 and axial function:
+s1 -> id => (-1, 1)
+
+julia> G*G
+GKM graph with 4 nodes, valency 2 and axial function:
+s1,id -> id,id => (-1, 1, 0, 0)
+id,s1 -> id,id => (0, 0, -1, 1)
+s1,s1 -> s1,id => (0, 0, -1, 1)
+s1,s1 -> id,s1 => (-1, 1, 0, 0)
+
+```
+
+!!! note
+    The character group is of type free ``\mathbb{Q}``-module if this holds for one of the two GKM graphs.
+"""
 function *(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::Bool=true, calculateConnection::Bool=true)::AbstractGKM_graph
+
+  if _get_weight_type(G1) == _get_weight_type(G2)
+    return _product(G1, G2; calculateCurveClasses, calculateConnection)
+  end
+
+  return _product(convert_weights(G1), convert_weights(G2); calculateCurveClasses, calculateConnection)
+end
+
+function _product(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveClasses::Bool=true, calculateConnection::Bool=true)::AbstractGKM_graph
   
-  @req G1.weightType == G2.weightType "GKM graphs must have the same weight type to be able to take their products"
-  @req base_ring(G1.M) == base_ring(G2.M) "GKM graphs must have the same character lattice base ring to be able to take their products"
-  weightType = G1.weightType
+  # @req G1.weightType == G2.weightType "GKM graphs must have the same weight type to be able to take their products"
+  # @req base_ring(G1.M) == base_ring(G2.M) "GKM graphs must have the same character lattice base ring to be able to take their products"
+  weightType = typeof(_get_weight_type(G1))
   baseRing = base_ring(G1.M)
 
     n1 = n_vertices(G1.g)

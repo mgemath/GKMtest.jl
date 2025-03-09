@@ -1,16 +1,22 @@
-@doc raw"""
-    flag(::Type{gkm_graph}, s::Vector{Int64})
+export flag_variety, grassmannian, gkm_graph_of_toric
+# import Oscar: projective_space
 
-Construct the GKM graph of the variety of flags. The dimensions of quotients are expressed by the array `s`.
+@doc raw"""
+    flag_variety(::Type{GKM_graph}, s::Vector{Int64}) -> AbstractGKM_graph{ZZRingElem}
+
+Construct the GKM graph of the variety of flags of ``\mathbb{C}^n``. The dimensions of quotients are expressed by the array `s`.
 
 # Examples
 ```jldoctest
-julia> flag_variety(gkm_graph, [1, 1])
-Normal toric variety
+julia> flag_variety(GKM_graph, [2,1])
+GKM graph with 3 nodes, valency 2 and axial function:
+13 -> 12 => (0, -1, 1)
+23 -> 12 => (-1, 0, 1)
+23 -> 13 => (-1, 1, 0)
 
 ```
 """
-function flag(::Type{gkm_graph}, s::Vector{Int64})
+function flag_variety(::Type{GKM_graph}, s::Vector{Int64})
 
     @req !isempty(s) "the vector of dimensions is empty"
     @req all(i -> s[i] > 0, eachindex(s)) "all dimensions must be positive"
@@ -46,7 +52,6 @@ function flag(::Type{gkm_graph}, s::Vector{Int64})
     labels = [prod(i -> d[n][i]>9 ? "|$(d[n][i])|" : "$(d[n][i])", 1:K[end-1]) for n in 1:nv] 
 
     return gkm_graph(g, labels, M, W)
-    # TODO: Construct connection of flag variety, as it is generally not 3-independent.
   end
   
   
@@ -84,51 +89,76 @@ end
 end
 
 @doc raw"""
-    grassmann(::Type{gkm_graph}, k::Int, n::Int)
+    grassmannian(::Type{gkm_graph}, k::Int, n::Int) -> AbstractGKM_graph{ZZRingElem}
 
 Construct the Grassmann variety of `k`-planes in the complex vector space of dimension `n`.
 
 # Examples
 ```jldoctest
-julia> projective_space(NormalToricVariety, 2)
-Normal toric variety
+julia> grassmannian(GKM_graph, 1,4)
+GKM graph with 5 nodes, valency 4 and axial function:
+2 -> 1 => (-1, 1, 0, 0, 0)
+3 -> 1 => (-1, 0, 1, 0, 0)
+3 -> 2 => (0, -1, 1, 0, 0)
+4 -> 1 => (-1, 0, 0, 1, 0)
+4 -> 2 => (0, -1, 0, 1, 0)
+4 -> 3 => (0, 0, -1, 1, 0)
+5 -> 1 => (-1, 0, 0, 0, 1)
+5 -> 2 => (0, -1, 0, 0, 1)
+5 -> 3 => (0, 0, -1, 0, 1)
+5 -> 4 => (0, 0, 0, -1, 1)
 
 ```
 """
-function grassmann(::Type{gkm_graph}, k::Int, n::Int)
+function grassmannian(::Type{GKM_graph}, k::Int, n::Int)
   @req (k >= 0 && n >= k) "Dimension must be non-negative"
   
-  return flag(::Type{gkm_graph}, [k, n])
+  return flag_variety(GKM_graph, [k, n])
 end
 
-@doc raw"""
-    projective_space(::Type{gkm_graph}, d::Int)
+# @doc raw"""
+#     projective_space(::Type{gkm_graph}, d::Int)
 
-Construct the projective space of dimension `d`.
+# Construct the projective space of dimension `d`.
 
-# Examples
-```jldoctest
-julia> projective_space(NormalToricVariety, 2)
-Normal toric variety
-```
-"""
-function projective_space(::Type{gkm_graph}, d::Int)
-  @req d >= 0 "Dimension must be non-negative"
+# # Examples
+# ```jldoctest
+# julia> projective_space(NormalToricVariety, 2)
+# Normal toric variety
+# ```
+# """
+# function projective_space(::Type{GKM_graph}, d::Int)
+#   @req d >= 0 "Dimension must be non-negative"
   
-  return grassmann(::Type{gkm_graph}, 1, d+1)
-end
+#   return grassmannian(GKM_graph, 1, d+1)
+# end
 
 
 @doc raw"""
-    gkm_graph_of_toric(v::NormalToricVariety)
+    gkm_graph_of_toric(v::NormalToricVariety) -> AbstractGKM_graph{ZZRingElem}
 
 Construct the GKM graph of the (smooth, projective) toric variety `v`.
 
 # Examples
 ```jldoctest
-julia> projective_space(NormalToricVariety, 2)
+julia> P2 = projective_space(NormalToricVariety, 2)
 Normal toric variety
 
+julia> gkm_graph_of_toric(P2)
+GKM graph with 3 nodes, valency 2 and axial function:
+2 -> 1 => (1, 0, -1)
+3 -> 1 => (0, 1, -1)
+3 -> 2 => (-1, 1, 0)
+
+julia> F = hirzebruch_surface(NormalToricVariety, 3)
+Normal toric variety
+
+julia> gkm_graph_of_toric(F)
+GKM graph with 4 nodes, valency 2 and axial function:
+2 -> 1 => (1, 0, -1, 0)
+3 -> 2 => (3, 1, 0, -1)
+4 -> 1 => (0, 1, 3, -1)
+4 -> 3 => (-1, 0, 1, 0)
 ```
 """
 function gkm_graph_of_toric(v::NormalToricVariety)
