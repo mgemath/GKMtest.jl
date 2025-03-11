@@ -4,10 +4,12 @@ export generalized_gkm_flag
 @doc raw"""
     generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}) -> AbstractGKM_graph
 
-Given a root system ``R`` and a subset ``S`` of the set of simple roots, it constructs  the 
-generalized flag variety ``G/P``. Here ``G`` is the simple connected complex Lie group 
+Given a root system ``R`` and a subset ``S`` of the set of simple roots, it constructs the 
+GKM graph of the generalized flag variety ``G/P``. Here ``G`` is the simple connected complex Lie group 
 with root system ``R``, and ``P`` is the parabolic subgroup with root system ``S``.
 If ``S`` is empty, it construct ``G/B`` where ``B`` is a Borel subgroup.
+The vertices of ``G/P`` correspond to the cosets ``W/W_P`` where ``W`` (resp., ``W_P``) is the Weyl group
+of ``G`` (resp., ``P``). The label of a vertex is the unique element of minimal length in the corresponding coset.
 
 !!! note
     The character group is of type free ``\mathbb{Z}``-module if ``R`` is of type ``A, B, C, D, G``.
@@ -18,6 +20,17 @@ If ``S`` is empty, it construct ``G/B`` where ``B`` is a Borel subgroup.
 
 # Examples
 ```jldoctest
+julia> A1xA1 = root_system([(:A, 1), (:A, 1)])
+Root system of rank 2
+  of type A1 x A1
+
+julia> generalized_gkm_flag(A1xA1)
+GKM graph with 4 nodes, valency 2 and axial function:
+s1 -> id => (-1, 1, 0, 0)
+s2 -> id => (0, 0, -1, 1)
+s1*s2 -> s1 => (0, 0, -1, 1)
+s1*s2 -> s2 => (-1, 1, 0, 0)
+
 julia> RC3 = root_system(:C, 3)
 Root system of rank 3
   of type C3

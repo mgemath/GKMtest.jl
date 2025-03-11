@@ -1,12 +1,90 @@
-"""
-Return (GKM graph of blowup, GKM graph of exceptional divisor)
-from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded as AbstractGKM_subgraph.
-Note that the GKM graph needs to have the connection field set. The returned blowup graph and subgraph
-will also have the connection field set, but not the curveClasses field.
-(It will be calculated automatically on demand via GKM_second_homology())
-Mathematically, this follows [Guillemin--Zara, section 2.2.1]
+@doc"""
+    blowupGKM(gkmSub::AbstractGKM_subgraph) -> AbstractGKM_subgraph
 
-Warning: This will build an Undirected graph. Behaviour with directed graphs as input is not tested.
+Return the tuple (GKM graph of blowup, GKM graph of exceptional divisor)
+from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded as AbstractGKM_subgraph.
+!!! note 
+    The GKM graph needs to have the connection field set. The returned blowup graph and subgraph
+    will also have the connection field set, but not the curveClasses field. 
+    (It will be calculated automatically on demand via `GKM_second_homology()`). 
+    Mathematically, this follows [Guillemin--Zara, section 2.2.1]
+
+!!! warning
+    This will build an Undirected graph. Behaviour with directed graphs as input is not tested.
+
+# Examples
+```jldoctest
+julia> G = grassmannian(GKM_graph, 1, 3) # 3-dimensional projective space
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+
+julia> S = GKMsubgraph_from_vertices(G, [1, 2]) # we take the subgraph of two vertices, it corresponds to a line
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 2 nodes, valency 1 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+
+julia> blowupSub = blowupGKM(S) # blowup of P3 along the line S
+GKM subgraph of:
+GKM graph with 6 nodes, valency 3 and axial function:
+[1>4] -> [1>3] => (0, 0, -1, 1)
+[2>3] -> [1>3] => (-1, 1, 0, 0)
+[2>4] -> [1>4] => (-1, 1, 0, 0)
+[2>4] -> [2>3] => (0, 0, -1, 1)
+3 -> [1>3] => (-1, 0, 1, 0)
+3 -> [2>3] => (0, -1, 1, 0)
+4 -> [1>4] => (-1, 0, 0, 1)
+4 -> [2>4] => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 4 nodes, valency 2 and axial function:
+[1>4] -> [1>3] => (0, 0, -1, 1)
+[2>3] -> [1>3] => (-1, 1, 0, 0)
+[2>4] -> [1>4] => (-1, 1, 0, 0)
+[2>4] -> [2>3] => (0, 0, -1, 1)
+
+julia> Spoint = GKMsubgraph_from_vertices(G, [1]) # we take the subgraphof one vertex, that is an invariant point
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 1 nodes, valency 0 and axial function:
+
+julia> blowupPt = blowupGKM(Spoint) # blowup of P3 at a point
+GKM subgraph of:
+GKM graph with 6 nodes, valency 3 and axial function:
+[1>3] -> [1>2] => (0, -1, 1, 0)
+[1>4] -> [1>2] => (0, -1, 0, 1)
+[1>4] -> [1>3] => (0, 0, -1, 1)
+2 -> [1>2] => (-1, 1, 0, 0)
+3 -> [1>3] => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> [1>4] => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 3 nodes, valency 2 and axial function:
+[1>3] -> [1>2] => (0, -1, 1, 0)
+[1>4] -> [1>2] => (0, -1, 0, 1)
+[1>4] -> [1>3] => (0, 0, -1, 1)
+```
 """
 function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   

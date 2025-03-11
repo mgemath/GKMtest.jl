@@ -22,9 +22,6 @@ s1 -> id => (-1, 1)
 julia> typeof(G_over_Q)
 GKMtest.AbstractGKM_graph{QQFieldElem}
 ```
-
-!!! note
-    The character group is of type free ``\mathbb{Q}``-module if this holds for one of the two GKM graphs.
 """
 function convert_weights(G::AbstractGKM_graph)::AbstractGKM_graph{QQFieldElem}
   

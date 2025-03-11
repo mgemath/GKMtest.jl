@@ -4,10 +4,24 @@ export flag_variety, grassmannian, gkm_graph_of_toric
 @doc raw"""
     flag_variety(::Type{GKM_graph}, s::Vector{Int64}) -> AbstractGKM_graph{ZZRingElem}
 
-Construct the GKM graph of the variety of flags of ``\mathbb{C}^n``. The dimensions of quotients are expressed by the array `s`.
+Construct the GKM graph of the variety of flags of ``\mathbb{C}^n``. The dimensions of quotients are expressed by the array `s`. The labels represent the vectors generating the flags. For example, if ``s=[1,2,1]``, the string ``213`` corresponds to the flag:
+
+``0\subset \langle e_2 \rangle \subset \langle e_2, e_1, e_3 \rangle \subset \langle e_2, e_1, e_3, e_4 \rangle=\mathbb{C}^4.``
+
+!!! note
+    This function is faster than `generalized_gkm_flag(root_system(:A, n-1), S)`, but the results are isomorphic.
 
 # Examples
 ```jldoctest
+julia> flag_variety(GKM_graph, [1,3])
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+
 julia> flag_variety(GKM_graph, [2,1])
 GKM graph with 3 nodes, valency 2 and axial function:
 13 -> 12 => (0, -1, 1)

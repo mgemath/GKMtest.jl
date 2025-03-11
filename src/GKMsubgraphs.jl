@@ -1,7 +1,9 @@
 import Oscar.has_edge
 import Oscar.has_vertex
 
-"""
+@doc"""
+    GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) -> AbstractGKM_subgraph
+
 Return the GKM subgraph induced by the given vertices
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection induced from the supergraph.
@@ -74,8 +76,10 @@ function _infer_GKM_connection!(gkmSub::AbstractGKM_subgraph)::Bool
   return false
 end
 
-"""
-Return the GKM subgraph induced by the given vertex labels
+@doc"""
+    GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) -> AbstractGKM_subgraph
+
+As before, but the vertices are given by their labels.
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection of the supergraph.
 """
@@ -89,7 +93,9 @@ function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{
   return res
 end
 
-"""
+@doc"""
+    GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) -> AbstractGKM_subgraph
+    
 Return the GKM subgraph induced by the given edges
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection induced from the supergraph.
