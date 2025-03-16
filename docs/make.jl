@@ -7,7 +7,11 @@ makedocs(
     sitename = "GKMtest",
     format = Documenter.HTML(),
     modules = [GKMtest],
-    warnonly = true
+    warnonly = true,
+    pages = [
+        "Home" => "index.md",
+        "GKM varieties" => "man/GKM.md",
+        "GW invariants" => "man/GW.md"]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

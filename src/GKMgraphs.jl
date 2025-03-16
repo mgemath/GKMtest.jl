@@ -1,9 +1,53 @@
-"""
+@doc raw"""
+    gkm_graph(g, labels, M, w; check=true, checkLabels=true) -> AbstractGKM_graph
 Create a GKM graph from the given data.
-Warnings:
- 1. Do not change the number of verices after this.
- 2. After you have added all edges using GKMadd_edge!(), use GKM_initialize!() to calculate
-    the GKM connection (if it is unique) and the curve classes.
+# Arguments
+- `g::Graph`: A OSCAR graph.
+- `labels::Vector{String}`: A vector of strings, used to denote the vertices.
+- `M::AbstractAlgebra.Generic.FreeModule{R}`: A OSCAR free module over ``\mathbb{Z}`` or ``\mathbb{Q}``, it denotes the character group. `R` is either `ZZRingElem` or `QQFieldElem`.
+- `w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}}`: The axial function 
+- `check::Bool=true`: Check if the data insered are consistent with those of a GKM graph.
+- `checkLabels::Bool=true`: Check if labels are consistent.
+
+# Example
+Let us construct the GKM graph of the projective line. First of all, we create a graph with two vertices, and one edge.
+```jldoctest first_GKM_graph
+julia> g = Graph{Undirected}(2)
+Undirected graph with 2 nodes and no edges
+
+julia> add_edge!(g, 1, 2);
+```
+Let us define our array of labels.
+
+```jldoctest first_GKM_graph
+julia> labels = ["a", "b"];
+```
+Now, we create the character group. We take a free module of rank 2 over the integers.
+
+```jldoctest first_GKM_graph
+julia> M = free_module(ZZ, 2)
+Free module of rank 2 over ZZ
+```
+We create the axial function. It is a dictionary from the set of edges to the character group. This time we have only one edge.
+
+```jldoctest first_GKM_graph
+julia> e = first(edges(g));
+
+julia> w = Dict(e => gens(M)[1] - gens(M)[2])
+Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}} with 1 entry:
+  Edge(2, 1) => (1, -1)
+```
+Finally, we create the GKM graph.
+```jldoctest first_GKM_graph
+julia> gkm_graph(g, labels, M, w)
+GKM graph with 2 nodes, valency 1 and axial function:
+b -> a => (1, -1)
+```
+
+!!! warning
+    1. Do not change the number of verices after this.
+    2. After you have added all edges using `GKMadd_edge!`, use `GKM_initialize!` to calculate the GKM connection (if it is unique) and the curve classes.
+
 """
 function gkm_graph(
   g::Graph,
@@ -38,6 +82,131 @@ function gkm_graph(
   return gkm
 end
 
+
+@doc raw"""
+    empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String}) -> AbstractGKM_graph
+
+Useful for constructing GKM graph. It return the GKM graph with `n` fixed points, no edges, valency `val` and vertices labelled by `labels`.
+
+```jldoctest empty_GKM_graph
+julia> G = empty_gkm_graph(2, 2, ["a", "b"])
+GKM graph with 2 nodes, valency 0 and axial function:
+
+```
+"""
+function empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String})
+
+  return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, val), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
+end
+
+@doc raw"""
+    GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+
+Add an edge to `G` from the vertex labelled `s` to the vertex labelled `d`, the axial function takes value `weight` in that edge.
+
+Let us construct the same example of `gkm_graph`, that is the GKM graph of the projective space. 
+
+```jldoctest empty_GKM_graph
+julia> G = empty_gkm_graph(2, 2, ["a", "b"])
+GKM graph with 2 nodes, valency 0 and axial function:
+
+julia> wei = gens(G.M)[1] - gens(G.M)[2]
+(1, -1)
+
+julia> GKMadd_edge!(G, "b", "a", wei);
+
+julia> G
+GKM graph with 2 nodes, valency 1 and axial function:
+b -> a => (1, -1)
+
+```
+
+!!! warning    
+    Add all edges immediately after creation. Any curve class or cohomology functionality should only be used after all edges have been added. The same holds for `GKM_initialize`.
+"""
+function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+
+  @req (s in G.labels) "Source label not found"
+  @req (d in G.labels) "Destination label not found"
+
+  sd = indexin([s, d], G.labels)
+
+  GKMadd_edge!(G, sd[1], sd[2], weight)
+
+end
+
+@doc raw"""
+    GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+
+Same as before, but using the number of the vertex instead of the label.
+"""
+function GKMadd_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+  
+  @req (s in 1:n_vertices(G.g)) "Source $s not found"
+  @req (d in 1:n_vertices(G.g)) "Destination $d not found"
+  @req parent(weight) === G.M "The group of characters is not correct"
+
+  Oscar.add_edge!(G.g, s, d)
+  G.w[Edge(s, d)] = weight
+  G.w[Edge(d, s)] = -weight
+
+end
+
+@doc raw"""
+    valency(G::AbstractGKM_graph) -> Int64
+
+It returns the valency of `G`.
+"""
+function valency(G::AbstractGKM_graph)
+  return length(all_neighbors(G.g, 1))
+end
+
+
+@doc raw"""
+    rank_torus(G::AbstractGKM_graph) -> Int64
+
+It returns the rank of the torus acting on `G`. That is, the rank of the character group.
+"""
+function rank_torus(G::AbstractGKM_graph)
+  return rank(G.M)
+end
+
+@doc raw"""
+    is2_indep(G::AbstractGKM_graph) -> Bool
+
+It returns `true` or `false` depending if `G` is 2-independent.
+"""
+function is2_indep(G::AbstractGKM_graph)
+  return _indep(G, 2)
+end
+
+@doc raw"""
+    is3_indep(G::AbstractGKM_graph) -> Bool
+
+It returns `true` or `false` depending if `G` is 3-independent.
+"""
+function is3_indep(G::AbstractGKM_graph)
+  return _indep(G, 3)
+end
+
+function _indep(G::AbstractGKM_graph, k::Int64)
+  
+  @req valency(G) >= k "valency is too low"
+
+  for v in 1:n_vertices(G.g)
+    for tup in Iterators.product([all_neighbors(G.g, v) for _ in 1:k]...)
+      any(i-> tup[i-1] >= tup[i], 2:k) && continue
+      
+      if rank(matrix([G.w[Edge(v, tup[i])] for i in 1:k])) < k
+        return false
+      end
+
+    end
+  end
+  
+  return true
+end
+
 """
 Call this as soon as all edges have been added to the GKM graph to calculate the GKM connection
 (if unique) and the curve classes of the gkm graph.
@@ -56,9 +225,6 @@ function GKM_initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveCla
   end
 end
 
-function valency(G::AbstractGKM_graph)
-  return length(all_neighbors(G.g, 1))
-end
 
 function _common_weight_denominator(G::AbstractGKM_graph)::ZZRingElem
   if G.weightType <: ZZRingElem
@@ -96,10 +262,6 @@ function Base.show(io::IO, ::MIME"text/plain", G::AbstractGKM_graph)
   end
 end
 
-function rank_torus(G::AbstractGKM_graph)
-  return rank(G.M)
-end
-
 
 function GKMproj_space(dim::Int; label::String = "x_")
   g = complete_graph(dim+1)
@@ -112,66 +274,13 @@ function GKMproj_space(dim::Int; label::String = "x_")
   return gkm_graph(g, labels, M, w)
 end
 
-function is2_indep(G::AbstractGKM_graph)
-  return _indep(G, 2)
-end
 
-function is3_indep(G::AbstractGKM_graph)
-  return _indep(G, 3)
-end
 
-function _indep(G::AbstractGKM_graph, k::Int64)
-  
-  @req valency(G) >= k "valency is too low"
 
-  for v in 1:n_vertices(G.g)
-    for tup in Iterators.product([all_neighbors(G.g, v) for _ in 1:k]...)
-      any(i-> tup[i-1] >= tup[i], 2:k) && continue
-      
-      if rank(matrix([G.w[Edge(v, tup[i])] for i in 1:k])) < k
-        return false
-      end
 
-    end
-  end
-  
-  return true
-end
 
-"""
-Warning: Add all edges immediately after creation.
-Any curve class or cohomology functionality should only be used after all edges have been added.
-The same holds for GKM_initialize().
-"""
-function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
-
-  @req (s in G.labels) "Source label not found"
-  @req (d in G.labels) "Destination label not found"
-
-  sd = indexin([s, d], G.labels)
-
-  GKMadd_edge!(G, sd[1], sd[2], weight)
-
-end
-
-function GKMadd_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
-  
-  @req (s in 1:n_vertices(G.g)) "Source $s not found"
-  @req (d in 1:n_vertices(G.g)) "Destination $d not found"
-  @req parent(weight) === G.M "The group of characters is not correct"
-
-  Oscar.add_edge!(G.g, s, d)
-  G.w[Edge(s, d)] = weight
-  G.w[Edge(d, s)] = -weight
-
-end
-
-function empty_gkm_graph(n::Int, val::Int, labels::Vector{String})
-
-  return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, val), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
-end
-
-"""
+@doc raw"""
+    GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true) -> Bool
 Return true if the GKM graph is valid. This means:
   1. Every vertex has the same degree
   2. The weights are defined for every edge and every reverse of every edge

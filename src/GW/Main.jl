@@ -142,6 +142,11 @@
 #   return res
 # end
 
+@doc raw"""
+    integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true) -> GW invariants
+
+Integrate the GW invariant.
+"""
 function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true)
   return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar)[1]
 end

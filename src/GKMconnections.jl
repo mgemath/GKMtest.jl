@@ -1,7 +1,9 @@
-"""
-Return the GKM_connection of the given GKM graph if it is unique or has been set manually.
+@doc raw"""
+    get_GKM_connection(gkm::AbstractGKM_graph) -> Union{Nothing, GKM_connection}
+
+It returns the GKM_connection of the given GKM graph if it is unique or has been set manually.
 If it is unique and hasn't been calculated, it is saved in the gkm object.
-If the connection is not unique and hasn't been defined manually, return nothing.
+If the connection is not unique and hasn't been defined manually, it returns nothing.
 """
 function get_GKM_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
   if isnothing(gkm.connection)
@@ -12,6 +14,12 @@ function get_GKM_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connecti
   return gkm.connection
 end
 
+
+@doc raw"""
+    set_GKM_connection!(gkm::AbstractGKM_graph)
+
+It finds, if possible, a GKM connection of G, and save it in the gkm object.
+"""
 function set_GKM_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
   @req gkm == con.gkm "Connection belongs to the wrong GKM graph!"
   @req GKM_isValidConnection(con) "GKM connection is invalid!"
@@ -19,13 +27,13 @@ function set_GKM_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
   gkm.connection = con
 end
 
-"""
-Return the freshly calculated GKM_connection of the given GKM graph if it is unique.
+################
+# Return the freshly calculated GKM_connection of the given GKM graph if it is unique.
 
-Warning:
-  1. This does not save the newly calculated GKM connection in the gkm object.
-  2. If the connection is unique or was set before, one should instead use get_GKM_connection().
-"""
+# Warning:
+#   1. This does not save the newly calculated GKM connection in the gkm object.
+#   2. If the connection is unique or was set before, one should instead use get_GKM_connection().
+#################
 function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   
   if valency(gkm) >= 3
@@ -159,8 +167,10 @@ function connection_map_from_a(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}
   return con
 end
 
-"""
-Return true if the given GKM connection is valid. This holds if and only if all of the following hold:
+@doc raw"""
+    GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true) -> Bool
+
+It returns true if the given GKM connection is valid. This holds if and only if all of the following hold:
   1. con and a are set for all (Edge(v,w), Edge(v,u)) where vw and vu are connected in the graph
   2. con maps every (e,e) to reverse(e)
   3. a maps every (e,e) to 2
