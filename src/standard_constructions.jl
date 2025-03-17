@@ -130,22 +130,25 @@ function grassmannian(::Type{GKM_graph}, k::Int, n::Int)
   return flag_variety(GKM_graph, [k, n])
 end
 
-# @doc raw"""
-#     projective_space(::Type{gkm_graph}, d::Int)
+@doc raw"""
+    projective_space(::Type{gkm_graph}, d::Int)
 
-# Construct the projective space of dimension `d`.
+Construct the projective space of dimension `d`.
 
-# # Examples
-# ```jldoctest
-# julia> projective_space(NormalToricVariety, 2)
-# Normal toric variety
-# ```
-# """
-# function projective_space(::Type{GKM_graph}, d::Int)
-#   @req d >= 0 "Dimension must be non-negative"
+# Examples
+```jldoctest
+julia> projective_space(GKM_graph, 2)
+GKM graph with 3 nodes, valency 2 and axial function:
+2 -> 1 => (-1, 1, 0)
+3 -> 1 => (-1, 0, 1)
+3 -> 2 => (0, -1, 1)
+```
+"""
+function Oscar.projective_space(::Type{GKM_graph}, d::Int)
+  @req d >= 0 "Dimension must be non-negative"
   
-#   return grassmannian(GKM_graph, 1, d+1)
-# end
+  return grassmannian(GKM_graph, 1, d)
+end
 
 
 @doc raw"""
