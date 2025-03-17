@@ -104,6 +104,8 @@ mutable struct GKM_H2 <: AbstractGKM_H2
   dualConeRaySum::RayVector{QQFieldElem} # sum of rays of the dual cone of the edgeCurveClasses, normalized so that the minimum of pairings with edge curve classes is 1.
   dualCone::Cone{QQFieldElem} # dual cone of the cone of effective curve classes
   chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem} # Z-module homomorphism from H2 to ZZ, giving the curve class evaluated on the first chern class of the tangent bundle of the space.
+  # This is used by Seidel spaces to project curve classes to the underlying P1:
+  sectionCount::Union{Nothing, AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}}
 
   function GKM_H2(
     gkm::AbstractGKM_graph,
@@ -113,8 +115,9 @@ mutable struct GKM_H2 <: AbstractGKM_H2
     quotientMap::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem},
     dualConeRaySum::RayVector{QQFieldElem},
     dualCone::Cone{QQFieldElem},
-    chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}
+    chernNumber::AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem},
+    sectionCount::Union{Nothing, AbstractAlgebra.Generic.ModuleHomomorphism{ZZRingElem}}
   )
-    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber)
+    return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber, sectionCount)
   end
 end

@@ -1,0 +1,11 @@
+G = GKMproj_space(2)
+w = gens(G.M)
+cMax = 3
+println("S1")
+S1 = Seidel_element(G, w[1], cMax)
+println("S2")
+S2 = Seidel_element(G, w[2], cMax)
+println("S3")
+S3 = Seidel_element(G, w[1]+w[2], cMax)
+println("S4")
+S4 = Seidel_element(G, 2*w[1], cMax)

@@ -48,3 +48,6 @@ export all_classes
 export isEffectiveCurveClass
 export chernNumber
 export isStrictlyNEF
+
+# Seidel_space.jl
+export Seidel_space

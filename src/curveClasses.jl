@@ -59,7 +59,7 @@ function _GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
 
   dualConeRaySum, C, H2ToCN = _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)
 
-  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, C, H2ToCN)
+  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, C, H2ToCN, nothing)
 end
 
 function _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)
@@ -243,7 +243,11 @@ function chernNumber(e::Edge, G::AbstractGKM_graph)::ZZRingElem
   @req flag "1st Chern class not a GKM class!"
   @req is_constant(quotient) "1st Chern number has too high degree"
 
-  return ZZ(coeff(quotient, 1))
+  if length(coefficients(quotient)) > 0
+    return ZZ(coeff(quotient, 1))
+  else
+    return ZZ(0)
+  end
 end
 
 """
