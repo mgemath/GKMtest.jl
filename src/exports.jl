@@ -51,3 +51,11 @@ export isStrictlyNEF
 
 # Seidel_space.jl
 export Seidel_space
+
+# equivariant_bundles.jl
+export vector_bundle
+export line_bundle
+export vector_bundle_rank
+export get_vector_bundle_connection
+export direct_sum
+export projective_bundle

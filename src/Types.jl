@@ -121,3 +121,26 @@ mutable struct GKM_H2 <: AbstractGKM_H2
     return new(gkm, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, dualCone, chernNumber, sectionCount)
   end
 end
+
+mutable struct GKM_vector_bundle{R <: GKM_weight_type}
+  gkm::AbstractGKM_graph{R}
+  # Character group of the torus acting on the vector bundle.
+  # This could be larger than the torus acting on the gkm space, for example by scaling fibres.
+  M::AbstractAlgebra.Generic.FreeModule{R}
+  # The homomorphism injecting gkm.M into M.
+  GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}
+  # weights[i, j] is the jth weight at the ith vertex.
+  w::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}}
+  # connection along edges of GKM.g for the fibre sub-line-bundles.
+  con::Union{Nothing, Dict{Tuple{Edge, Int64}, Int64}}
+
+  function GKM_vector_bundle(
+    gkm::AbstractGKM_graph,
+    M::AbstractAlgebra.Generic.FreeModule{R},
+    GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R},
+    w::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}},
+    con::Union{Nothing, Dict{Tuple{Edge, Int64}, Int64}}
+  ) where R <: GKM_weight_type
+    return new{R}(gkm, M, GMtoM, w, con)
+  end
+end
