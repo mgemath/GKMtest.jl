@@ -1,10 +1,11 @@
 # Warning: This is not actually the inverse of the Euler class, as the h classes will be multiplied later.
 # Note: this throws an error if the decorated tree is a single vertex with less than 3 vertices.
 # But GW_decorated_tree() checks this during construction, so no check is done here.
-function Euler_inv(dt::GW_decorated_tree)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+function Euler_inv(dt::GW_decorated_tree; check_degree::Bool=false)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
   C = dt.gkm.equivariantCohomology.coeffRing
   res = C(1)//C(1)
+  oldDeg = 0
 
   for v in 1:n_vertices(dt.tree)
 
@@ -32,6 +33,19 @@ function Euler_inv(dt::GW_decorated_tree)::AbstractAlgebra.Generic.FracFieldElem
     else 
       res = res // (tmpSum^(-e))
     end
+
+    if check_degree
+      r = valency(dt.gkm)
+      Sv = count(i -> i==v, dt.marks)
+      corDeg = r*(valv - 1) + 3 - Sv - 2*valv
+      if _get_degree(res) - oldDeg != corDeg
+        println("Wrong Euler class degree:")
+        println("dt: $dt")
+        println("r: $r, v=val(v) = $valv")
+        @req false "Euler class has wrong degree!"
+      end
+      oldDeg += corDeg
+    end
   end
 
   return res
@@ -40,7 +54,7 @@ end
 """
 Calculate h(epsilon, d) as in [Liu--Sheshmani, Lemma 4.5, p. 16].
 """
-function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check::Bool=true)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check::Bool=true, check_degrees::Bool=false)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
   gkm = con.gkm
   C = R.coeffRing
@@ -63,7 +77,28 @@ function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check:
     ei = Edge(src(e), v)
     wei = weightClass(ei, R)
     ai = con.a[(e, ei)]
-    res = res * _b(1//d * we, wei, d*ai, C)
+    bFactor = _b(1//d * we, wei, d*ai, C)
+    if check_degrees
+      corDeg = -d*ai - 1
+      actDeg = _get_degree(bFactor)
+      if actDeg != corDeg
+        println("b factor has wrong deg for d=$d, ai=$ai, we=$we, wei=$wei.")
+        println("Should be $actDeg but is $corDeg")
+        @req false "wrong b factor"
+      end
+    end
+    res = res * bFactor
+  end
+
+  if check_degrees
+    r = valency(R.gkm)
+    ce = chernNumber(e, R.gkm)
+    corDeg = -(r-1) - d * ce
+    if corDeg != _get_degree(res)
+      println("Wrong h class for e=$e, d=$d")
+      println("Deg is $(_get_degree(res)) but should be $corDeg")
+      @req false "wrong h class"
+    end
   end
 
   return res
@@ -80,7 +115,7 @@ function _b(u::QQMPolyRingElem, w::QQMPolyRingElem, a::ZZRingElem, C::QQMPolyRin
     end
   else 
     for j in 1:(-a-1)
-      res = res // (w + j*u)
+      res = res * (w + j*u)
     end
   end
   return res

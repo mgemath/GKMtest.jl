@@ -147,11 +147,11 @@
 
 Integrate the GW invariant.
 """
-function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true)
-  return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar)[1]
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true, check_degrees::Bool = false)
+  return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar, check_degrees=check_degrees)[1]
 end
 
-function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true)
+function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true, check_degrees::Bool = false)
 
   inputLength = length(P_input)
   inputSize = size(P_input)
@@ -235,17 +235,18 @@ end
             all(c -> c==0, Class) && continue
 
             if euler == zero(R.coeffRing)
-              euler = Euler_inv(dt)//(PROD * aut)
+              euler = Euler_inv(dt; check_degree=check_degrees)//(PROD * aut)
               for e in edges(tree)
                 triple = (edgeMult[e], min(col[src(e)], col[dst(e)]), max(col[src(e)], col[dst(e)]))
                 if !haskey(h_dict, triple)
-                    h_dict[triple] = _h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R, check=false)
+                    h_dict[triple] = _h(Edge(col[src(e)], col[dst(e)]), triple[1], con, R; check=false, check_degrees=check_degrees)
                 end
                 euler *= h_dict[triple]
               end
             end
             # println("ls = $(ls), col = $(col), aut = $(aut), PRODW = $(PROD), m=$(m), E = $(euler)")
-            # println(euler)
+            #@req _is_homogeneous(euler) "Euler not homogeneous"
+            #@req _is_homogeneous(Class[1]) "Class not homogeneous"
             res += Class.*euler
           end
         end
@@ -259,4 +260,41 @@ end
     end
   end
   return res
+end
+
+# For debugging purposes:
+function _get_degree(f)
+  if f == 0
+    return nothing
+  end
+  f = f//1
+  return _get_deg_poly(numerator(f)) - _get_deg_poly(denominator(f))
+end
+
+function _get_deg_poly(f)
+  for e in exponents(f)
+    return sum(e)
+  end
+end
+
+function _is_homogeneous(f)
+  f = f//1
+  return _is_homogeneous_poly(numerator(f)) && _is_homogeneous_poly(denominator(f))
+end
+
+function _is_homogeneous_poly(f)
+  if f == 0
+    return true
+  end
+  s::Union{Nothing, Int64} = nothing
+  for e in exponents(f)
+    if isnothing(s)
+      s = sum(e)
+    else
+      if s != sum(e)
+        return false
+      end
+    end
+  end
+  return true
 end

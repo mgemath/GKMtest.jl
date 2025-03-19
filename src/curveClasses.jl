@@ -415,3 +415,11 @@ function _max_n_edges(H2::GKM_H2, beta::CurveClass_type)
   s = sum([H2.dualConeRaySum[i] * beta[i] for i in 1:rkH2])
   return Int64(ZZ(floor(s)))
 end
+
+function print_curve_classes(G::AbstractGKM_graph)
+  H2 = GKM_second_homology(G)
+  l = G.labels
+  for e in edges(G.g)
+    println("$(l[src(e)]) -> $(l[dst(e)]):\t$(H2.quotientMap(gens(H2.edgeLattice)[H2.edgeToGenIndex[e]])),\tChern number: $(chernNumber(e, G))")
+  end
+end
