@@ -67,7 +67,7 @@ function gkm_graph(
     @req length(unique(labels)) == length(labels) "Labels must be unique"
   end
   if checkLabels
-    # reserve characters <,[,] for vertex labels of blowups
+    # reserve characters <,[,] for vertex labels of blowups and Seidel space
     @req all(v -> !contains(labels[v], ">") && !contains(labels[v], "[") && !contains(labels[v], "]"), 1:n_vertices(g)) "Characters >,[,] are forbidden for vertex labels"
   end
   for e in edges(g)

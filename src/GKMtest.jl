@@ -19,9 +19,11 @@ include("GKMsubgraphs.jl")
 include("product.jl")
 include("blowup.jl")
 include("curveClasses.jl")
+include("Seidel_space.jl")
 
 include("GP.jl")
 include("different_w_types.jl")
+include("equivariant_bundles.jl")
 include("GW/includes.jl")
 
 # files in the definitive format
