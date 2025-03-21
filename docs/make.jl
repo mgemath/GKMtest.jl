@@ -27,12 +27,14 @@ makedocs(
     modules = [GKMtest],
     warnonly = true,
     pages = pages,
-    plugins=[bib]
+    plugins=[bib],
+    doctest = false,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
 deploydocs(
-    repo = "github.com/mgemath/GKMtest.jl.git"
+    repo = "github.com/mgemath/GKMtest.jl.git",
+    versions = nothing,
 )
