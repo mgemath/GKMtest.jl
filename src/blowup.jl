@@ -7,7 +7,7 @@ from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded
     The GKM graph needs to have the connection field set. The returned blowup graph and subgraph
     will also have the connection field set, but not the curveClasses field. 
     (It will be calculated automatically on demand via `GKM_second_homology()`). 
-    Mathematically, this follows [Guillemin--Zara, section 2.2.1]
+    Mathematically, this follows [GZ01; section 2.2.1](@cite).
 
 !!! warning
     This will build an Undirected graph. Behaviour with directed graphs as input is not tested.

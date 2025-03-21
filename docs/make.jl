@@ -1,5 +1,11 @@
 using Documenter
 using GKMtest
+using DocumenterCitations
+
+bib = CitationBibliography(
+    joinpath(@__DIR__, "src", "gkm_references.bib");
+    style=:alpha
+)
 
 DocMeta.setdocmeta!(GKMtest, :DocTestSetup, :(using Oscar, GKMtest); recursive=true)
 
@@ -12,14 +18,16 @@ pages = [
                             "Standard Constructions" => "man/GKM/STDconstructions.md",
                             "Operators" => "man/GKM/Operators.md", 
                             "Connections" => "man/GKM/Connections.md"],
-        "GW invariants" => "man/GW.md"]
+        "GW invariants" => "man/GW.md",
+        "References" => "references.md"]
 
 makedocs(
     sitename = "GKMtest",
     format = Documenter.HTML(),
     modules = [GKMtest],
     warnonly = true,
-    pages = pages
+    pages = pages,
+    plugins=[bib]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
