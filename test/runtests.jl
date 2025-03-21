@@ -17,7 +17,7 @@ G2 = gkm_graph(g, labs, M, de2)
 GKMproj_space(4)
 GKMproj_space(4, label = "a")
 
-@test is3_indep(GKMproj_space(4))
+@req is3_indep(GKMproj_space(4)) "Fail1"
 
 #Figure 1.(b)
 labs2 = String[]
@@ -49,20 +49,18 @@ GKMadd_edge!(G2, "213", "213", x1-x3);
 
 is3_indep(G2)
 
-@test true
-
 F=flag_gkm_graph([1,1,1]) # this is the same as the variety G2, or Figure 1.(b). It is the variety of complete flags in C^3
 
 flag_gkm_graph([1, 3]) # this is the projective space of dimension 3-1
 
 FlagVar34 = flag_gkm_graph([3, 4]) # this is the Grassmannian G(k,n) where k=3 and n = 3+4
 println("(Combinatorial) Betti numbers of flag variety with quotient dimensions (3, 4): $(bettiNumbers(FlagVar34))")
-@test GKM_isValid(FlagVar34)
+@req GKM_isValid(FlagVar34) "Fail2"
 
 h=hirzebruch_surface(NormalToricVariety, 6);
 
 Gh = gkm_graph(h) # from a toric variety to a GKM graph
-@test bettiNumbers(Gh) == [1, 2, 1]
-@test GKM_isValid(Gh)
+@req bettiNumbers(Gh) == [1, 2, 1] "Fail3"
+@req GKM_isValid(Gh) "Fail3"
 
 include("GKMsubgraph_test.jl")
