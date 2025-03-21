@@ -262,9 +262,9 @@ function _addToConnection!(blowupCon::Dict{Tuple{Edge, Edge}, Edge}, con::GKM_co
   end
 end
 
-"""
-For each vertex of the blowup graph, this returns a dictionary from neighbors in the original graph to neighbors in the new graph.
-"""
+
+# For each vertex of the blowup graph, this returns a dictionary from neighbors in the original graph to neighbors in the new graph.
+
 function _flagBijections(gkmSub::AbstractGKM_subgraph, con::GKM_connection, normalNeighbors::Vector{Vector{Int64}}, c::Int64, externalVertices::Vector{Int64}, nvBlowup::Int64)
 
   res = Array{Dict{Int64, Int64}}(undef, nvBlowup)
@@ -316,9 +316,9 @@ function _extVindex(v::Int64, nvBlowup::Int64, externalVertices::Vector{Int64})
   return nvBlowup - length(externalVertices) + i
 end
 
-"""
-For an external flag at src(e), return the index of the source of that flag in the bowup.
-"""
+# 
+# For an external flag at src(e), return the index of the source of that flag in the bowup.
+# 
 function _extFlagToIndex(gkmSub::AbstractGKM_subgraph, e::Edge, normalNeighbors::Vector{Vector{Int64}}, externalVertices::Vector{Int64}, nvBlowup::Int64, c::Int64)::Int64
   s = src(e)
   d = dst(e)

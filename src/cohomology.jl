@@ -18,8 +18,8 @@ function _equivariant_cohomology_ring(G::AbstractGKM_graph)::GKM_cohomology_ring
   return GKM_cohomology_ring(G, coeffRing, coeffRingLocalized, cohomRing, cohomRingLocalized, edgeWeightClasses, pointEulerClasses)
 end
 
-"""
-    isGKMclass(c::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph)::Bool
+@doc raw"""
+    isGKMclass(c::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph) -> Bool
 
 Return true if the given class is an actual GKM cohomology class.
 This holds if and only if the difference between localizations at fixed points connected through
@@ -29,8 +29,8 @@ function isGKMclass(c::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph)::Bool
   return isGKMclass(c, G.equivariantCohomology)
 end
 
-"""
-    isGKMclass(c::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::Bool
+@doc raw"""
+    isGKMclass(c::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring) -> Bool
 
 Return true if the given class is an actual GKM cohomology class.
 This holds if and only if the difference between localizations at fixed points connected through
@@ -69,8 +69,8 @@ function one(R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   return scalar(1,R)
 end
 
-"""
-    pointClass(vertexLabel::String, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
+@doc raw"""
+    pointClass(vertexLabel::String, G::AbstractGKM_graph) -> FreeModElem{QQMPolyRingElem}
 
 Return the equivariant Poincare dual of the fixed point with given label
 """
@@ -78,8 +78,8 @@ function pointClass(vertexLabel::String, G::AbstractGKM_graph)::FreeModElem{QQMP
   return pointClass(vertexLabel, G.equivariantCohomology)
 end
 
-"""
-    pointClass(vertexLabel::String, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+@doc raw"""
+    pointClass(vertexLabel::String, R::GKM_cohomology_ring) -> FreeModElem{QQMPolyRingElem}
 
 Return the equivariant Poincare dual of the fixed point with given label
 """
@@ -88,8 +88,8 @@ function pointClass(vertexLabel::String, R::GKM_cohomology_ring)::FreeModElem{QQ
   return pointClass(indexin([vertexLabel], R.gkm.labels)[1], R)
 end
 
-"""
-    pointClass(vertex::Int, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
+@doc raw"""
+    pointClass(vertex::Int, G::AbstractGKM_graph) -> FreeModElem{QQMPolyRingElem}
 
 Return the equivariant Poincare dual of the given fixed point
 """
@@ -97,8 +97,8 @@ function pointClass(vertex::Int, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingE
   return pointClass(vertex, G.equivariantCohomology)
 end 
 
-"""
-    pointClass(vertex::Int, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+@doc raw"""
+    pointClass(vertex::Int, R::GKM_cohomology_ring) -> FreeModElem{QQMPolyRingElem}
 
 Return the equivariant Poincare dual of the given fixed point
 """
@@ -106,8 +106,8 @@ function pointClass(vertex::Int, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRin
   return eulerClass(vertex, R) * gens(R.cohomRing)[vertex]
 end 
 
-"""
-    PDClass(gkmSub::AbstractGKM_subgraph)::FreeModElem{QQMPolyRingElem}
+@doc raw"""
+    PDClass(gkmSub::AbstractGKM_subgraph) -> FreeModElem{QQMPolyRingElem}
 
 Return the equivariant Poincare dual cohomology class of the GKM subgraph.
 """
@@ -131,8 +131,8 @@ function PDClass(gkmSub::AbstractGKM_subgraph)::FreeModElem{QQMPolyRingElem}
   return res
 end
 
-"""
-    weightClass(e::Edge, G::AbstractGKM_graph)::QQMPolyRingElem
+@doc raw"""
+    weightClass(e::Edge, G::AbstractGKM_graph) -> QQMPolyRingElem
 
 Return the weight of the edge e as an element of the coefficient ring of the equivariant cohomology theory.
 """
@@ -140,8 +140,8 @@ function weightClass(e::Edge, G::AbstractGKM_graph)::QQMPolyRingElem
   return weightClass(e, G.equivariantCohomology)
 end
 
-"""
-    weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
+@doc raw"""
+    weightClass(e::Edge, R::GKM_cohomology_ring) -> QQMPolyRingElem
 
 Return the weight of the edge e as an element of the coefficient ring of the equivariant cohomology theory.
 """
@@ -172,8 +172,8 @@ function _weightClass(e::Edge, R::GKM_cohomology_ring)::QQMPolyRingElem
   return res
 end
 
-"""
-    eulerClass(vertex::Int, G::AbstractGKM_graph)::QQMPolyRingElem
+@doc raw"""
+    eulerClass(vertex::Int, G::AbstractGKM_graph) -> QQMPolyRingElem
 
 Return the euler class of the normal bundle of the fixed point v.
 """
@@ -181,8 +181,8 @@ function eulerClass(vertex::Int, G::AbstractGKM_graph)::QQMPolyRingElem
   return eulerClass(vertex, G.equivariantCohomology)
 end
 
-"""
-    eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem
+@doc raw"""
+    eulerClass(vertex::Int, R::GKM_cohomology_ring) -> QQMPolyRingElem
 
 Return the euler class of the normal bundle of the fixed point v.
 """
@@ -203,8 +203,8 @@ function _eulerClass(vertex::Int, R::GKM_cohomology_ring)::QQMPolyRingElem
   return res
 end
 
-"""
-    eulerClass(vertexLabel::String, G::AbstractGKM_graph)::QQMPolyRingElem
+@doc raw"""
+    eulerClass(vertexLabel::String, G::AbstractGKM_graph) -> QQMPolyRingElem
 
 Return the euler class of the normal bundle of the fixed point with the given label.
 """
@@ -212,8 +212,8 @@ function eulerClass(vertexLabel::String, G::AbstractGKM_graph)::QQMPolyRingElem
   return eulerClass(vertexLabel, G.equivariantCohomology)
 end
 
-"""
-    eulerClass(vertexLabel::String, R::GKM_cohomology_ring)::QQMPolyRingElem
+@doc raw"""
+    eulerClass(vertexLabel::String, R::GKM_cohomology_ring) -> QQMPolyRingElem
 
 Return the euler class of the normal bundle of the fixed point with the given label.
 """
@@ -222,8 +222,8 @@ function eulerClass(vertexLabel::String, R::GKM_cohomology_ring)::QQMPolyRingEle
   return eulerClass(indexin([vertexLabel], R.gkm.labels)[1], R)
 end
 
-"""
-    integrateGKMclass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph; check::Bool=true)::QQMPolyRingElem
+@doc raw"""
+    integrateGKMClass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph; check::Bool=true) -> QQMPolyRingElem
 
 Integrate the GKM class, yielding an element of the coefficient ring. This only works if isGKMclass(class,R) == true.
 """
@@ -231,8 +231,8 @@ function integrateGKMClass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_g
   return integrateGKMClass(class, G; check)
 end
 
-"""
-    integrateGKMclass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring; check::Bool=true)::QQMPolyRingElem
+@doc raw"""
+    integrateGKMClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring; check::Bool=true) -> QQMPolyRingElem
 
 Integrate the GKM class, yielding an element of the coefficient ring. This only works if isGKMclass(class,R) == true.
 """
@@ -249,14 +249,18 @@ function integrateGKMClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomolog
 end
 
 
-"""
+@doc raw"""
+    firstChernClass(G::AbstractGKM_graph) -> FreeModElem{QQMPolyRingElem}
+
 Return the equivariant first chern class of the GKM space.
 """
 function firstChernClass(G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
   return firstChernClass(G.equivariantCohomology)
 end
 
-"""
+@doc raw"""
+    firstChernClass(R::GKM_cohomology_ring) -> FreeModElem{QQMPolyRingElem}
+
 Return the equivariant first chern class of the GKM space of which R is the cohomology ring.
 """
 function firstChernClass(R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
@@ -271,7 +275,9 @@ function firstChernClass(R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   return res
 end
 
-"""
+@doc raw"""
+    integrateOverEdge(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph, e::Edge) -> AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+
 Integrate the cohomology class over the curve represented by the GKM graph edge.
 """
 function integrateOverEdge(
@@ -282,7 +288,9 @@ function integrateOverEdge(
   return integrateOverEdge(class, G.equivariantCohomology, e)
 end
 
-"""
+@doc raw"""
+    integrateOverEdge(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring, e::Edge) -> AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+
 Integrate the cohomology class over the curve represented by the GKM graph edge.
 """
 function integrateOverEdge(
@@ -293,8 +301,8 @@ function integrateOverEdge(
   return (class[src(e)] - class[dst(e)]) // weightClass(e, R)
 end
 
-"""
-    integrateClass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+@doc raw"""
+    integrateClass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph) -> AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
 Integrate the cohomology class, yielding an element of the fraction field of the equivariant coefficient ring.
 If isGKMclass(class, R) == true, this fraction will represent a ring element.
@@ -304,8 +312,8 @@ function integrateClass(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_grap
   return integrateClass(class, G.equivariantCohomology)
 end
 
-"""
-    integrateClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+@doc raw"""
+    integrateClass(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring) -> AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
 Integrate the cohomology class, yielding an element of the fraction field of the equivariant coefficient ring.
 If isGKMclass(class, R) == true, this fraction will represent a ring element.

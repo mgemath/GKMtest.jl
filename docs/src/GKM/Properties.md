@@ -1,6 +1,6 @@
 These are the main properties of GKM graphs.
 ```@docs
-bettiNumbers
+betti_numbers
 valency
 rank_torus
 is2_indep

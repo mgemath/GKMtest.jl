@@ -12,13 +12,14 @@ DocMeta.setdocmeta!(GKMtest, :DocTestSetup, :(using Oscar, GKMtest); recursive=t
 
 pages = [
         "Home" => "index.md",
-        "GKM varieties" => ["GKM" => "man/GKM/GKM.md", 
-                            "Constructors" => "man/GKM/Constructors.md", 
-                            "Properties" => "man/GKM/Properties.md", 
-                            "Standard Constructions" => "man/GKM/STDconstructions.md",
-                            "Operators" => "man/GKM/Operators.md", 
-                            "Connections" => "man/GKM/Connections.md"],
-        "GW invariants" => "man/GW.md",
+        "GKM varieties" => ["GKM" => "GKM/GKM.md", 
+                            "Constructors" => "GKM/Constructors.md", 
+                            "Properties" => "GKM/Properties.md", 
+                            "Standard Constructions" => "GKM/STDconstructions.md",
+                            "Operators" => "GKM/Operators.md", 
+                            "Connections" => "GKM/Connections.md",
+                            "Cohomology" => "GKM/Cohomology.md"],
+        "GW invariants" => "GW/GW.md",
         "References" => "references.md"]
 
 makedocs(
@@ -35,6 +36,5 @@ makedocs(
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
 deploydocs(
-    repo = "github.com/mgemath/GKMtest.jl.git",
-    versions = nothing,
+    repo = "github.com/mgemath/GKMtest.jl.git"
 )

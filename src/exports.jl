@@ -26,11 +26,13 @@ export GKM_isValidConnection
 # cohomology.jl
 export isGKMclass
 export weightClass
-export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, integrateGKMClass, PDClass
+export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, PDClass
+export integrateGKMClass
+export integrateOverEdge
 export firstChernClass
 
 # betti.jl
-export bettiNumbers
+export betti_numbers
 
 # GKMsubgraphs.jl
 export GKMsubgraph_from_vertices
