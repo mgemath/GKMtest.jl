@@ -1,6 +1,6 @@
-using Documenter
+using Documenter, DocumenterCitations
 using GKMtest
-using DocumenterCitations
+
 
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "gkm_references.bib");
@@ -29,7 +29,7 @@ makedocs(
     warnonly = true,
     pages = pages,
     plugins=[bib],
-    doctest = false,
+    doctest = true,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

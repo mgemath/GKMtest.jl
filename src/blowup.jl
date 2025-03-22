@@ -14,7 +14,7 @@ from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded
 
 # Examples
 ```jldoctest
-julia> G = grassmannian(GKM_graph, 1, 3) # 3-dimensional projective space
+julia> G = projective_space(GKM_graph, 3) # 3-dimensional projective space
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
 3 -> 1 => (-1, 0, 1, 0)

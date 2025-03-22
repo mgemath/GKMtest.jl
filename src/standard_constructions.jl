@@ -1,5 +1,5 @@
 export flag_variety, grassmannian, gkm_graph_of_toric
-# import Oscar: projective_space
+import Oscar: projective_space
 
 @doc raw"""
     flag_variety(::Type{GKM_graph}, s::Vector{Int64}) -> AbstractGKM_graph{ZZRingElem}
@@ -109,25 +109,27 @@ Construct the Grassmann variety of `k`-planes in the complex vector space of dim
 
 # Examples
 ```jldoctest
-julia> grassmannian(GKM_graph, 1,4)
-GKM graph with 5 nodes, valency 4 and axial function:
-2 -> 1 => (-1, 1, 0, 0, 0)
-3 -> 1 => (-1, 0, 1, 0, 0)
-3 -> 2 => (0, -1, 1, 0, 0)
-4 -> 1 => (-1, 0, 0, 1, 0)
-4 -> 2 => (0, -1, 0, 1, 0)
-4 -> 3 => (0, 0, -1, 1, 0)
-5 -> 1 => (-1, 0, 0, 0, 1)
-5 -> 2 => (0, -1, 0, 0, 1)
-5 -> 3 => (0, 0, -1, 0, 1)
-5 -> 4 => (0, 0, 0, -1, 1)
+julia> grassmannian(GKM_graph, 2, 4)
+GKM graph with 6 nodes, valency 4 and axial function:
+13 -> 12 => (0, -1, 1, 0)
+14 -> 12 => (0, -1, 0, 1)
+14 -> 13 => (0, 0, -1, 1)
+23 -> 12 => (-1, 0, 1, 0)
+23 -> 13 => (-1, 1, 0, 0)
+24 -> 12 => (-1, 0, 0, 1)
+24 -> 14 => (-1, 1, 0, 0)
+24 -> 23 => (0, 0, -1, 1)
+34 -> 13 => (-1, 0, 0, 1)
+34 -> 14 => (-1, 0, 1, 0)
+34 -> 23 => (0, -1, 0, 1)
+34 -> 24 => (0, -1, 1, 0)
 
 ```
 """
 function grassmannian(::Type{GKM_graph}, k::Int, n::Int)
   @req (k >= 0 && n >= k) "Dimension must be non-negative"
   
-  return flag_variety(GKM_graph, [k, n])
+  return flag_variety(GKM_graph, [k, n-k])
 end
 
 @doc raw"""
@@ -144,10 +146,10 @@ GKM graph with 3 nodes, valency 2 and axial function:
 3 -> 2 => (0, -1, 1)
 ```
 """
-function Oscar.projective_space(::Type{GKM_graph}, d::Int)
+function projective_space(::Type{GKM_graph}, d::Int)
   @req d >= 0 "Dimension must be non-negative"
   
-  return grassmannian(GKM_graph, 1, d)
+  return grassmannian(GKM_graph, 1, d+1)
 end
 
 
