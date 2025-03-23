@@ -1,4 +1,5 @@
 # Connections
+
 Functions regarding connections.
 ```@docs
 get_GKM_connection

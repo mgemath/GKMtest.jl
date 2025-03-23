@@ -1,4 +1,5 @@
 # Constructors
+
 These functions allow the construction of GKM varieties.
 
 ```@docs

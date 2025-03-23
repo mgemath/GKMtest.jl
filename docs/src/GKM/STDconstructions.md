@@ -1,4 +1,5 @@
 # Standard Constructions
+
 These functions allow the construction of GKM varieties.
 ```@docs
 generalized_gkm_flag

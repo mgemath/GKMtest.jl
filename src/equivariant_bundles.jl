@@ -9,6 +9,31 @@ function line_bundle(
   return vector_bundle(G, M, GMtoM, reshape(weights, length(weights), 1))
 end
 
+
+@doc raw"""
+    vector_bundle(G::AbstractGKM_graph, M::AbstractAlgebra.Generic.FreeModule{R}, GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}, weights::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}}; calculateConnection::Bool=true) -> GKM_vector_bundle
+
+It constructs the vector bundle given by the following datam:#
+# Arguments
+- `g::G::AbstractGKM_graph`: A GKM graph
+- `M::AbstractAlgebra.Generic.FreeModule{R}`: 
+
+# Examples
+```jldoctest
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+
+julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]])
+GKM vector bundle of rank 1 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, 0, 0, 0)
+2: (0, 1, 0, 0)
+3: (0, 0, 1, 0)
+
+```
+"""
 function vector_bundle(
   G::AbstractGKM_graph,
   M::AbstractAlgebra.Generic.FreeModule{R},
@@ -138,17 +163,16 @@ end
 # detailed show
 function Base.show(io::IO, ::MIME"text/plain", V::GKM_vector_bundle)
 
-  println(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over $(V.gkm) with weights:")
+  print(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over $(V.gkm) with weights:")
   rk = vector_bundle_rank(V)
   for v in 1:n_vertices(V.gkm.g)
-    print(io, "$(V.gkm.labels[v]): ")
+    print(io, "\n$(V.gkm.labels[v]): ")
     for i in 1:rk
       print(io, V.w[v,i])
       if i<rk
         print(io, ", ")
       end
     end
-    print("\n")
   end
 end
 

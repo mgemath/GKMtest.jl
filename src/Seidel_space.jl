@@ -1,5 +1,10 @@
 #TODO: If calculating GKM_second_homology of the Seidel space takes too long, implement it here.
 
+@doc raw"""
+    Seidel_space(G::AbstractGKM_graph, w::AbstractAlgebra.Generic.FreeModuleElem{R}) -> AbstractGKM_graph
+
+It constructs the Seidel space of the `G` with weights `w`.
+"""
 function Seidel_space(
   G::AbstractGKM_graph,
   w::AbstractAlgebra.Generic.FreeModuleElem{R}

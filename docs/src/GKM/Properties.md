@@ -1,3 +1,5 @@
+# Properties of GKM graphs
+
 These are the main properties of GKM graphs.
 ```@docs
 betti_numbers
