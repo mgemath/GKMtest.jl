@@ -1,6 +1,3 @@
-
-import Base: zero, one, *, ^
-
 """
     _equivariant_cohomology_ring(G::AbstractGKM_graph)
 

@@ -1,5 +1,3 @@
-import Oscar.direct_sum, Oscar.line_bundle
-
 function line_bundle(
   G::AbstractGKM_graph,
   M::AbstractAlgebra.Generic.FreeModule{R},

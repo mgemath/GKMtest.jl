@@ -9,6 +9,7 @@ using Oscar, Combinatorics, ProgressMeter
 
 ## GKM
 include("exports.jl")
+include("imports.jl")
 include("Types.jl")
 include("different_w_types.jl")
 
@@ -46,8 +47,8 @@ include("GW/includes.jl")
 ## obsolate
 include("obsolate/obsolate.jl")
 
-# files in the definitive format
+## experimental
+include("bruhat.jl")
 
-# include("betti_numbers.jl")
 
 end # module GKMtest

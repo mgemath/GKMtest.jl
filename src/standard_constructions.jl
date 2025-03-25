@@ -1,5 +1,4 @@
 export flag_variety, grassmannian, gkm_graph_of_toric
-import Oscar: projective_space
 
 @doc raw"""
     flag_variety(::Type{GKM_graph}, s::Vector{Int64}) -> AbstractGKM_graph{ZZRingElem}

@@ -10,22 +10,16 @@ If possible, the subgraph will be endowed with the connection induced from the s
 """
 function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
 
-  vertices = sort(vertices)
-  vDict = zeros(Int64, 0)
+  @req all(v -> v>0, vertices) "Vertex index must be positive"
 
-  last = 0
-  for v in vertices
-    @req v > 0 "Vertex index must be positive"
-    if v == last #don't count duplicate vertices
-      continue
-    end
-    push!(vDict, v)
-    last = v
-  end
+  return _GKMsubgraph_from_vertices(gkm, unique(sort(vertices)))
+end
+
+function _GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vDict::Vector{Int64}) :: AbstractGKM_subgraph
 
   subnv = length(vDict)
   labels = [gkm.labels[vDict[i]] for i in 1:subnv]
-  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{gkm.weightType}}(); checkLabels=false) # use the same character lattice
+  subGKM = gkm_graph(Graph{Undirected}(subnv), labels, gkm.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{typeof(_get_weight_type(gkm))}}(); checkLabels=false) # use the same character lattice
   
   for e in edges(gkm.g)
     if src(e) in vDict && dst(e) in vDict
@@ -84,9 +78,9 @@ This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection of the supergraph.
 """
 function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
-  for l in vertexLabels
-    @req l in gkm.labels "Label $l not found"
-  end
+
+  @req all(l -> l in gkm.labels, vertexLabels) "Label $l not found"
+
   vertices::Vector{Int64} = indexin(vertexLabels, gkm.labels) # need to specify Vector{Int64} as indexin returns vector of Union{Nothing, Int64}.
   res = GKMsubgraph_from_vertices(gkm, vertices)
   _infer_GKM_connection!(res)

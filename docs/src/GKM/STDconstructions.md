@@ -1,10 +1,24 @@
 # Standard Constructions
 
-These functions allow the construction of GKM varieties.
+In this section we present some functions that allow the construction of famous GKM graphs.
+
+## Generalized Flags Varieties
+
 ```@docs
 generalized_gkm_flag
 flag_variety
 grassmannian
 projective_space
+```
+
+### Generalized Schubert
+```@docs
+get_bruhat_order_of_generalized_flag
+generalized_gkm_schubert
+```
+
+## Toric varieties
+
+```@docs
 gkm_graph_of_toric
 ```
