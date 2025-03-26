@@ -21,6 +21,6 @@ S4 = Seidel_element(G, 2*gens(G.M)[1], cMax)
 #  end
 #end
 
-SG4 = Seidel_space(G, 2*w[1])
+SG4 = Seidel_space(G, 2*gens(G.M)[1])
 P = ev(1, pointClass(4, SG4))
 integrateGKM(SG4, edgeCurveClass(SG4, Edge(1, 4)), 1, P; show_bar=false)
