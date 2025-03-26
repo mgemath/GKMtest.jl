@@ -59,7 +59,7 @@ function _GKM_second_homology(G::AbstractGKM_graph)::GKM_H2
 
   dualConeRaySum, C, H2ToCN = _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)
 
-  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, C, H2ToCN, nothing)
+  return GKM_H2(G, edgeLattice, H2, edgeToGenIndex, quotientMap, dualConeRaySum, C, H2ToCN, nothing, nothing)
 end
 
 function _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)

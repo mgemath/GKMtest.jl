@@ -7,12 +7,15 @@ It constructs the Seidel space of the `G` with weights `w`.
 """
 function Seidel_space(
   G::AbstractGKM_graph,
-  w::AbstractAlgebra.Generic.FreeModuleElem{R}
+  weight::AbstractAlgebra.Generic.FreeModuleElem{R};
+  basePoint::Int64 = 1
 ) where R<:GKM_weight_type
 
-  @req parent(w) === G.M "The weight does not belong to the right character lattice"
+  @req parent(weight) === G.M "The weight does not belong to the right character lattice"
+  @req is_connected(G.g) "The GKM graph should be connected."
 
   nv = n_vertices(G.g)
+  ne = n_edges(G.g)
   r = rank_torus(G)
   labels = G.labels
   
@@ -43,7 +46,7 @@ function Seidel_space(
     # edge over 0:
     GKMadd_edge!(SG, src(e), dst(e), iM(G.w[e]))
     # edge over inf:
-    wz = sum([G.w[e][i] * w[i] for i in 1:r])
+    wz = sum([G.w[e][i] * weight[i] for i in 1:r])
     GKMadd_edge!(SG, nv + src(e), nv + dst(e), iM(G.w[e]) -  wz * z)
   end
 
@@ -99,13 +102,61 @@ function Seidel_space(
     set_GKM_connection!(SG, Scon)
   end
 
+
+  # build curve classes:
+
+  GCC = GKM_second_homology(G)
+  Gq = GCC.quotientMap
+  rkGH2 = length(gens(GCC.H2))
+  horizontalEdgeLattice = free_module(ZZ, nv)
+  # first edges over 0, then over inf, then horizontal ones.
+  SedgeLattice, _, _ = direct_sum(vcat(repeat([GCC.edgeLattice], 2), [horizontalEdgeLattice]))
+  extraFactor = free_module(ZZ, 1)
+  SH2, _, projs = direct_sum(GCC.H2, extraFactor)
+
+  #build map from horizontalEdgeLattice to GCC.edgeLattice and extraFactor
+  horToExtra = ModuleHomomorphism(horizontalEdgeLattice, extraFactor, [gens(extraFactor)[1] for i in 1:nv])
+  # calculate H2 shifts of horizontal edges
+  shiftDict = Dict{Int64, CurveClass_type}()
+  shiftDict[1] = zero(GCC.H2)
+  #first, assume basePoint = 1
+  while length(keys(shiftDict)) < nv # this is why we checked connectedness of G first.
+    for v1 in keys(shiftDict)
+      for v2 in all_neighbors(G.g, v1)
+        haskey(shiftDict, v2) && continue
+        e = Edge(v1,v2)
+        we = G.w[e]
+        wz = sum([we[i] * weight[i] for i in 1:r])
+        shiftDict[v2] = shiftDict[v1] -wz * edgeCurveClass(G, e)
+      end
+    end
+  end
+  # Now shift so that the correct base point has zero vertical class.
+  horToGH2 = ModuleHomomorphism(horizontalEdgeLattice, GCC.H2, [shiftDict[i] - shiftDict[basePoint] for i in 1:nv])
+  qMatrix = [Gq Int(0); Gq Int(0); horToGH2 horToExtra ]
+  Sq = ModuleHomomorphism(SedgeLattice, SH2, qMatrix)
+  SedgeToGenIndex = Dict{Edge, Int64}()
+  for e in edges(G.g)
+    indE = GCC.edgeToGenIndex[e]
+    SedgeToGenIndex[e] = indE
+    SedgeToGenIndex[reverse(e)] = indE
+    SedgeToGenIndex[Edge(src(e)+nv, dst(e)+nv)] = indE + ne
+    SedgeToGenIndex[Edge(dst(e)+nv, src(e)+nv)] = indE + ne
+  end
+  for v in 1:nv
+    SedgeToGenIndex[Edge(v, v+nv)] = 2*ne + v
+    SedgeToGenIndex[Edge(v+nv, v)] = 2*ne + v
+  end
+  dualConeRaySum, C, H2ToCN = _finish_GKM_H2(SedgeLattice, SH2, Sq, SG, SedgeToGenIndex)
+  SG.curveClasses = GKM_H2(SG, SedgeLattice, SH2, SedgeToGenIndex, Sq, dualConeRaySum, C, H2ToCN, nothing, projs[1])
+
   return SG
 end
 
 function _SeidelSectionCount(SG::AbstractGKM_graph)
   @req divides(n_vertices(SG.g), 2)[1] "SG is not a Seidel space!"
-  nv = div(n_vertices(SG.g), 2)
   H2 = GKM_second_homology(SG)
+  rkH2 = length(gens(H2.H2)) - 1
 
   if !isnothing(H2.sectionCount)
     return H2.sectionCount
@@ -113,26 +164,7 @@ function _SeidelSectionCount(SG::AbstractGKM_graph)
 
   # generate sectional multiplicity as ZZ-module homorphism from H2 to ZZ
   ZZasModule = free_module(ZZ, 1)
-  edgeSectionDict = Dict{Int64, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
-  edgeSectionVect = Vector{AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
-  for e in edges(SG.g)
-    if abs(src(e) - dst(e)) == nv
-      edgeSectionDict[H2.edgeToGenIndex[e]] = gens(ZZasModule)[1]
-    else
-      edgeSectionDict[H2.edgeToGenIndex[e]] = 0 * gens(ZZasModule)[1]
-    end
-  end
-  for i in 1:n_edges(SG.g)
-    push!(edgeSectionVect, edgeSectionDict[i])
-  end
-  edgeLatticeToSec = ModuleHomomorphism(H2.edgeLattice, ZZasModule, edgeSectionVect)
-
-  H2ToSec = Vector{AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
-  for g in gens(H2.H2)
-    p = preimage(H2.quotientMap, g)
-    push!(H2ToSec, edgeLatticeToSec(p))
-  end
-  H2.sectionCount = ModuleHomomorphism(H2.H2, ZZasModule, H2ToSec)
+  H2.sectionCount = ModuleHomomorphism(H2.H2, ZZasModule, vcat([zero(ZZasModule) for i in 1:rkH2], [gens(ZZasModule)[1]]))
   return H2.sectionCount
 end
 
@@ -144,7 +176,6 @@ function _effectiveSectionClassesWithChernNumber(
   chernNumber::ZZRingElem;
 )
 
-  # TODO: this whole thing!
   H2 = GKM_second_homology(SG)
   secCt = _SeidelSectionCount(SG)
   cN = H2.chernNumber

@@ -171,11 +171,12 @@ function conjecture_O_eigenvalues(G::AbstractGKM_graph; printData::Bool=true)
   return roots(QQBar, chi0)
 end
 
-function QH_is_associative(G::AbstractGKM_graph)::Bool
+function QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool = true)::Bool
   nv = n_vertices(G.g)
   g = [QH_class(G, x) for x in gens(G.equivariantCohomology.cohomRingLocalized)]
   for i in 1:nv, j in 1:nv, k in 1:nv
     if (g[i]*g[j])*g[k] != g[i]*(g[j]*g[k])
+      printDiagnostics && println("Not associative for: ($i, $j, $k)")
       return false
     end
   end

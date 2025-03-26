@@ -174,7 +174,7 @@ function _product(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveCl
 
     if calculateCurveClasses
       dualConeRaySum, C, H2ToCN = _finish_GKM_H2(edgeLattice, H2, q, res, edgeToGenIndex)
-      res.curveClasses = GKM_H2(res, edgeLattice, H2, edgeToGenIndex, q, dualConeRaySum, C, H2ToCN, nothing)
+      res.curveClasses = GKM_H2(res, edgeLattice, H2, edgeToGenIndex, q, dualConeRaySum, C, H2ToCN, nothing, nothing)
     end
     if calculateConnection
       newConObj = build_GKM_connection(res, newCon)

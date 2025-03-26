@@ -69,6 +69,7 @@ function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
           break
         end
       end
+      @req haskey(con, (e, ei)) "No connection image found for ($e, $ei)! The GKM graph does not admit a connection."
     end
   end
 
