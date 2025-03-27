@@ -18,7 +18,7 @@ export edgeFromLabels
 # GKMconnections.jl
 export get_GKM_connection
 export set_GKM_connection!
-export build_GKm_connection
+export build_GKM_connection
 export connection_a_from_con
 export connection_map_from_a
 export GKM_isValidConnection

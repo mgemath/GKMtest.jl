@@ -193,3 +193,44 @@ function QH_is_commutative(G::AbstractGKM_graph)::Bool
   end
   return true
 end
+
+function QH_is_polynomial(G::AbstractGKM_graph)::Bool
+  S = G.QH_structure_consts
+  for b in keys(S)
+    for k in keys(S[b])
+      s = S[b][k]
+      if !_is_polynomial(s)
+        println("QH is not polynomial for curve class $b at index $k.")
+        return false
+      end
+    end
+  end
+  return true
+end
+
+function QH_is_homogeneous(G::AbstractGKM_graph)::Bool
+  S = G.QH_structure_consts
+  for b in keys(S)
+    for k in keys(S[b])
+      s = S[b][k]
+      if !_is_homogeneous(s)
+        println("QH is not homogeneous for curve class $b at index $k.")
+        return false
+      end
+    end
+  end
+  return true
+end
+
+# Return all QH structure constants that are nonzero and have been calculated.
+# This does not calculate potentially non-zero constants that have not yet been calculated.
+function QH_supporting_curve_classes(G::AbstractGKM_graph)
+  S = G.QH_structure_consts
+  res = CurveClass_type[]
+  for b in keys(S)
+    if !all(s -> iszero(s), S[b])
+      push!(res, b)
+    end
+  end
+  return res
+end

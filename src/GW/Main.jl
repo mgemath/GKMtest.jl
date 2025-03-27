@@ -271,6 +271,14 @@ function _get_degree(f)
   return _get_deg_poly(numerator(f)) - _get_deg_poly(denominator(f))
 end
 
+function _is_polynomial(f)
+  if f == 0
+    return true
+  end
+  f = f//1
+  return _get_deg_poly(denominator(f)) == 0
+end
+
 function _get_deg_poly(f)
   for e in exponents(f)
     return sum(e)
