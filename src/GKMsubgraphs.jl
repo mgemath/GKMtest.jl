@@ -24,7 +24,7 @@ function _GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vDict::Vector{Int64}
   for e in edges(gkm.g)
     if src(e) in vDict && dst(e) in vDict
       sd = indexin([src(e), dst(e)], vDict)
-      GKMadd_edge!(subGKM, sd[1], sd[2], gkm.w[e])
+      add_edge!(subGKM, sd[1], sd[2], gkm.w[e])
     end
   end
   res = AbstractGKM_subgraph(gkm, subGKM, vDict)
@@ -114,7 +114,7 @@ function GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: 
   
   for e in edges
     sd = indexin([src(e), dst(e)], vDict)
-    GKMadd_edge!(subGKM, sd[1], sd[2], gkm.w[e])
+    add_edge!(subGKM, sd[1], sd[2], gkm.w[e])
   end
   res = AbstractGKM_subgraph(gkm, subGKM, vDict)
   _infer_GKM_connection!(res)
@@ -217,10 +217,10 @@ Warning: If a connection for the supergraph is set, this does not check if it is
 Use isCompatible() for this.
 """
 function GKM_isValidSubgraph(gkmsub::AbstractGKM_subgraph; printDiagnostics::Bool = true)::Bool
-  if !GKM_isValid(gkmsub.super; printDiagnostics)
+  if !isvalid(gkmsub.super; printDiagnostics)
     printDiagnostics && println("GKM-Supergraph is invalid")
     return false
-  elseif !GKM_isValid(gkmsub.self; printDiagnostics)
+  elseif !isvalid(gkmsub.self; printDiagnostics)
     printDiagnostics && println("Sub-GKM-graph is invalid as GKM graph")
     return false
   elseif gkmsub.self.M != gkmsub.super.M

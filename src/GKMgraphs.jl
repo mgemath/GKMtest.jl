@@ -2,12 +2,12 @@
     gkm_graph(g, labels, M, w; check=true, checkLabels=true) -> AbstractGKM_graph
 Create a GKM graph from the given data.
 # Arguments
-- `g::Graph`: A OSCAR graph.
+- `g::Graph`: An unoriented OSCAR graph.
 - `labels::Vector{String}`: A vector of strings, used to denote the vertices.
 - `M::AbstractAlgebra.Generic.FreeModule{R}`: A OSCAR free module over ``\mathbb{Z}`` or ``\mathbb{Q}``, it denotes the character group. `R` is either `ZZRingElem` or `QQFieldElem`.
-- `w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}}`: The axial function 
-- `check::Bool=true`: Check if the data insered are consistent with those of a GKM graph.
-- `checkLabels::Bool=true`: Check if labels are consistent.
+- `w::Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{R}}`: The axial function. Note that it is enough to specify the weight of each edge in one orientation here. The opposite oriented edge will automatically be given minus that weight.
+- `check::Bool=true`: Check if the data inserted are consistent.
+- `checkLabels::Bool=true`: Check that the labels don't contain the characters `<`, `[`, `]`, which are reserved for the output of special constructions like blowups and projective bundles.
 
 # Example
 Let us construct the GKM graph of the projective line. First of all, we create a graph with two vertices, and one edge.
@@ -46,7 +46,11 @@ b -> a => (1, -1)
 
 !!! warning
     1. Do not change the number of verices after this.
-    2. After you have added all edges using `GKMadd_edge!`, use `GKM_initialize!` to calculate the GKM connection (if it is unique) and the curve classes.
+    2. Don't modify the underlying OSCAR graph directly after this. Use the functions of this package instead.
+    3. All edges should be added immediately after calling this function and not changed afterwards.
+
+!!! note
+    After you have added all edges using `add_edge!`, you may use `GKM_initialize!` to calculate the GKM connection (if it is unique) and the curve classes. If you don't do this, those data will be calculated whenever required for the first time.
 
 """
 function gkm_graph(
@@ -86,7 +90,7 @@ end
 @doc raw"""
     empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String}) -> AbstractGKM_graph
 
-Useful for constructing GKM graph. It return the GKM graph with `n` fixed points, no edges, valency `val` and vertices labelled by `labels`.
+Return the GKM graph with `n` fixed points, no edges, valency `val` and vertices labelled by `labels`.
 
 ```jldoctest empty_GKM_graph
 julia> G = empty_gkm_graph(2, 2, ["a", "b"])
@@ -100,7 +104,7 @@ function empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String})
 end
 
 @doc raw"""
-    GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+    add_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
 
 Add an edge to `G` from the vertex labelled `s` to the vertex labelled `d`, the axial function takes value `weight` in that edge.
 
@@ -113,7 +117,7 @@ GKM graph with 2 nodes, valency 0 and axial function:
 julia> wei = gens(G.M)[1] - gens(G.M)[2]
 (1, -1)
 
-julia> GKMadd_edge!(G, "b", "a", wei);
+julia> add_edge!(G, "b", "a", wei);
 
 julia> G
 GKM graph with 2 nodes, valency 1 and axial function:
@@ -122,25 +126,25 @@ b -> a => (1, -1)
 ```
 
 !!! warning    
-    Add all edges immediately after creation. Any curve class or cohomology functionality should only be used after all edges have been added. The same holds for `GKM_initialize`.
+    Add all edges immediately after creation. Any curve class or cohomology functionality should only be used after all edges have been added. The same holds for `GKM_initialize!`.
 """
-function GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+function add_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
 
   @req (s in G.labels) "Source label not found"
   @req (d in G.labels) "Destination label not found"
 
   sd = indexin([s, d], G.labels)
 
-  GKMadd_edge!(G, sd[1], sd[2], weight)
+  add_edge!(G, sd[1], sd[2], weight)
 
 end
 
 @doc raw"""
-    GKMadd_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+    add_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
 
 Same as before, but using the number of the vertex instead of the label.
 """
-function GKMadd_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+function add_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
   
   @req (s in 1:n_vertices(G.g)) "Source $s not found"
   @req (d in 1:n_vertices(G.g)) "Destination $d not found"
@@ -155,7 +159,7 @@ end
 @doc raw"""
     valency(G::AbstractGKM_graph) -> Int64
 
-It returns the valency of `G`.
+Return the valency of `G`, i.e. the degree of each vertex.
 """
 function valency(G::AbstractGKM_graph)
   return length(all_neighbors(G.g, 1))
@@ -165,7 +169,7 @@ end
 @doc raw"""
     rank_torus(G::AbstractGKM_graph) -> Int64
 
-It returns the rank of the torus acting on `G`. That is, the rank of the character group.
+Return the rank of the torus acting on `G`. That is, the rank of the character group.
 """
 function rank_torus(G::AbstractGKM_graph)
   return rank(G.M)
@@ -174,7 +178,7 @@ end
 @doc raw"""
     is2_indep(G::AbstractGKM_graph) -> Bool
 
-It returns `true` or `false` depending if `G` is 2-independent.
+Return `true` if `G` is 2-independent, i.e. the weights of every two edges at a vertex are linearly independent.
 """
 function is2_indep(G::AbstractGKM_graph)
   return _indep(G, 2)
@@ -183,7 +187,7 @@ end
 @doc raw"""
     is3_indep(G::AbstractGKM_graph) -> Bool
 
-It returns `true` or `false` depending if `G` is 3-independent.
+Return `true` if `G` is 3-independent, i.e. the weights of every three edges at a vertex are linearly independent.
 """
 function is3_indep(G::AbstractGKM_graph)
   return _indep(G, 3)
@@ -265,7 +269,7 @@ end
 
 
 @doc raw"""
-    GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true) -> Bool
+    isvalid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true) -> Bool
 Return true if the GKM graph is valid. This means:
   1. Every vertex has the same degree
   2. The weights are defined for every edge and every reverse of every edge
@@ -277,7 +281,7 @@ Return true if the GKM graph is valid. This means:
   8. The equivariant cohomology ring has rank = number of vertices of graph
   9. The coefficient ring of the equivariant cohomology ring has number of generators = torus rank.
 """
-function GKM_isValid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
+function isvalid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
 
   if !all(v -> length(all_neighbors(gkm.g, 1)) == length(all_neighbors(gkm.g, v)), 2:n_vertices(gkm.g))
     printDiagnostics && println("The valency is not the same for all vertices")

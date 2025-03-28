@@ -9,10 +9,8 @@ export connection
 export GKMproj_space
 export is3_indep
 export is2_indep
-export GKMadd_edge!
 export empty_gkm_graph
 # export flag_gkm_graph
-export GKM_isValid
 export edgeFromLabels
 
 # GKMconnections.jl

@@ -4,7 +4,6 @@
 #
 ###############################################################################
 
-# We introduce abstract types so that we can 
 abstract type GKM_graph end
 abstract type AbstractGKM_H2 end
 abstract type AbstractGKM_connection end

@@ -1,5 +1,10 @@
 # Implementing the GKM graph from [GKZ20, after Cor 2.13]
-# It has a 2-torus acting and is 3-valent, so not 3-independent and admits multiple connections.
+#
+# It has a 2-torus acting and is 3-valent, so not 3-independent but still admits a unique connection.
+# It is realized as smooth projective variety by P(E), where E -> X is an algebraic vector bundle over X = P^1 x P^1 (cf [GKZ20, Thm 5.1 and Prop 6.1])
+# In terminology of [GKZ20, Def 4.9 & Cor 4.11], it has the maximum number of internal vertices.
+# Hence, by [GKZ20, Thm 7.1 (I)], it cannot be realized by a complex structure with a compatible invariant Kaehler form (cf. [GKZ20, Remark 5.2]).
+# So I guess the action on the algebraic variety P(E) is simply not algebraic...
 
 g = Graph{Undirected}(8)
 labels = ["v_$i" for i in 1:8]
@@ -81,3 +86,5 @@ end
 # Furthermore, the coefficients for beta=(0, -j, j) are constant for j in {2, 3, 4, 5}, so probably we get some q^beta/(1-q^beta) terms!
 # The same holds for beta=(j, -j, 0) for j in {1, 2, 3}
 # Note that the other classes can not appear infinitely often (if the structure constants are polynomial) because they have positive chern number.
+
+#TODO: Try the same GKM graph with the other connection and see if the result is different!

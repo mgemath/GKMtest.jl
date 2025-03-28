@@ -40,14 +40,14 @@ function Seidel_space(
 
   # add edges:
   for i in 1:nv
-    GKMadd_edge!(SG, i, i+nv, z)
+    add_edge!(SG, i, i+nv, z)
   end
   for e in edges(G.g)
     # edge over 0:
-    GKMadd_edge!(SG, src(e), dst(e), iM(G.w[e]))
+    add_edge!(SG, src(e), dst(e), iM(G.w[e]))
     # edge over inf:
     wz = sum([G.w[e][i] * weight[i] for i in 1:r])
-    GKMadd_edge!(SG, nv + src(e), nv + dst(e), iM(G.w[e]) -  wz * z)
+    add_edge!(SG, nv + src(e), nv + dst(e), iM(G.w[e]) -  wz * z)
   end
 
   # infer GKM connection to Seidel space if possible

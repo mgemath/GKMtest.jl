@@ -1,10 +1,11 @@
 @doc raw"""
     betti_numbers(G::AbstractGKM_graph) -> Vector{Int64}
 
-Return the array `betti_numbers` such that `betti_numbers[i+1]` is the 2i-th (combinatorial) Betti number for i from 0 to the valency of `G`, as defined in [GZ01; section 1.3](@cite).
+Return the array `betti_numbers` such that `betti_numbers[i+1]` is the 2i-th combinatorial Betti number for i from 0 to the valency of `G`, as defined in [GZ01; section 1.3](@cite).
 !!! note
     * `i` ranges from 0 to the valency of `G`, that can be obtained by `valency(G)`.
     * From [GZ01; Theorem 1.3.2](@cite), the combinatorial Betti numbers equal the Betti numbers of the underlying GKM space if the torus action is Hamiltonian.
+      This holds automatically for smooth projective varieties with algebraic torus action (cf. [GFK12; Example 8.1 (ii)](@cite)).
 
 !!! warning
     `betti_numbers[1]` is the 0-th Betti number, since Julia arrays are 1-based and not 0-based.

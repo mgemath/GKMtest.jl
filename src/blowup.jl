@@ -151,7 +151,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
       end
       weight = gkmSub.super.w[Edge(vDict[v], j)] - gkmSub.super.w[Edge(vDict[v], i)]
       newEdge = Edge(_intVindex(v, c, i, normalNeighbors), _intVindex(v, c, j, normalNeighbors))
-      GKMadd_edge!(gkmBlowup, src(newEdge), dst(newEdge), weight)
+      add_edge!(gkmBlowup, src(newEdge), dst(newEdge), weight)
       push!(exceptionalEdges, newEdge)
 
       # println("connection for new edge $newEdge:")
@@ -214,7 +214,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
       sInd = _extFlagToIndex(gkmSub, e, normalNeighbors, externalVertices, nvBlowup, c)
       dInd = _extFlagToIndex(gkmSub, reverse(e), normalNeighbors, externalVertices, nvBlowup, c)
       w = gkmSub.super.w[e]
-      GKMadd_edge!(gkmBlowup, sInd, dInd, w)
+      add_edge!(gkmBlowup, sInd, dInd, w)
       _addToConnection!(blowupCon, con, e, Edge(sInd, dInd), flagBij)
     else
 
@@ -228,7 +228,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
         dIndi = _extFlagToIndex(gkmSub, epi, normalNeighbors, externalVertices, nvBlowup, c)
         w = gkmSub.super.w[e]
 
-        GKMadd_edge!(gkmBlowup, sIndi, dIndi, w)
+        add_edge!(gkmBlowup, sIndi, dIndi, w)
         _addToConnection!(blowupCon, con, e, Edge(sIndi, dIndi), flagBij)
         push!(exceptionalEdges, Edge(sIndi, dIndi))
       end

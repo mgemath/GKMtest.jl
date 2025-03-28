@@ -210,7 +210,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
       vInd = (v-1)*rk + i
       j = con[(e, i)]
       wInd = (w-1)*rk + j
-      GKMadd_edge!(res, vInd, wInd, V.GMtoM(G.w[e]))
+      add_edge!(res, vInd, wInd, V.GMtoM(G.w[e]))
 
       if !isnothing(Gcon)
         eNew = Edge(vInd, wInd)
@@ -244,7 +244,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
         vjInd = (v-1)*rk + j
         wNew = V.w[v, j] - V.w[v, i]
         @req !iszero(wNew) "Vector bundle has two identical weights over vertex $v (indices $i, $j)"
-        GKMadd_edge!(res, viInd, vjInd, wNew)
+        add_edge!(res, viInd, vjInd, wNew)
 
         if !isnothing(Gcon)
           e = Edge(viInd, vjInd)
@@ -279,7 +279,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
     set_GKM_connection!(res, resConObj)
   end
 
-  if !GKM_isValid(res)
+  if !isvalid(res)
     println("Warning: resulting projective bundle is not a valid GKM graph (see reason above).")
   end
 
