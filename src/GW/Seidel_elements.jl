@@ -16,7 +16,7 @@ function Seidel_element(G::AbstractGKM_graph,
 
   #initialize classes to integrate over:
   res = Dict{CurveClass_type, Any}()
-  P = [ev(1, pointClass(nv+i, SG)) for i in 1:nv]
+  P = [ev(1, point_class(nv+i, SG)) for i in 1:nv]
   coeffRing = G.equivariantCohomology.coeffRingLocalized
   g = gens(coeffRing)
   SGCC = GKM_second_homology(SG)

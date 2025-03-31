@@ -51,7 +51,7 @@ function Seidel_space(
   end
 
   # infer GKM connection to Seidel space if possible
-  con = get_GKM_connection(G)
+  con = get_connection(G)
   if !isnothing(con)
     SconDict = Dict{Tuple{Edge, Edge}, Edge}()
     # connection along new edge
@@ -99,7 +99,7 @@ function Seidel_space(
       SconDict[(reverse(e), epi)] = ei
     end
     Scon = build_GKM_connection(SG, SconDict)
-    set_GKM_connection!(SG, Scon)
+    set_connection!(SG, Scon)
   end
 
 

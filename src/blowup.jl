@@ -1,5 +1,5 @@
 @doc"""
-    blowupGKM(gkmSub::AbstractGKM_subgraph) -> AbstractGKM_subgraph
+    blow_up(gkmSub::AbstractGKM_subgraph) -> AbstractGKM_subgraph
 
 Return the tuple (GKM graph of blowup, GKM graph of exceptional divisor)
 from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded as AbstractGKM_subgraph.
@@ -23,7 +23,7 @@ GKM graph with 4 nodes, valency 3 and axial function:
 4 -> 2 => (0, -1, 0, 1)
 4 -> 3 => (0, 0, -1, 1)
 
-julia> S = GKMsubgraph_from_vertices(G, [1, 2]) # we take the subgraph of two vertices, it corresponds to a line
+julia> S = gkm_subgraph_from_vertices(G, [1, 2]) # we take the subgraph of two vertices, it corresponds to a line
 GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
@@ -36,7 +36,7 @@ Subgraph:
 GKM graph with 2 nodes, valency 1 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
 
-julia> blowupSub = blowupGKM(S) # blowup of P3 along the line S
+julia> blowupSub = blow_up(S) # blowup of P3 along the line S
 GKM subgraph of:
 GKM graph with 6 nodes, valency 3 and axial function:
 [1>4] -> [1>3] => (0, 0, -1, 1)
@@ -55,7 +55,7 @@ GKM graph with 4 nodes, valency 2 and axial function:
 [2>4] -> [1>4] => (-1, 1, 0, 0)
 [2>4] -> [2>3] => (0, 0, -1, 1)
 
-julia> Spoint = GKMsubgraph_from_vertices(G, [1]) # we take the subgraphof one vertex, that is an invariant point
+julia> Spoint = gkm_subgraph_from_vertices(G, [1]) # we take the subgraphof one vertex, that is an invariant point
 GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
@@ -67,7 +67,7 @@ GKM graph with 4 nodes, valency 3 and axial function:
 Subgraph:
 GKM graph with 1 nodes, valency 0 and axial function:
 
-julia> blowupPt = blowupGKM(Spoint) # blowup of P3 at a point
+julia> blowupPt = blow_up(Spoint) # blowup of P3 at a point
 GKM subgraph of:
 GKM graph with 6 nodes, valency 3 and axial function:
 [1>3] -> [1>2] => (0, -1, 1, 0)
@@ -86,13 +86,13 @@ GKM graph with 3 nodes, valency 2 and axial function:
 [1>4] -> [1>3] => (0, 0, -1, 1)
 ```
 """
-function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
+function blow_up(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   
-  con = get_GKM_connection(gkmSub.super)
+  con = get_connection(gkmSub.super)
   @req !isnothing(con) "Supergraph needs a connection"
 
   @req GKM_isValidSubgraph(gkmSub) "invalid graph/subgraph pair"
-  @req GKM_isValidConnection(con) "invalid connection"
+  @req isvalid(con) "invalid connection"
   @req isCompatible(gkmSub, con) "connection incompatible with subgraph"
 
   nvSub = n_vertices(gkmSub.self.g)
@@ -104,7 +104,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   c = n - d # codimension
 
   if d == n
-    return (GKMsubgraph_from_vertices(gkmSub.super, Array(1:nv)), con)
+    return (gkm_subgraph_from_vertices(gkmSub.super, Array(1:nv)), con)
   end
   
   externalVertices = Int64[]
@@ -235,8 +235,8 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
     end
   end
 
-  set_GKM_connection!(gkmBlowup, build_GKM_connection(gkmBlowup, blowupCon))
-  gkmSubgraphBlowup = GKMsubgraph_from_edges(gkmBlowup, exceptionalEdges)
+  set_connection!(gkmBlowup, build_GKM_connection(gkmBlowup, blowupCon))
+  gkmSubgraphBlowup = gkm_subgraph_from_edges(gkmBlowup, exceptionalEdges)
   
   # Base.show(stdout, MIME"text/plain"(), gkmSubgraphBlowup)
   #println("Resulting connection dict:")

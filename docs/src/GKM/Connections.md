@@ -18,7 +18,7 @@ Sufficient conditions for uniqueness of the connection (if it exists) are:
 If neither of these two conditions hold and $G$ is not the output of a standard construction, a choice of connection can be specified manually using `set_connection!`.
 
 ```@docs
-get_GKM_connection
-set_GKM_connection!
-GKM_isValidConnection
+get_connection
+set_connection!
+isvalid(::GKMtest.GKM_connection; ::Bool)
 ```

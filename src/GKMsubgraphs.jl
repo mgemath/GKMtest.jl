@@ -2,20 +2,20 @@ import Oscar.has_edge
 import Oscar.has_vertex
 
 @doc"""
-    GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) -> AbstractGKM_subgraph
+    gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) -> AbstractGKM_subgraph
 
 Return the GKM subgraph induced by the given vertices
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection induced from the supergraph.
 """
-function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
+function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
 
   @req all(v -> v>0, vertices) "Vertex index must be positive"
 
-  return _GKMsubgraph_from_vertices(gkm, unique(sort(vertices)))
+  return _gkm_subgraph_from_vertices(gkm, unique(sort(vertices)))
 end
 
-function _GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vDict::Vector{Int64}) :: AbstractGKM_subgraph
+function _gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vDict::Vector{Int64}) :: AbstractGKM_subgraph
 
   subnv = length(vDict)
   labels = [gkm.labels[vDict[i]] for i in 1:subnv]
@@ -39,7 +39,7 @@ Else return false. False is also returned if the subgraph's connection is alread
 """
 function _infer_GKM_connection!(gkmSub::AbstractGKM_subgraph)::Bool
 
-  con = get_GKM_connection(gkmSub.super)
+  con = get_connection(gkmSub.super)
   if !isnothing(con) && isCompatible(gkmSub, con; printDiagnostics=false)
 
     oldCon = con.con
@@ -64,37 +64,37 @@ function _infer_GKM_connection!(gkmSub::AbstractGKM_subgraph)::Bool
     end
 
     newConObj = GKM_connection(gkmSub.self, newCon, newA)
-    set_GKM_connection!(gkmSub.self, newConObj)
+    set_connection!(gkmSub.self, newConObj)
     return true
   end
   return false
 end
 
 @doc"""
-    GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) -> AbstractGKM_subgraph
+    gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) -> AbstractGKM_subgraph
 
 As before, but the vertices are given by their labels.
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection of the supergraph.
 """
-function GKMsubgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
+function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
 
   @req all(l -> l in gkm.labels, vertexLabels) "Label $l not found"
 
   vertices::Vector{Int64} = indexin(vertexLabels, gkm.labels) # need to specify Vector{Int64} as indexin returns vector of Union{Nothing, Int64}.
-  res = GKMsubgraph_from_vertices(gkm, vertices)
+  res = gkm_subgraph_from_vertices(gkm, vertices)
   _infer_GKM_connection!(res)
   return res
 end
 
 @doc"""
-    GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) -> AbstractGKM_subgraph
+    gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) -> AbstractGKM_subgraph
     
 Return the GKM subgraph induced by the given edges
 This does not check if the result is a valid GKM graph.
 If possible, the subgraph will be endowed with the connection induced from the supergraph.
 """
-function GKMsubgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: AbstractGKM_subgraph
+function gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: AbstractGKM_subgraph
   
   vDict = zeros(Int64, 0)
 

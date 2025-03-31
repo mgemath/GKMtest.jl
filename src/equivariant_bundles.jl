@@ -199,7 +199,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
   weightType = typeof(_get_weight_type(G))
   res = gkm_graph(Gres, labels, V.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{weightType}}(); checkLabels=false)
 
-  Gcon = get_GKM_connection(G)
+  Gcon = get_connection(G)
   resCon = Dict{Tuple{Edge, Edge}, Edge}()
 
   # add edges corresponding to original edges
@@ -276,7 +276,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
 
   if !isnothing(Gcon)
     resConObj = build_GKM_connection(res, resCon)
-    set_GKM_connection!(res, resConObj)
+    set_connection!(res, resConObj)
   end
 
   if !isvalid(res)

@@ -7,5 +7,5 @@ gkm_graph
 empty_gkm_graph
 add_edge!
 convert_weights
-isvalid
+isvalid(::GKMtest.AbstractGKM_graph; ::Bool)
 ```

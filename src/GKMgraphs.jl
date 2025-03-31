@@ -222,7 +222,7 @@ If any of those fields are already set, this will not overwrite them.
 function GKM_initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveClasses::Bool=true)
 
   if connection
-    get_GKM_connection(gkm)
+    get_connection(gkm)
   end
   if curveClasses
     GKM_second_homology(gkm)

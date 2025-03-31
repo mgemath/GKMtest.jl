@@ -14,32 +14,27 @@ export empty_gkm_graph
 export edgeFromLabels
 
 # GKMconnections.jl
-export get_GKM_connection
-export set_GKM_connection!
+export get_connection
+export set_connection!
 export build_GKM_connection
 export connection_a_from_con
 export connection_map_from_a
-export GKM_isValidConnection
 
 # cohomology.jl
-export isGKMclass
-export weightClass
-export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, PDClass
-export integrateGKMClass
-export integrateOverEdge
-export firstChernClass
+export is_gkm_class
+export weight_class
+export scalar, zero, one, multiply, euler_class, poincare_dual
+export integrate_gkm_class
+export first_chern_class
 
 # betti.jl
 export betti_numbers
 
 # GKMsubgraphs.jl
-export GKMsubgraph_from_vertices
-export GKMsubgraph_from_edges
+export gkm_subgraph_from_vertices
+export gkm_subgraph_from_edges
 export GKM_isValidSubgraph
 export isCompatible
-
-# blowup.jl
-export blowupGKM
 
 # curveClasses.jl
 export GKM_second_homology

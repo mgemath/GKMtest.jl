@@ -168,7 +168,7 @@ function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int6
   end
 
   P = [P_input[k].func for k in inputKeys]
-  con = get_GKM_connection(G)
+  con = get_connection(G)
   @req !isnothing(con) "GKM graph needs a connection!"
 
   ########

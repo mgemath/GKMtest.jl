@@ -260,5 +260,5 @@ function _generalized_gkm_schubert(base::AbstractGKM_graph, pt::String, rev::Boo
     vertices = vcat(vertices, [a[1] for a in suborder[lab]])
   end
 
-  return GKMsubgraph_from_vertices(base, vertices)
+  return gkm_subgraph_from_vertices(base, vertices)
 end

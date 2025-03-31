@@ -237,7 +237,7 @@ This is the pairing of the curve class with the first Chern class of the tangent
 function chernNumber(e::Edge, G::AbstractGKM_graph)::ZZRingElem
 
   R = G.equivariantCohomology
-  cn = integrateOverEdge(firstChernClass(R), R, e)
+  cn = integrate(first_chern_class(R), R, e)
   (flag, quotient) = divides(numerator(cn), denominator(cn))
 
   @req flag "1st Chern class not a GKM class!"

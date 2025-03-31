@@ -10,7 +10,7 @@ function Euler_inv(dt::GW_decorated_tree; check_degree::Bool=false)::AbstractAlg
   for v in 1:n_vertices(dt.tree)
 
     valv = degree(dt.tree, v)
-    e = eulerClass(imageOf(v, dt), dt.gkm)
+    e = euler_class(imageOf(v, dt), dt.gkm)
     #println("e = $e, val = $valv")
     if valv >= 1
       res = res * e^(valv - 1)
@@ -22,7 +22,7 @@ function Euler_inv(dt::GW_decorated_tree; check_degree::Bool=false)::AbstractAlg
 
     for v2 in all_neighbors(dt.tree, v)
       e = Edge(v,v2)
-      wev = weightClass(imageOf(e, dt), dt.gkm) // edgeMult(e, dt)
+      wev = weight_class(imageOf(e, dt), dt.gkm) // edgeMult(e, dt)
       res = res // wev
       tmpSum = tmpSum + 1//wev
     end
@@ -65,7 +65,7 @@ function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check:
     @req d>0 "d is non-positive"
   end
 
-  we = weightClass(e, R) # weight of the edge e
+  we = weight_class(e, R) # weight of the edge e
 
   res = ( C((-1)^d) * ZZ(d)^(2d) ) // ( factorial(ZZ(d))^2 )
   res = res // ( (we)^(2d) )
@@ -75,7 +75,7 @@ function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check:
     v == dst(e) && continue 
 
     ei = Edge(src(e), v)
-    wei = weightClass(ei, R)
+    wei = weight_class(ei, R)
     ai = con.a[(e, ei)]
     bFactor = _b(1//d * we, wei, d*ai, C)
     if check_degrees
@@ -128,7 +128,7 @@ function GWTreeContribution(
 
   res = Euler_inv(dt)
   R = dt.gkm.equivariantCohomology
-  con = get_GKM_connection(dt.gkm)
+  con = get_connection(dt.gkm)
 
   # multiply by h classes
   for e in edges(dt.tree)

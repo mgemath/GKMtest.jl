@@ -20,7 +20,7 @@ function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
   # Generating P_input takes a little if we have many vertices. So we calculate it here and reuse it.
   println("Building classes to integrate over the moduli space...")
   nv = n_vertices(G.g)
-  evClasses = [ev(i, pointClass(j, G)) for i in 1:3, j in 1:nv]
+  evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
   P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
   println("Starting integration:")
 
@@ -61,7 +61,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
     # For example for n=16 vertices it takes around 10 seconds.
     if isnothing(P_input)
       println("Building classes to integrate over the moduli space...")
-      evClasses = [ev(i, pointClass(j, G)) for i in 1:3, j in 1:nv]
+      evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
       P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
       println("Starting integration:")
     end
@@ -96,7 +96,7 @@ function quantumProduct(
     return res
   end
 
-  P_input = [ev(1, class1)*ev(2, class2)*ev(3, pointClass(v, G)) for v in 1:nv]
+  P_input = [ev(1, class1)*ev(2, class2)*ev(3, point_class(v, G)) for v in 1:nv]
   GW_invts = integrateGKM(G, beta, 3, P_input)
 
   return sum([GW_invts[i] * gens(G.equivariantCohomology.cohomRingLocalized)[i] for i in 1:nv])
@@ -152,7 +152,7 @@ function quantum_product_at_q1(G::AbstractGKM_graph, class)
 end
 
 function c1_at_q1(G::AbstractGKM_graph)
-  return quantum_product_at_q1(G, firstChernClass(G))
+  return quantum_product_at_q1(G, first_chern_class(G))
 end
 
 """
