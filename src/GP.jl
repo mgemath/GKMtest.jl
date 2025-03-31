@@ -95,8 +95,8 @@ end
 function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
 
   ## Create WP
-  W = weyl_group(R) # Weyl group of the root system
-  WP = [one(W)] # embedding of W_P into W, called WP
+  Weyl = weyl_group(R) # Weyl group of the root system
+  WP = [one(Weyl)] # embedding of W_P into W, called WP
 
   if !isempty(indices_of_S)
 
@@ -105,17 +105,17 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
 
     #embedding of W_P into W, called WP
     s = simple_roots(R)
-    WP = [prod(i -> reflection(s[indices_of_S[i]]), word(a); init = one(W)) for a in weyl_group(cartan_submatrix)]
+    WP = [prod(i -> reflection(s[indices_of_S[i]]), word(a); init = one(Weyl)) for a in weyl_group(cartan_submatrix)]
   end
   
   (fams, ordering) = root_system_type_with_ordering(R)
 
   type_of_graph = any(fam -> fam[1] in (:E, :F), fams) ? QQFieldElem : ZZRingElem
   
-  cosets = [WP for _ in 1:div(order(W), length(WP))]
-  reprs = [one(W) for _ in 1:length(cosets)]
+  cosets = [WP for _ in 1:div(order(Weyl), length(WP))]
+  reprs = [one(Weyl) for _ in 1:length(cosets)]
   index = 1
-  for b in W
+  for b in Weyl
     any(i -> b in cosets[i], 1:index) && continue
     index += 1
     cosets[index] = b .* cosets[index]
@@ -123,25 +123,50 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
     index == length(cosets) && break
   end
 
+  gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
   labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
-  M = free_module(parent(zero(type_of_graph)), mapreduce(_dimension_ambient, +, fams))
+  M = free_module(parent(zero(type_of_graph)), n_columns(gen_matrix))
   W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{type_of_graph}}()
 
-  gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
+  get_root = Dict{Edge, RootSpaceElem}()
 
   for i in 1:length(reprs)
     r1 = reprs[i]
     for t in positive_roots(R)
-      new_rep = reflection(t)*r1
+      # new_rep = reflection(t)*r1
+      new_rep = r1*reflection(t)
       j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
       j === nothing && continue
       add_edge!(g, j, i)
       vec = matrix(parent(zero(type_of_graph)), coefficients(t)*gen_matrix)
-      W[Edge(j,i)] = (-1)*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
+      sign::Int64 = length(r1) < length(new_rep) ? -1 : 1
+      W[Edge(j, i)] = sign*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
+      get_root[Edge(j, i)] = t
     end
   end
 
+
+  ## construct connection
+  a::Dict{Tuple{Edge, Edge}, ZZRingElem} = Dict{Tuple{Edge, Edge}, ZZRingElem}()
+  for e in edges(g)
+
+    alpha = get_root[e]
+    E = (src(e), dst(e))
+
+    for i in 1:2
+      _v = E[i]
+      for _w in all_neighbors(g, _v)
+
+        ei = Edge(_v, _w)
+        beta = get_root[ei in edges(g) ? ei : reverse(ei)]
+        
+        a[(Edge(E[i], E[3-i]), ei)] = -ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
+      end
+    end
+  end
+# println(a)
+  #TODO define connection using a
   return gkm_graph(g, labs, M, W)
 end
 
