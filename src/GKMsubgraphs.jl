@@ -4,9 +4,49 @@ import Oscar.has_vertex
 @doc"""
     gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) -> AbstractGKM_subgraph
 
-Return the GKM subgraph induced by the given vertices
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection induced from the supergraph.
+Return the GKM subgraph induced by the given vertices.
+!!! note
+    1. This does not check if the result is a valid GKM graph (use may use `isvalid` for that).
+    2. If possible, the subgraph will be endowed with the connection induced from the supergraph.
+
+# Example
+```jldoctest subgr_from_vert
+julia> G = projective_space(GKM_graph, 3)
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+
+julia> S = gkm_subgraph_from_vertices(G, [2, 3])
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 2 nodes, valency 1 and axial function:
+3 -> 2 => (0, -1, 1, 0)
+
+julia> S.self
+GKM graph with 2 nodes, valency 1 and axial function:
+3 -> 2 => (0, -1, 1, 0)
+
+julia> S.super
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+
+```
 """
 function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
 
@@ -33,14 +73,12 @@ function _gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vDict::Vector{Int64
 end
 
 
-"""
-If the supergraph's connection is compatible with the subgraph, infer it to the subgraph and return true.
-Else return false. False is also returned if the subgraph's connection is already set.
-"""
+# If the supergraph's connection is compatible with the subgraph, infer it to the subgraph and return true.
+# Else return false. False is also returned if the subgraph's connection is already set.
 function _infer_GKM_connection!(gkmSub::AbstractGKM_subgraph)::Bool
 
   con = get_connection(gkmSub.super)
-  if !isnothing(con) && isCompatible(gkmSub, con; printDiagnostics=false)
+  if !isnothing(con) && is_compatible_with_connection(gkmSub, con; printDiagnostics=false)
 
     oldCon = con.con
     oldA = con.a
@@ -74,8 +112,6 @@ end
     gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) -> AbstractGKM_subgraph
 
 As before, but the vertices are given by their labels.
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection of the supergraph.
 """
 function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
 
@@ -90,9 +126,29 @@ end
 @doc"""
     gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) -> AbstractGKM_subgraph
     
-Return the GKM subgraph induced by the given edges
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection induced from the supergraph.
+Return the GKM subgraph induced by the given edges.
+!!! note
+    1. This does not check if the result is a valid GKM graph (use `isvalid` for that).
+    2. If possible, the subgraph will be endowed with the connection induced from the supergraph.
+
+# Example
+```jldoctest subgr_from_edges
+julia> G = projective_space(GKM_graph, 3);
+
+julia> S = gkm_subgraph_from_edges(G, [Edge(1, 2), Edge(2, 3)])
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 3 nodes, valency 1 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 2 => (0, -1, 1, 0)
+```
 """
 function gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: AbstractGKM_subgraph
   
@@ -121,9 +177,7 @@ function gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) ::
   return res
 end
 
-"""
-Return true if the gkm subgraph contains the given edge of the supergraph.
-"""
+# Return true if the gkm subgraph contains the given edge of the supergraph.
 function has_edge(gkmSub::AbstractGKM_subgraph, e::Edge)::Bool
   if !(src(e) in gkmSub.vDict) || !(dst(e) in gkmSub.vDict)
     return false
@@ -136,16 +190,12 @@ function _vertex_preimage(gkmSub::AbstractGKM_subgraph, v::Int64)::Int64
   return indexin([v], gkmSub.vDict)[1]
 end
 
-"""
-Return true if the gkm subgraph contains the given vertex of the supergraph.
-"""
+# Return true if the gkm subgraph contains the given vertex of the supergraph.
 function has_vertex(gkmSub::AbstractGKM_subgraph, v::Int64)::Bool
   return v in gkmSub.vDict
 end
 
-"""
-Return true if the gkm subgraph contains the given vertex label of the supergraph.
-"""
+# Return true if the gkm subgraph contains the given vertex label of the supergraph.
 function has_vertex(gkmSub::AbstractGKM_subgraph, vertexLabel::String)::Bool
   @req vertexLabel in gkmSub.super.labels "Vertex with label $vertexLabel does not exist."
   v::Int64 = indexin([vertexLabel], gkmSub.super.labels)[1]
@@ -163,10 +213,13 @@ function edgeToSupergraph(gkmSub::AbstractGKM_subgraph, e::Edge)::Edge
   return imE
 end
 
+@doc raw"""
+    is_compatible_with_connection(gkmSub::AbstractGKM_subgraph, con::GKM_connection; printDiagnostics::Bool=true)::Bool
+
+Return `true` if the connection map sends edge pairs contained in the subgraph to an edge of the subgraph.
+This is necessary for the subgraph to represent a $T$-invariant subspace.
 """
-Return true if the connection map sends edge pairs contained in the subgraph to an edge of the subgraph.
-"""
-function isCompatible(gkmSub::AbstractGKM_subgraph, con::GKM_connection; printDiagnostics::Bool=true)::Bool
+function is_compatible_with_connection(gkmSub::AbstractGKM_subgraph, con::GKM_connection; printDiagnostics::Bool=true)::Bool
   nvsub = n_vertices(gkmSub.self.g)
   for v in 1:nvsub
     for w in 1:nvsub
@@ -207,16 +260,19 @@ function Base.show(io::IO, ::MIME"text/plain", G::AbstractGKM_subgraph)
   show(io, MIME"text/plain"(), G.self)
 end
 
-"""
+@doc raw"""
+    isvalid(gkmsub::AbstractGKM_subgraph; printDiagnostics::Bool = true) -> Bool
+
 Return true if the given GKM subgraph is valid. This holds if and only if all of the following hold:
   1. The supergraph and subgraph are both valid GKM GKMsubgraphs of the same character group
   2. The subgraph is mathematically a subgraph of the supergraph
   3. The edge weights of the subgraph match that of the supergraph
   4. The vertex labels of the subgraph and the supergraph match.
-Warning: If a connection for the supergraph is set, this does not check if it is compatible with the subgraph.
-Use isCompatible() for this.
+!!! warning
+    If a connection for the supergraph is set, this does not check if it is compatible with the subgraph.
+    Use `is_compatible_with_connection()` for this.
 """
-function GKM_isValidSubgraph(gkmsub::AbstractGKM_subgraph; printDiagnostics::Bool = true)::Bool
+function isvalid(gkmsub::AbstractGKM_subgraph; printDiagnostics::Bool = true)::Bool
   if !isvalid(gkmsub.super; printDiagnostics)
     printDiagnostics && println("GKM-Supergraph is invalid")
     return false

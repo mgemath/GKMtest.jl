@@ -1,6 +1,6 @@
 function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
 
-  @req isStrictlyNEF(G) "G is not strictly NEF, so need to specify beta"
+  @req is_strictly_nef(G) "G is not strictly NEF, so need to specify beta"
 
   if !refresh && G.know_all_QH_structure_consts
     return G.QH_structure_consts
@@ -51,7 +51,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
       G.QH_structure_consts[beta] = res
       return res
     end
-    if !isEffectiveCurveClass(G, beta)
+    if !is_effective(G, beta)
       G.QH_structure_consts[beta] = res
       return res
     end

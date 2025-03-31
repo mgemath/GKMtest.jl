@@ -2,7 +2,7 @@
 
 export GKM_graph #abstract type
 export gkm_graph
-export GKM_initialize!
+export initialize!
 export valency
 export rank_torus
 export connection
@@ -17,8 +17,6 @@ export edgeFromLabels
 export get_connection
 export set_connection!
 export build_GKM_connection
-export connection_a_from_con
-export connection_map_from_a
 
 # cohomology.jl
 export is_gkm_class
@@ -33,16 +31,13 @@ export betti_numbers
 # GKMsubgraphs.jl
 export gkm_subgraph_from_vertices
 export gkm_subgraph_from_edges
-export GKM_isValidSubgraph
-export isCompatible
+export is_compatible_with_connection
 
 # curveClasses.jl
 export GKM_second_homology
-export edgeCurveClass
+export curve_class
 export all_classes
-export isEffectiveCurveClass
-export chernNumber
-export isStrictlyNEF
+export is_strictly_nef
 export print_curve_classes
 
 # Seidel_space.jl

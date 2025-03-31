@@ -10,7 +10,7 @@ from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded
     Mathematically, this follows [GZ01; section 2.2.1](@cite).
 
 !!! warning
-    This will build an Undirected graph. Behaviour with directed graphs as input is not tested.
+    This will build an undirected graph. Behaviour with directed graphs as input is not tested.
 
 # Examples
 ```jldoctest
@@ -55,7 +55,7 @@ GKM graph with 4 nodes, valency 2 and axial function:
 [2>4] -> [1>4] => (-1, 1, 0, 0)
 [2>4] -> [2>3] => (0, 0, -1, 1)
 
-julia> Spoint = gkm_subgraph_from_vertices(G, [1]) # we take the subgraphof one vertex, that is an invariant point
+julia> Spoint = gkm_subgraph_from_vertices(G, [1]) # we take the subgraph of one vertex that is an invariant point
 GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
@@ -91,9 +91,9 @@ function blow_up(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   con = get_connection(gkmSub.super)
   @req !isnothing(con) "Supergraph needs a connection"
 
-  @req GKM_isValidSubgraph(gkmSub) "invalid graph/subgraph pair"
+  @req isvalid(gkmSub) "invalid graph/subgraph pair"
   @req isvalid(con) "invalid connection"
-  @req isCompatible(gkmSub, con) "connection incompatible with subgraph"
+  @req is_compatible_with_connection(gkmSub, con) "connection incompatible with subgraph"
 
   nvSub = n_vertices(gkmSub.self.g)
   nv = n_vertices(gkmSub.super.g)

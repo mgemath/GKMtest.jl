@@ -51,9 +51,7 @@ function Euler_inv(dt::GW_decorated_tree; check_degree::Bool=false)::AbstractAlg
   return res
 end
 
-"""
-Calculate h(epsilon, d) as in [Liu--Sheshmani, Lemma 4.5, p. 16].
-"""
+# Calculate h(epsilon, d) as in [Liu--Sheshmani, Lemma 4.5, p. 16].
 function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check::Bool=true, check_degrees::Bool=false)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
   gkm = con.gkm
@@ -104,9 +102,7 @@ function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check:
   return res
 end
 
-"""
-Calculate b(u,w,a) as in [Liu--Sheshmani, Lemma 4.5, p.16]. C is the coefficient ring
-"""
+# Calculate b(u,w,a) as in [Liu--Sheshmani, Lemma 4.5, p.16]. C is the coefficient ring
 function _b(u::QQMPolyRingElem, w::QQMPolyRingElem, a::ZZRingElem, C::QQMPolyRing)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
   res = C(1) // C(1) # make sure this has FracFieldElem type.
   if a >= 0
