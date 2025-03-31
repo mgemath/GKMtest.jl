@@ -17,8 +17,6 @@ export edgeFromLabels
 export get_connection
 export set_connection!
 export build_GKM_connection
-export connection_a_from_con
-export connection_map_from_a
 
 # cohomology.jl
 export is_gkm_class

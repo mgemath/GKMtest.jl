@@ -1,5 +1,7 @@
 # Cohomology
 
+**TODO (Daniel)**: Write a paragraph, citing the GKM paper, which explains the GKM presentation of $H_T(X;\mathbb{Q})$.
+
 ```@docs
 is_gkm_class
 point_class

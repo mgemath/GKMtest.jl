@@ -4,9 +4,49 @@ import Oscar.has_vertex
 @doc"""
     gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) -> AbstractGKM_subgraph
 
-Return the GKM subgraph induced by the given vertices
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection induced from the supergraph.
+Return the GKM subgraph induced by the given vertices.
+!!! note
+    1. This does not check if the result is a valid GKM graph (use may use `isvalid` for that).
+    2. If possible, the subgraph will be endowed with the connection induced from the supergraph.
+
+# Example
+```jldoctest subgr_from_vert
+julia> G = GKMproj_space(3)
+GKM graph with 4 nodes, valency 3 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_0 => (-1, 0, 1, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+x_3 -> x_0 => (-1, 0, 0, 1)
+x_3 -> x_1 => (0, -1, 0, 1)
+x_3 -> x_2 => (0, 0, -1, 1)
+
+julia> S = gkm_subgraph_from_vertices(G, [2, 3])
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_0 => (-1, 0, 1, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+x_3 -> x_0 => (-1, 0, 0, 1)
+x_3 -> x_1 => (0, -1, 0, 1)
+x_3 -> x_2 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 2 nodes, valency 1 and axial function:
+x_2 -> x_1 => (0, -1, 1, 0)
+
+julia> S.self
+GKM graph with 2 nodes, valency 1 and axial function:
+x_2 -> x_1 => (0, -1, 1, 0)
+
+julia> S.super
+GKM graph with 4 nodes, valency 3 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_0 => (-1, 0, 1, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+x_3 -> x_0 => (-1, 0, 0, 1)
+x_3 -> x_1 => (0, -1, 0, 1)
+x_3 -> x_2 => (0, 0, -1, 1)
+
+```
 """
 function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertices::Vector{Int64}) :: AbstractGKM_subgraph
 
@@ -74,8 +114,6 @@ end
     gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) -> AbstractGKM_subgraph
 
 As before, but the vertices are given by their labels.
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection of the supergraph.
 """
 function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
 
@@ -90,9 +128,36 @@ end
 @doc"""
     gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) -> AbstractGKM_subgraph
     
-Return the GKM subgraph induced by the given edges
-This does not check if the result is a valid GKM graph.
-If possible, the subgraph will be endowed with the connection induced from the supergraph.
+Return the GKM subgraph induced by the given edges.
+!!! note
+    1. This does not check if the result is a valid GKM graph (use `isvalid` for that).
+    2. If possible, the subgraph will be endowed with the connection induced from the supergraph.
+
+# Example
+```jldoctest subgr_from_edges
+julia> G = GKMproj_space(3)
+GKM graph with 4 nodes, valency 3 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_0 => (-1, 0, 1, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+x_3 -> x_0 => (-1, 0, 0, 1)
+x_3 -> x_1 => (0, -1, 0, 1)
+x_3 -> x_2 => (0, 0, -1, 1)
+
+julia> S = gkm_subgraph_from_edges(G, [Edge(1, 2), Edge(2, 3)])
+GKM subgraph of:
+GKM graph with 4 nodes, valency 3 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_0 => (-1, 0, 1, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+x_3 -> x_0 => (-1, 0, 0, 1)
+x_3 -> x_1 => (0, -1, 0, 1)
+x_3 -> x_2 => (0, 0, -1, 1)
+Subgraph:
+GKM graph with 3 nodes, valency 1 and axial function:
+x_1 -> x_0 => (-1, 1, 0, 0)
+x_2 -> x_1 => (0, -1, 1, 0)
+```
 """
 function gkm_subgraph_from_edges(gkm::AbstractGKM_graph, edges::Vector{Edge}) :: AbstractGKM_subgraph
   
