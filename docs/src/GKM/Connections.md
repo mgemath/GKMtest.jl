@@ -11,7 +11,7 @@ A connection ``\nabla`` of a GKM graph ``G`` is a family of connections ``\nabla
 The connection is compatible with the axial function ``\mathrm{w}`` of ``G`` if for all ``e' \in E_p``, there exists an integer ``a`` depending on ``e`` and ``e'`` such that
 
 ```math
-\mathrm{w}(\nabla_e(e'))-\mathrm{w}(e') = a \mathrm{w}(e).
+\mathrm{w}(\nabla_e(e')) = \mathrm{w}(e') - a \mathrm{w}(e).
 ```
 
 If $G$ is the GKM graph of a GKM variety $X$, then these integers $a$ are the degrees of the equivariant line bundles into which $TX$ splits when restricted to the invariant rational curve represented by $e$.
@@ -29,8 +29,7 @@ In those cases, the connection can be computed using `get_connection`.
 If neither of these two conditions hold and $G$ is not the output of a standard construction, a choice of connection can be specified manually using `set_connection!`.
 
 ```@docs
-get_connection
-build_GKM_connection
+get_connection(::GKMtest.AbstractGKM_graph)
 build_GKM_connection
 set_connection!
 isvalid(::GKMtest.GKM_connection; ::Bool)
