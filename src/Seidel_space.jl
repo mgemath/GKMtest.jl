@@ -1,9 +1,78 @@
-#TODO: If calculating GKM_second_homology of the Seidel space takes too long, implement it here.
-
 @doc raw"""
-    Seidel_space(G::AbstractGKM_graph, w::AbstractAlgebra.Generic.FreeModuleElem{R}) -> AbstractGKM_graph
+    Seidel_space(G::AbstractGKM_graph, w::AbstractAlgebra.Generic.FreeModuleElem{R}; basePoint::Int64 = 1) -> AbstractGKM_graph
 
-It constructs the Seidel space of the `G` with weights `w`.
+Construct the Seidel space associated to the GKM graph `G` (representing the GKM variety $X$) and the map $\iota:\mathbb{C}^\times\rightarrow T$ given by the element $w\in\mathfrak{t}$.
+
+# Optional arguments:
+ - `basePoint::Int64`: This is the vertex of `G` so that in the internal presentation of the curve classes of $S_X$, the curve class of the section of $S_X\rightarrow \mathbb{P}^1$
+    associated to the vertex `basePoint` is represented by `(0,...,0,1)`.
+    The first entries correspond to curve classes of $X$. The last is the degree of the curve class projected to $\mathbb{P}^1$.
+
+# Examples
+```jldoctest Seidel_space
+julia> G = projective_space(GKM_graph, 2);
+
+julia> S = Seidel_space(G, gens(G.M)[1])
+GKM graph with 6 nodes, valency 3 and axial function:
+[2]_0 -> [1]_0 => (-1, 1, 0, 0)
+[3]_0 -> [1]_0 => (-1, 0, 1, 0)
+[3]_0 -> [2]_0 => (0, -1, 1, 0)
+[1]_inf -> [1]_0 => (0, 0, 0, -1)
+[2]_inf -> [2]_0 => (0, 0, 0, -1)
+[2]_inf -> [1]_inf => (-1, 1, 0, 1)
+[3]_inf -> [3]_0 => (0, 0, 0, -1)
+[3]_inf -> [1]_inf => (-1, 0, 1, 1)
+[3]_inf -> [2]_inf => (0, -1, 1, 0)
+
+julia> S = Seidel_space(G, gens(G.M)[1] + 7*gens(G.M)[2])
+GKM graph with 6 nodes, valency 3 and axial function:
+[2]_0 -> [1]_0 => (-1, 1, 0, 0)
+[3]_0 -> [1]_0 => (-1, 0, 1, 0)
+[3]_0 -> [2]_0 => (0, -1, 1, 0)
+[1]_inf -> [1]_0 => (0, 0, 0, -1)
+[2]_inf -> [2]_0 => (0, 0, 0, -1)
+[2]_inf -> [1]_inf => (-1, 1, 0, -6)
+[3]_inf -> [3]_0 => (0, 0, 0, -1)
+[3]_inf -> [1]_inf => (-1, 0, 1, 1)
+[3]_inf -> [2]_inf => (0, -1, 1, 7)
+
+julia> print_curve_classes(S)
+[2]_0 -> [1]_0: (1, 0), Chern number: 3
+[3]_0 -> [1]_0: (1, 0), Chern number: 3
+[3]_0 -> [2]_0: (1, 0), Chern number: 3
+[1]_inf -> [1]_0: (0, 1), Chern number: -3
+[2]_inf -> [2]_0: (6, 1), Chern number: 15
+[2]_inf -> [1]_inf: (1, 0), Chern number: 3
+[3]_inf -> [3]_0: (-1, 1), Chern number: -6
+[3]_inf -> [1]_inf: (1, 0), Chern number: 3
+[3]_inf -> [2]_inf: (1, 0), Chern number: 3
+
+```
+Using a different base point does not change the resulting GKM graph but gives a different internal presentation of the curve classes.
+```jldoctest Seidel_space
+julia> S = Seidel_space(G, gens(G.M)[1] + 7*gens(G.M)[2]; basePoint=2)
+GKM graph with 6 nodes, valency 3 and axial function:
+[2]_0 -> [1]_0 => (-1, 1, 0, 0)
+[3]_0 -> [1]_0 => (-1, 0, 1, 0)
+[3]_0 -> [2]_0 => (0, -1, 1, 0)
+[1]_inf -> [1]_0 => (0, 0, 0, -1)
+[2]_inf -> [2]_0 => (0, 0, 0, -1)
+[2]_inf -> [1]_inf => (-1, 1, 0, -6)
+[3]_inf -> [3]_0 => (0, 0, 0, -1)
+[3]_inf -> [1]_inf => (-1, 0, 1, 1)
+[3]_inf -> [2]_inf => (0, -1, 1, 7)
+
+julia> print_curve_classes(S)
+[2]_0 -> [1]_0: (1, 0), Chern number: 3
+[3]_0 -> [1]_0: (1, 0), Chern number: 3
+[3]_0 -> [2]_0: (1, 0), Chern number: 3
+[1]_inf -> [1]_0: (-6, 1), Chern number: -3
+[2]_inf -> [2]_0: (0, 1), Chern number: 15
+[2]_inf -> [1]_inf: (1, 0), Chern number: 3
+[3]_inf -> [3]_0: (-7, 1), Chern number: -6
+[3]_inf -> [1]_inf: (1, 0), Chern number: 3
+[3]_inf -> [2]_inf: (1, 0), Chern number: 3
+```
 """
 function Seidel_space(
   G::AbstractGKM_graph,
@@ -127,7 +196,7 @@ function Seidel_space(
         e = Edge(v1,v2)
         we = G.w[e]
         wz = sum([we[i] * weight[i] for i in 1:r])
-        shiftDict[v2] = shiftDict[v1] -wz * edgeCurveClass(G, e)
+        shiftDict[v2] = shiftDict[v1] -wz * curve_class(G, e)
       end
     end
   end

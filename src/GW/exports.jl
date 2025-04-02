@@ -1,4 +1,4 @@
-export integrateGKM
+export gromov_witten
 export ev
 export class_one
 export Psi
@@ -12,7 +12,7 @@ export _ev
 # QH.jl
 export quantumProduct
 export QH_structure_constants
-export QH_Structure_constants_in_basis
+export QH_structure_constants_in_basis
 export QH_class
 export quantum_product_at_q1
 export c1_at_q1

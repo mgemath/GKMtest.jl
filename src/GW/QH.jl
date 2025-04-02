@@ -1,4 +1,34 @@
-function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
+@doc raw"""
+    QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
+
+Return the structure constants of the equivariant quantum cohomology $QH_T^*(X)$ where $X$ is the GKM variety realizing the GKM graph.
+
+!!! note
+    - This requires `is_strictly_nef(G)==true`, as this guarantees that there are at most finitely many curve classes $\beta$ with non-zero coefficients for $q^\beta$.
+    - If `is_strictly_nef(G)==false`, use the method of `QH_structure_constants` below that specifies a specific $\beta$.
+    - As this computation might be expensive, the result is stored in `G` for later use. If the requested structure constants have been computed before, they will not be
+      computed afresh unless the optional argument `refresh` is set to `true`.
+
+# Output format:
+The output type is `Dict{CurveClass_type, Array{Any, 3}}`.
+If `ans` denotes the returned object, then
+`ans[beta][i, j, k]` is the the $q^\beta$-coefficient of $PD(v_i) \ast PD(v_j)$ localized at $v_k$, where $v_i, v_j, v_k$ represent the fixed points with indices $i,j,k$, respectively, 
+and $PD$ represents the Poincaré dual.
+
+# Optional arguments:
+ - `refresh::Bool`: `false` by default. If `true`, then this will overwrite any previously calculated $QH_T$ structure constants of `G`.
+
+# Example
+```jldoctest QH_structure_constants_all
+julia> P1 = projective_space(GKM_graph, 1);
+
+julia> S = QH_structure_constants(P1; show_progress=false)
+Dict{AbstractAlgebra.FPModuleElem{ZZRingElem}, Array{Any, 3}} with 2 entries:
+  (0) => [t1^2 - 2*t1*t2 + t2^2 0; 0 0;;; 0 0; 0 t1^2 - 2*t1*t2 + t2^2]
+  (1) => [1 1; 1 1;;; 1 1; 1 1]
+```
+"""
+function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false, show_progress::Bool=true)
 
   @req is_strictly_nef(G) "G is not strictly NEF, so need to specify beta"
 
@@ -18,16 +48,16 @@ function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
   maxChernNumber = 2*n
 
   # Generating P_input takes a little if we have many vertices. So we calculate it here and reuse it.
-  println("Building classes to integrate over the moduli space...")
+  show_progress && println("Building classes to integrate over the moduli space...")
   nv = n_vertices(G.g)
   evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
   P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
-  println("Starting integration:")
+  show_progress && println("Starting integration:")
 
   for c in 0:maxChernNumber
     for beta in _effectiveClassesWithChernNumber(GKM_second_homology(G), c)
-      println("Calculating structure constants for $beta, Chern number $c:")
-      QH_structure_constants(G, beta; refresh, P_input)
+      show_progress && println("Calculating structure constants for $beta, Chern number $c:")
+      QH_structure_constants(G, beta; refresh = refresh, P_input = P_input, show_progress = show_progress)
     end
   end
 
@@ -36,7 +66,72 @@ function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
   return G.QH_structure_consts
 end
 
-function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; refresh::Bool=false, P_input=nothing)
+@doc raw"""
+    QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; refresh::Bool=false, P_input=nothing, show_progress::Bool=true)
+
+Return the $q^\beta$-coefficients of the structure constants of the equivariant quantum cohomology $QH_T^*(X)$, where $X$ is the GKM variety realizing the GKM graph.
+
+!!! note
+    - As this computation might be expensive, the result is stored in `G` for later use. If the requested structure constants have been computed before, they will not be
+      computed afresh unless the optional argument `refresh` is set to `true`.
+
+# Output format:
+The output type is `Array{Any, 3}`.
+If`ans` denotes the returned object, then
+`ans[i, j, k]` is the the $q^\beta$-coefficient of $PD(v_i) \ast PD(v_j)$ localized at $v_k$, where $v_i, v_j, v_k$ represent the fixed points with indices $i,j,k$, respectively, 
+and $PD$ represents the Poincaré dual.
+
+# Optional arguments:
+ - `refresh::Bool`: `false` by default. If `true`, then this will overwrite any previously calculated $QH_T$ structure constants of `G`.
+
+# Example
+```jldoctest QH_structure_constants_edge
+julia> P1 = projective_space(GKM_graph, 1);
+
+julia> beta = curve_class(P1, Edge(1, 2));
+
+julia> QH_structure_constants(P1, 0*beta; show_progress=false)
+2×2×2 Array{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}, 3}:
+[:, :, 1] =
+ t1^2 - 2*t1*t2 + t2^2  0
+ 0                      0
+
+[:, :, 2] =
+ 0  0
+ 0  t1^2 - 2*t1*t2 + t2^2
+
+julia> QH_structure_constants(P1, beta; show_progress=false)
+2×2×2 Array{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}, 3}:
+[:, :, 1] =
+ 1  1
+ 1  1
+
+[:, :, 2] =
+ 1  1
+ 1  1
+
+julia> QH_structure_constants(P1, 2*beta; show_progress=false)
+2×2×2 Array{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}, 3}:
+[:, :, 1] =
+ 0  0
+ 0  0
+
+[:, :, 2] =
+ 0  0
+ 0  0
+
+julia> QH_structure_constants(P1, -1 * beta; show_progress=false)
+2×2×2 Array{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}, 3}:
+[:, :, 1] =
+ 0  0
+ 0  0
+
+[:, :, 2] =
+ 0  0
+ 0  0
+```
+"""
+function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; refresh::Bool=false, P_input=nothing, show_progress::Bool=true)
 
   if refresh || !haskey(G.QH_structure_consts, beta)
 
@@ -46,7 +141,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
   
     if beta == zero(parent(beta))
       for i in 1:nv
-        res[i, i, i] = (eulerClass(i, G)//1)^2
+        res[i, i, i] = (euler_class(i, G)//1)^2
       end
       G.QH_structure_consts[beta] = res
       return res
@@ -60,12 +155,12 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
     # Generating P_input actually takes a surprisingly long amount of time for growing number of vertices.
     # For example for n=16 vertices it takes around 10 seconds.
     if isnothing(P_input)
-      println("Building classes to integrate over the moduli space...")
+      show_progress && println("Building classes to integrate over the moduli space...")
       evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
       P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
-      println("Starting integration:")
+      show_progress && println("Starting integration:")
     end
-    res = integrateGKM(G, beta, 3, P_input)
+    res = gromov_witten(G, beta, 3, P_input; show_bar=show_progress)
     G.QH_structure_consts[beta] = res
     return res
   end
@@ -89,20 +184,67 @@ function quantumProduct(
     C = QH_structure_constants(G, beta)
     res = zero(G.equivariantCohomology.cohomRingLocalized)
     for i in 1:nv, j in 1:nv, k in 1:nv
-      eulerI = eulerClass(i, G)
-      eulerJ = eulerClass(j, G)
+      eulerI = euler_class(i, G)
+      eulerJ = euler_class(j, G)
       res += (C[i, j, k] * class1[i] * class2[j] // eulerI // eulerJ) * gens(G.equivariantCohomology.cohomRingLocalized)[k]
     end
     return res
   end
 
   P_input = [ev(1, class1)*ev(2, class2)*ev(3, point_class(v, G)) for v in 1:nv]
-  GW_invts = integrateGKM(G, beta, 3, P_input)
+  GW_invts = gromov_witten(G, beta, 3, P_input)
 
   return sum([GW_invts[i] * gens(G.equivariantCohomology.cohomRingLocalized)[i] for i in 1:nv])
 end
 
-function QH_Structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
+
+@doc raw"""
+    QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
+
+Return all structure constants of `G` that have been calculated so far with respect to the given basis.
+A smart choice of basis can drastically simplify the presentation of the ring $QH_T^*(X)$.
+
+!!! note
+    This does not calculate any structure constants afresh.
+    To do so, use `QH_structure_constants`.
+
+# Output format:
+The same as that of `QH_structure_constants`, i.e. of type `Dict{CurveClass_type, Array{Any, 3}}`.
+
+# Arguments
+ - `G::AbstractGKM_graph`: The GKM graph whose quantum cohomology is of interest.
+ - `b::Matrix`: A matrix whose rows are the desired $H_T^*(\text{pt};\mathbb{Q})$-linear basis of $H_T^*(X;\mathbb{Q})$.
+    The element `b[i,j]` is the localization to the `j`-th fixed point of the `i`-th basis element.
+
+# Examples
+The following example shows that $QH_T(X;\mathbb{Q}) \cong\mathbb{Q}[t_1, t_2, e]/(e^2 - (t_1-t_2)e - q)$ where $e=PD([1:0])$ and $q$
+corresponds to the curve class $[\mathbb{P}^1]\in H_2(\mathbb{P}^1;\mathbb{Z})$.
+```jldoctest
+julia> P1 = projective_space(GKM_graph, 1);
+
+julia> QH_structure_constants(P1; show_progress=false);
+
+julia> P1 = projective_space(GKM_graph, 1);
+
+julia> QH_structure_constants(P1; show_progress=false)
+Dict{AbstractAlgebra.FPModuleElem{ZZRingElem}, Array{Any, 3}} with 2 entries:
+  (0) => [t1^2 - 2*t1*t2 + t2^2 0; 0 0;;; 0 0; 0 t1^2 - 2*t1*t2 + t2^2]
+  (1) => [1 1; 1 1;;; 1 1; 1 1]
+
+julia> t1, t2 = gens(P1.equivariantCohomology.coeffRing);
+
+julia> base = [1 1; t1-t2 0 ];
+
+julia> QH_structure_constants_in_basis(P1, base)
+Dict{AbstractAlgebra.FPModuleElem{ZZRingElem}, Array{Any, 3}} with 2 entries:
+  (0) => [1 0; 0 0;;; 0 1; 1 t1 - t2]
+  (1) => [0 0; 0 1;;; 0 0; 0 0]
+```
+
+**TODO** Add GP2 example as well!
+"""
+
+function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
   s = size(b)
   @req s[1] == s[2] "Base matrix must be square"
   @req s[1] == n_vertices(G.g) "dimension of basis elements must be number of vertices of GKM graph"

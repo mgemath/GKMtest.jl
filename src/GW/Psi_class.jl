@@ -1,9 +1,19 @@
+@doc raw"""
+    Psi(a) -> EquivariantClass
+
+TBW
+"""
 function Psi(a)::EquivariantClass
 
     rule = :(_Psi(dt, $a))
     return EquivariantClass(rule, eval(:((dt) -> $rule)))
 end
 
+@doc raw"""
+    Psi(a::Int...)::EquivariantClass
+
+TBW
+"""
 function Psi(a::Int...)::EquivariantClass
 
     rule = :(_Psi(dt, $a))

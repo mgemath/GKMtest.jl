@@ -25,7 +25,7 @@ function Seidel_element(G::AbstractGKM_graph,
   for c in cMin:cMax
     for b in _effectiveSectionClassesWithChernNumber(SG, c)
       println("Chern number $c, curve class $b:")
-      GW = integrateGKM(SG, b, 1, P; check_degrees=true) #TODO: remove this and have global flag for checking
+      GW = gromov_witten(SG, b, 1, P; check_degrees=true) #TODO: remove this and have global flag for checking
       @req !haskey(res, b) "Cannot have two distinct section classes restricting to the same vertical curve class!"
       res[GH2proj(b)] = [evaluate(GW[i], vcat([g[j] for j in 1:nv], [zero(coeffRing)])) for i in 1:nv]
     end

@@ -1,5 +1,5 @@
 # # * It should probably take the GKM connection as input
-# function integrateGKM(G::AbstractGKM_graph, classes::Vector{FreeModElem{QQMPolyRingElem}})
+# function gromov_witten(G::AbstractGKM_graph, classes::Vector{FreeModElem{QQMPolyRingElem}})
 #   con = build_GKM_connection(G)
 #   R = equivariant_cohomology_ring(G)
 
@@ -66,7 +66,7 @@
 #   println(res)
 # end
 
-# function integrateGKM(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
+# function gromov_witten(G::AbstractGKM_graph, n_marks::Int64, P_input, beta)
 #   con = build_GKM_connection(G)
 #   R = equivariant_cohomology_ring(G)
 #   P = P_input.func
@@ -143,20 +143,59 @@
 # end
 
 @doc raw"""
-    integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true) -> GW invariants
+    gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true) -> GW invariants
 
-Integrate the GW invariant.
+Integrate the class `P_input` over the moduli space $\overline{\mathcal{M}_{0,n}}(X,\beta)$ of genus 0 stable maps to $X$ in class $\beta\in H_2(X;\mathbb{Z})$ with `n_marks`
+marked points.
+The result is an element of $\text{Frac}(H_T^*(\text{pt};\mathbb{Q}))$, i.e. a rational function in $\dim_\mathbb{C}(T)$ many variables.
+
+!!! note
+    If the underlying space is a (smooth projective) GKM variety then the output should in fact live in $H_T^*(\text{pt};\mathbb{Q})$, so it should be 
+    a polynomial in the $\dim_\mathbb{C}(T)$ many variables.
+
+!!! warning
+    The GKM graph `G` must have a connection, as this datum is required by the localization formula [LS17](@cite).
+
+# Arguments
+ - `G::AbstractGKM_graph`: The GKM graph of the target GKM variety $X$.
+ - `beta::CurveClass_type`: The (non-zero) curve class $\beta\in H_2(X;\mathbb{Z})$ in which the image of the stable map should lie.
+    To produce `beta`, use functions like `curve_class` (see [Curve Classes](../GKM/CurveClasses.md)).
+ - `P_input::EquivariantClass`: The equivariant cohomology class on $\overline{\mathcal{M}_{0,n}}(X,\beta)$ that is being integrated.
+    Use the functions `ev`, `class_one`, and `Psi` to produce this. These classes also support arithmetic using `+`, `*`, et cetera.
+ - `show_bar::Bool`: If `true`, a progress bar will be displayed showing the estimated time until completion.
+
+# Example
+```jldoctest gromov_witten
+julia> P2 = projective_space(GKM_graph, 2);
+
+julia> beta = curve_class(P2, Edge(1, 2));
+
+julia> gromov_witten(P2, beta, 1, ev(1, point_class(P2, 1)); show_bar=false)
+0
+
+julia> gromov_witten(P2, beta, 2, ev(1, point_class(P2, 1)) * ev(2, point_class(P2, 2)); show_bar=false)
+1
+
+julia> gromov_witten(P2, beta, 2, ev(1, point_class(P2, 1)) * ev(2, point_class(P2, 1)); show_bar=false)
+1
+
+julia> gromov_witten(P2, beta, 2, ev(1, point_class(P2, 1))^2 * ev(2, point_class(P2, 2)); show_bar=false)
+t1^2 - t1*t2 - t1*t3 + t2*t3
+
+julia> gromov_witten(P2, beta, 3, ev(1, point_class(P2, 1)) * ev(2, point_class(P2, 1)) * ev(3, point_class(P2, 3)); show_bar=false)
+t1 - t2
+```
 """
-function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true, check_degrees::Bool = false)
-  return integrateGKM(G, beta, n_marks, [P_input]; show_bar=show_bar, check_degrees=check_degrees)[1]
+function gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = true, check_degrees::Bool = false)
+  return gromov_witten(G, beta, n_marks, [P_input]; show_bar=show_bar, check_degrees=check_degrees)[1]
 end
 
-function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true, check_degrees::Bool = false)
+function gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true, check_degrees::Bool = false)
 
   inputLength = length(P_input)
   inputSize = size(P_input)
   inputKeys = keys(P_input)
-  @req inputLength > 0 "integrateGKM needs at least one input for P_input..."
+  @req inputLength > 0 "gromov_witten needs at least one input for P_input..."
 
   @req beta != zero(parent(beta)) "Beta must be non-zero"
 

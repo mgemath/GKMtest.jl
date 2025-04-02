@@ -1,3 +1,43 @@
+@doc raw"""
+    line_bundle(G::AbstractGKM_graph, M::AbstractAlgebra.Generic.FreeModule{R}, GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}, weights::Vector{AbstractAlgebra.Generic.FreeModuleElem{R}}) -> GKM_vector_bundle
+
+Return the equivariant line bundle over the GKM graph `G` whose weights over the fixed points are given by `weights`.
+
+# Arguments
+- `g::G::AbstractGKM_graph`: A GKM graph
+- `M::AbstractAlgebra.Generic.FreeModule{R}`: The weight lattice of the torus acting on the line bundle.
+    This is often bigger than the torus acting on `G`, for example when there is an extra scaling-action on the fibres.
+- `GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}`: The inclusion of `G.M` (the weight lattice of the torus acting on `G`) into `M` (the weight lattice of the possibly bigger torus acting on the total space of the line bundle).
+- `weights::Vector{AbstractAlgebra.Generic.FreeModuleElem{R}}`: A vector containing the weight of the fibre of the line bundle over each vertex of `G`.
+
+# Examples
+
+The trivial line bundle $L\rightarrow \mathbb{P}^2$ with scaling action on each fibre.
+Here $T=(\mathbb{C}^\times)^3$ acts on $\mathbb{P}^2$ and $T\times\mathbb{C}^\times$ acts on the total space of $L$, where the 
+extra factor $\mathbb{C}^\times$ scales each fiber and preserves the base.
+```jldoctest line_bundle
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+
+julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[4], gens(M)[4], gens(M)[4]])
+GKM vector bundle of rank 1 over GKM graph with 3 nodes and valency 2 with weights:
+1: (0, 0, 0, 1)
+2: (0, 0, 0, 1)
+3: (0, 0, 0, 1)
+```
+Here is another line bundle on $\mathbb{P}^2$ with a more interesting action than fibrewise scaling:
+```jldoctest line_bundle
+julia> V2 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]])
+GKM vector bundle of rank 1 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, 0, 0, 0)
+2: (0, 1, 0, 0)
+3: (0, 0, 1, 0)
+```
+
+"""
 function line_bundle(
   G::AbstractGKM_graph,
   M::AbstractAlgebra.Generic.FreeModule{R},
@@ -11,25 +51,31 @@ end
 @doc raw"""
     vector_bundle(G::AbstractGKM_graph, M::AbstractAlgebra.Generic.FreeModule{R}, GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}, weights::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}}; calculateConnection::Bool=true) -> GKM_vector_bundle
 
-It constructs the vector bundle given by the following datam:#
+Construct the equivariant vector bundle given by the following datum:#
 # Arguments
-- `g::G::AbstractGKM_graph`: A GKM graph
-- `M::AbstractAlgebra.Generic.FreeModule{R}`: 
+- `g::G::AbstractGKM_graph`: The GKM graph of the base.
+- `M::AbstractAlgebra.Generic.FreeModule{R}`: The weight lattice of the torus acting on the vector bundle.
+    This is often bigger than the torus acting on `G`, for example when there is an extra scaling-action on the fibres.
+- `GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}`: The inclusion of `G.M` (the weight lattice of the torus acting on `G`) into `M` (the weight lattice of the possibly bigger torus acting on the total space of the vector bundle).
+- `weights::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}}`: Over each fixed point (i.e., vertex of `G`), the vector bundle splits into a direct sum of $r$ equivariant line bundles, where $r$ is the rank of the vector bundle.
+    This argument is a matrix such that `weights[i, j]` is the $j$-th weight at the $i$-th vertex.
 
 # Examples
+Let us construct manually (without using `direct_sum()`) the direct sum of the two examples from `line_bundle()`.
 ```jldoctest
 julia> G = projective_space(GKM_graph, 2);
 
 julia> M = free_module(ZZ, 4);
 
-julia> GMtoM = ModuleHomomorphism(G.M, M, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+julia> g = gens(M);
 
-julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]])
-GKM vector bundle of rank 1 over GKM graph with 3 nodes and valency 2 with weights:
-1: (1, 0, 0, 0)
-2: (0, 1, 0, 0)
-3: (0, 0, 1, 0)
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3]]);
 
+julia> V = vector_bundle(G, M, GMtoM, [g[1] g[4]; g[2] g[4]; g[3] g[4]])
+GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, 0, 0, 0), (0, 0, 0, 1)
+2: (0, 1, 0, 0), (0, 0, 0, 1)
+3: (0, 0, 1, 0), (0, 0, 0, 1)
 ```
 """
 function vector_bundle(
@@ -55,16 +101,88 @@ function vector_bundle(
   res =  GKM_vector_bundle(G, M, GMtoM, weights, nothing)
   # build connection if it is unique.
   if calculateConnection
-    get_vector_bundle_connection(res)
+    get_connection(res)
   end
   return res
 end
 
-function vector_bundle_rank(V::GKM_vector_bundle)::Int64
+@doc raw"""
+    rank(V::GKM_vector_bundle) -> Int64
+
+Return the rank of the given GKM vector bundle.
+
+# Example
+```jldoctest rank_bdles
+julia> G = gkm_graph_of_toric(hirzebruch_surface(NormalToricVariety, 5));
+
+julia> M = free_module(ZZ, 5);
+
+julia> g = gens(M);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3], g[4]]);
+
+julia> L = line_bundle(G, M, GMtoM, [g[5], g[5], g[5], g[5]]);
+
+julia> rank(direct_sum(L, L, L))
+3
+```
+
+"""
+function rank(V::GKM_vector_bundle)::Int64
   return size(V.w)[2]
 end
 
-function get_vector_bundle_connection(V::GKM_vector_bundle)
+@doc raw"""
+    get_connection(V::GKM_vector_bundle)
+
+Return the connection of the given vector bundle, if it is unique or has been set manually.
+If the vector bundle does not admit a unique connection and it has not bene set manually, return `nothing`.
+
+# Mathematical description:
+This is the same concept as a [Connection](Connections.md) on a GKM graph.
+Let `G` be the GKM graph that is the basis of the vector bundle `V`.
+Assume that `G` comes from a GKM variety $X$.
+Then each edge of `e` corresponds to an invariant rational curve $C_e$ in $X$.
+If $V$ is an equivariant line bundle overe $X$, then its restriction to $C_e\cong\mathbb{P}^1$ splits into a direct sum of equivariant line bundles.
+This defines a bijection between the direct summands of $V$ at $\text{src}(e)$ and the direct summands of $V$ at $\text{dst}(e)$.
+
+This bijection is recorded in the returned object.
+
+# Example
+```jldoctest get_connection_bdle
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> g = gens(M);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3]]);
+
+julia> V = vector_bundle(G, M, GMtoM, [g[1] g[4]; g[2] g[4]; g[3] g[4]])
+GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, 0, 0, 0), (0, 0, 0, 1)
+2: (0, 1, 0, 0), (0, 0, 0, 1)
+3: (0, 0, 1, 0), (0, 0, 0, 1)
+
+julia> get_connection(V)
+Dict{Tuple{Edge, Int64}, Int64} with 12 entries:
+  (Edge(2, 3), 2) => 2
+  (Edge(1, 2), 1) => 1
+  (Edge(1, 3), 2) => 2
+  (Edge(3, 2), 2) => 2
+  (Edge(2, 1), 2) => 2
+  (Edge(3, 1), 2) => 2
+  (Edge(3, 2), 1) => 1
+  (Edge(1, 2), 2) => 2
+  (Edge(1, 3), 1) => 1
+  (Edge(2, 3), 1) => 1
+  (Edge(2, 1), 1) => 1
+  (Edge(3, 1), 1) => 1
+```
+It is visible here that the vector bundle is a direct sum of two line bundles, since we have `(e, i) => i` for each edge `e` and index `i`.
+The output will be more complicated when the vector bundle does not split into line bundles.
+"""
+function get_connection(V::GKM_vector_bundle)
   if isnothing(V.con)
     V.con = _build_vector_bundle_connection(V)
   end
@@ -78,7 +196,7 @@ function _build_vector_bundle_connection(V::GKM_vector_bundle)
   weights = V.w
 
   G = V.gkm
-  rk = vector_bundle_rank(V)
+  rk = rank(V)
 
   for e in edges(G.g)
     @req !is_zero(G.w[e]) "Weight zero edge found."
@@ -111,6 +229,33 @@ function _build_vector_bundle_connection(V::GKM_vector_bundle)
   return con
 end
 
+@doc raw"""
+    direct_sum(V::GKM_vector_bundle{R}...) -> GKM_vector_bundle
+
+Return the direct sum of the given vector bundles.
+This requires all bundles to have the same base GKM graph and the same character lattice.
+
+# Example
+```jldoctest
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> g = gens(M);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3]]);
+
+julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[4], gens(M)[4], gens(M)[4]]);
+
+julia> V2 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+
+julia> V = direct_sum(V1, V2)
+GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
+1: (0, 0, 0, 1), (1, 0, 0, 0)
+2: (0, 0, 0, 1), (0, 1, 0, 0)
+3: (0, 0, 0, 1), (0, 0, 1, 0)
+```
+"""
 function direct_sum(V::GKM_vector_bundle{R}...)::GKM_vector_bundle where R<:GKM_weight_type
   n = length(V)
   @req n >= 1 "Need at least one direct summand."
@@ -123,15 +268,14 @@ function direct_sum(V::GKM_vector_bundle{R}...)::GKM_vector_bundle where R<:GKM_
   M = V[1].M
   GMtoM = V[1].GMtoM
   weights = hcat((V[i].w for i in 1:n)...)
-  println(typeof(weights))
   res = vector_bundle(G, M, GMtoM, weights)
 
   # infer connection from direct summands
-  if isnothing(get_vector_bundle_connection(res)) && !any([isnothing(get_vector_bundle_connection(V[i])) for i in 1:n])
+  if isnothing(get_connection(res)) && !any([isnothing(get_connection(V[i])) for i in 1:n])
     con = Dict{Tuple{Edge, Int64}, Int64}()
     offset = 0
     for i in 1:n
-      conI = get_vector_bundle_connection(V[i])
+      conI = get_connection(V[i])
       for k in keys(conI)
         e = k[1]
         a = k[2]
@@ -139,7 +283,7 @@ function direct_sum(V::GKM_vector_bundle{R}...)::GKM_vector_bundle where R<:GKM_
         con[(e, a+offset)] = b+offset
         con[(reverse(e), b+offset)] = a+offset
       end
-      offset += vector_bundle_rank(V[i])
+      offset += rank(V[i])
     end
     res.con = con
   end
@@ -154,15 +298,15 @@ function Base.show(io::IO, V::GKM_vector_bundle)
     print(io, "GKM vector bundle")
   else
     # nested printing allowed, preferably terse
-    print(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over GKM graph with $(n_vertices(V.gkm.g)) vertices")
+    print(io, "GKM vector bundle of rank $(rank(V)) over GKM graph with $(n_vertices(V.gkm.g)) vertices")
   end
 end
 
 # detailed show
 function Base.show(io::IO, ::MIME"text/plain", V::GKM_vector_bundle)
 
-  print(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over $(V.gkm) with weights:")
-  rk = vector_bundle_rank(V)
+  print(io, "GKM vector bundle of rank $(rank(V)) over $(V.gkm) with weights:")
+  rk = rank(V)
   for v in 1:n_vertices(V.gkm.g)
     print(io, "\n$(V.gkm.labels[v]): ")
     for i in 1:rk
@@ -174,18 +318,91 @@ function Base.show(io::IO, ::MIME"text/plain", V::GKM_vector_bundle)
   end
 end
 
-function dual_bundle(V::GKM_vector_bundle)::GKM_vector_bundle
+@doc raw"""
+    dual(V::GKM_vector_bundle) -> GKM_vector_bundle
+
+Return the dual equivariant vector bundle.
+
+# Example
+```jldoctest dual_vector_bundles
+julia> G = gkm_graph_of_toric(hirzebruch_surface(NormalToricVariety, 5));
+
+julia> M = free_module(ZZ, 5);
+
+julia> g = gens(M);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3], g[4]]);
+
+julia> L = line_bundle(G, M, GMtoM, [g[5], g[5], g[5], g[5]])
+GKM vector bundle of rank 1 over GKM graph with 4 nodes and valency 2 with weights:
+1: (0, 0, 0, 0, 1)
+2: (0, 0, 0, 0, 1)
+3: (0, 0, 0, 0, 1)
+4: (0, 0, 0, 0, 1)
+
+julia> dual(L)
+GKM vector bundle of rank 1 over GKM graph with 4 nodes and valency 2 with weights:
+1: (0, 0, 0, 0, -1)
+2: (0, 0, 0, 0, -1)
+3: (0, 0, 0, 0, -1)
+4: (0, 0, 0, 0, -1)
+
+```
+"""
+function dual(V::GKM_vector_bundle)::GKM_vector_bundle
   res = vector_bundle(V.gkm, V.M, V.GMtoM, -V.w; calculateConnection=false)
   res.con = V.con
   return res
 end
 
-function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
-  con = get_vector_bundle_connection(V)
+@doc raw"""
+    projectivization(V::GKM_vector_bundle) -> AbstractGKM_graph
+
+Return the projectivisation of the given equivariant vector bundle.
+!!! note
+    If the given bundle does not admit a unique connection, it must be specified manually by setting the field `V.con`.
+
+# Example
+```jldoctest projectivization
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> g = gens(M);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [g[1], g[2], g[3]]);
+
+julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[4], gens(M)[4], gens(M)[4]]);
+
+julia> V2 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+
+julia> V = direct_sum(V1, V2)
+GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
+1: (0, 0, 0, 1), (1, 0, 0, 0)
+2: (0, 0, 0, 1), (0, 1, 0, 0)
+3: (0, 0, 0, 1), (0, 0, 1, 0)
+
+julia> P = projectivization(V)
+GKM graph with 6 nodes, valency 3 and axial function:
+[1]_2 -> [1]_1 => (-1, 0, 0, 1)
+[2]_1 -> [1]_1 => (-1, 1, 0, 0)
+[2]_2 -> [1]_2 => (-1, 1, 0, 0)
+[2]_2 -> [2]_1 => (0, -1, 0, 1)
+[3]_1 -> [1]_1 => (-1, 0, 1, 0)
+[3]_1 -> [2]_1 => (0, -1, 1, 0)
+[3]_2 -> [1]_2 => (-1, 0, 1, 0)
+[3]_2 -> [2]_2 => (0, -1, 1, 0)
+[3]_2 -> [3]_1 => (0, 0, -1, 1)
+```
+The naming convention for the vertices of the projectivization's GKM graph is `[v]_i` where `v` is a vertex of the original GKM graph and `i` is the index
+of the line bundle direct summand to which this vertex of the projectivization corresponds.
+"""
+function projectivization(V::GKM_vector_bundle)::AbstractGKM_graph
+  con = get_connection(V)
   @req !isnothing(con) "GKM vector bundle needs connection for projectivization."
   G = V.gkm
   nv = n_vertices(G.g)
-  rk = vector_bundle_rank(V)
+  rk = rank(V)
 
   Gres = Graph{Undirected}(nv * rk)
   labels = String[]

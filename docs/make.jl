@@ -12,7 +12,7 @@ DocMeta.setdocmeta!(GKMtest, :DocTestSetup, :(using Oscar, GKMtest); recursive=t
 
 pages = [
         "Home" => "index.md",
-        "GKM varieties" => ["GKM" => "GKM/GKM.md", 
+        "GKM varieties" => ["GKM Graphs" => "GKM/GKM.md", 
                             "Constructors" => "GKM/Constructors.md", 
                             "Properties" => "GKM/Properties.md",
                             "Connections" => "GKM/Connections.md", 
@@ -22,7 +22,9 @@ pages = [
                             "Curve Classes" => "GKM/CurveClasses.md",
                             "Vector Bundles" => "GKM/Vectorbundles.md",
                             "Seidel Space" => "GKM/Seidelspace.md"],
-        "GW invariants" => "GW/GW.md",
+        "Gromov--Witten theory & Quantum Cohomology" => ["Gromov--Witten invariants" => "GW/GW.md",
+                                                "Quantum Cohomology" => "GW/QH.md",
+                                                "Seidel Elements / Shift Operators" => "GW/SeidelElements.md"],
         "References" => "references.md"]
 
 makedocs(
