@@ -50,7 +50,7 @@ b -> a => (1, -1)
     3. All edges should be added immediately after calling this function and not changed afterwards.
 
 !!! note
-    After you have added all edges using `add_edge!`, you may use `GKM_initialize!` to calculate the GKM connection (if it is unique) and the curve classes. If you don't do this, those data will be calculated whenever required for the first time.
+    After you have added all edges using `add_edge!`, you may use `initialize!` to calculate the GKM connection (if it is unique) and the curve classes. If you don't do this, those data will be calculated whenever required for the first time.
 
 """
 function gkm_graph(
@@ -88,9 +88,11 @@ end
 
 
 @doc raw"""
-    empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String}) -> AbstractGKM_graph
+    empty_gkm_graph(n::Int64, r::Int64, labels::Vector{String}) -> AbstractGKM_graph
+    empty_gkm_graph(n::Int64, r::Int64, labels::Vector{String}) -> AbstractGKM_graph
 
-Return the GKM graph with `n` fixed points, no edges, valency `val` and vertices labelled by `labels`.
+Return the GKM graph with `n` fixed points, no edges, torus rank `r` and vertices labelled by `labels`.
+Return the GKM graph with `n` fixed points, no edges, torus rank `r` and vertices labelled by `labels`.
 
 ```jldoctest empty_GKM_graph
 julia> G = empty_gkm_graph(2, 2, ["a", "b"])
@@ -98,9 +100,9 @@ GKM graph with 2 nodes, valency 0 and axial function:
 
 ```
 """
-function empty_gkm_graph(n::Int64, val::Int64, labels::Vector{String})
+function empty_gkm_graph(n::Int64, r::Int64, labels::Vector{String})
 
-  return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, val), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
+  return gkm_graph(Graph{Undirected}(n), labels, free_module(ZZ, r), Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}())
 end
 
 @doc raw"""
@@ -126,7 +128,7 @@ b -> a => (1, -1)
 ```
 
 !!! warning    
-    Add all edges immediately after creation. Any curve class or cohomology functionality should only be used after all edges have been added. The same holds for `GKM_initialize!`.
+    Add all edges immediately after creation. Any curve class or cohomology functionality should only be used after all edges have been added. The same holds for `initialize!`.
 """
 function add_edge!(G::AbstractGKM_graph, s::String, d::String, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
 
@@ -160,6 +162,17 @@ end
     valency(G::AbstractGKM_graph) -> Int64
 
 Return the valency of `G`, i.e. the degree of each vertex.
+# Example:
+The valency of the GKM graph of $\mathbb{P}^3$ is 3, since all of the fixed points $[1:0:0:0], \dots, [0:0:0:1]$ are connected to each other
+via some $T$-invariant $\mathbb{P}^1$'s. For example, $[1:0:0:0]$ and $[0:1:0:0]$ are connected by $\{[x:y:0:0] : x,y\in\mathbb{C}\}$.
+```jldoctest valency
+julia> valency(projective_space(GKM_graph, 3))
+3
+julia> valency(grassmannian(GKM_graph, 2, 4)) # The Grassmannian of 2-planes in C^4
+4
+julia> valency(flag_variety(GKM_graph, [1, 1, 1, 1])) # The variety of full flags in C^4
+6
+```
 """
 function valency(G::AbstractGKM_graph)
   return length(all_neighbors(G.g, 1))
@@ -170,6 +183,24 @@ end
     rank_torus(G::AbstractGKM_graph) -> Int64
 
 Return the rank of the torus acting on `G`. That is, the rank of the character group.
+
+# Examples
+By default, the torus acting on $\mathbb{P}^n$ is $(\mathbb{C}^\times)^{n+1}$, acting by rescaling the homogeneous coordinates.
+```jldoctest rank_torus
+julia> P3 = projective_space(GKM_graph, 3);
+
+julia> rank_torus(P3)
+4
+```
+Taking products adds the rank:
+```jldoctest rank_torus
+julia> H6 = gkm_graph_of_toric(hirzebruch_surface(NormalToricVariety, 6));
+
+julia> rank_torus(H6)
+4
+julia> rank_torus(H6 * P3)
+8
+```
 """
 function rank_torus(G::AbstractGKM_graph)
   return rank(G.M)
@@ -188,6 +219,31 @@ end
     is3_indep(G::AbstractGKM_graph) -> Bool
 
 Return `true` if `G` is 3-independent, i.e. the weights of every three edges at a vertex are linearly independent.
+# Example
+The weights of $\mathbb{P}^3$ at the fixed point $[1:0:0:0]$ are $\{t_i-t_0:i\in\{1, 2, 3\}\}$, which are linearly independent over $\mathbb{C}$.
+```jldoctest is3_indep
+julia> is3_indep(projective_space(GKM_graph, 3))
+true
+```
+The variety of complete flags in $\mathbb{C}^3$ is an example of a GKM graph that is not 3-independent:
+```jldoctest is3_indep
+julia> G = flag_variety(GKM_graph, [1, 1, 1])
+GKM graph with 6 nodes, valency 3 and axial function:
+13 -> 12 => (0, -1, 1)
+21 -> 12 => (-1, 1, 0)
+23 -> 13 => (-1, 1, 0)
+23 -> 21 => (-1, 0, 1)
+31 -> 13 => (-1, 0, 1)
+31 -> 21 => (0, -1, 1)
+32 -> 12 => (-1, 0, 1)
+32 -> 23 => (0, -1, 1)
+32 -> 31 => (-1, 1, 0)
+
+julia> is3_indep(G)
+false
+```
+!!! warning
+    This function throws an error if the valency of `G` is less than 3, since in this case it is not possible to pick three different edges ta a vertex.
 """
 function is3_indep(G::AbstractGKM_graph)
   return _indep(G, 3)
@@ -212,14 +268,16 @@ function _indep(G::AbstractGKM_graph, k::Int64)
 end
 
 """
-Call this as soon as all edges have been added to the GKM graph to calculate the GKM connection
+    initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveClasses::Bool=true)
+
+You may optionally call this function as soon as all edges have been added to the GKM graph to calculate the GKM connection
 (if unique) and the curve classes of the gkm graph.
-This will set the fields gkm.connection and gkm.curveClasses that are initially nothing.
-If you don't call this, these fields will be initialized later if possible, which might take some time
+This will set the fields `gkm.connection` and `gkm.curveClasses` that are initially `nothing`.
+If you don't call this, these fields will be initialized later if possible, which might take some time at unexpected moments
 (especially for curveClasses).
 If any of those fields are already set, this will not overwrite them.
 """
-function GKM_initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveClasses::Bool=true)
+function initialize!(gkm::AbstractGKM_graph; connection::Bool=true, curveClasses::Bool=true)
 
   if connection
     get_connection(gkm)
@@ -280,6 +338,36 @@ Return true if the GKM graph is valid. This means:
   7. Vertex labels must be unique
   8. The equivariant cohomology ring has rank = number of vertices of graph
   9. The coefficient ring of the equivariant cohomology ring has number of generators = torus rank.
+
+# Examples
+The standard constructions always produce valid GKM graphs, e.g. the complex projective space $\mathbb{P}^3$:
+```jldoctest isvalid_GKM_graph
+julia> isvalid(projective_space(GKM_graph, 3))
+true
+```
+On the other hand, here is an example showing why one should never modify the underlying OSCAR graph of a GKM graph directly:
+```jldoctest isvalid_GKM_graph
+julia> G = empty_gkm_graph(3, 1, ["v1", "v2", "v3"])
+GKM graph with 3 nodes, valency 0 and axial function:
+
+julia> add_edge!(G.g, 1, 2)
+true
+
+julia> isvalid(G)
+The valency is not the same for all vertices
+false
+
+julia> add_edge!(G.g, 1, 3)
+true
+
+julia> add_edge!(G.g, 2, 3)
+true
+
+julia> isvalid(G)
+Weight of Edge(2, 1) is missing.
+false
+```
+Instead, one should add all edges with `add_edge!(G, "v1", "v2", weight)` (see above).
 """
 function isvalid(gkm::AbstractGKM_graph; printDiagnostics::Bool=true)::Bool
 

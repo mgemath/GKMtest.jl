@@ -3,7 +3,7 @@ function Seidel_element(G::AbstractGKM_graph,
     cMax::Int64
   ) where R<:GKM_weight_type
 
-  @req isStrictlyNEF(G) "G is required to be strictly NEF for the full Seidel element."
+  @req is_strictly_NEF(G) "G is required to be strictly NEF for the full Seidel element."
   SG = Seidel_space(G, w) # by default, we take the basepoint 1 here.
 
   nv = n_vertices(G.g)

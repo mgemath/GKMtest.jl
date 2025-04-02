@@ -163,7 +163,7 @@ function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int6
   H2 = GKM_second_homology(G)
   R = G.equivariantCohomology
   res = zeros(R.coeffRingLocalized, inputSize...)
-  if !isEffectiveCurveClass(H2, beta)
+  if !is_effective(H2, beta)
     return res
   end
 

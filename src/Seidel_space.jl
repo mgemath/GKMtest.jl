@@ -168,9 +168,7 @@ function _SeidelSectionCount(SG::AbstractGKM_graph)
   return H2.sectionCount
 end
 
-"""
-Warning: Don't use this on anything that is not the output of Seidel_space(...).
-"""
+# Warning: Don't use this on anything that is not the output of Seidel_space(...).
 function _effectiveSectionClassesWithChernNumber(
   SG::AbstractGKM_graph,
   chernNumber::ZZRingElem;

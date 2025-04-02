@@ -19,6 +19,7 @@ pages = [
                             "Standard Constructions" => "GKM/STDconstructions.md",
                             "Operators" => "GKM/Operators.md", 
                             "Cohomology" => "GKM/Cohomology.md",
+                            "Curve Classes" => "GKM/CurveClasses.md",
                             "Vector Bundles" => "GKM/Vectorbundles.md",
                             "Seidel Space" => "GKM/Seidelspace.md"],
         "GW invariants" => "GW/GW.md",

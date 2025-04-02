@@ -7,4 +7,5 @@ valency
 rank_torus
 is2_indep
 is3_indep
+is_strictly_nef
 ```
