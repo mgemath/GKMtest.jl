@@ -11,7 +11,7 @@ grassmannian
 projective_space
 ```
 
-### Generalized Schubert
+## Generalized Schubert Varieties
 ```@docs
 get_bruhat_order_of_generalized_flag
 generalized_gkm_schubert

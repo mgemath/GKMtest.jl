@@ -1,8 +1,8 @@
-G = GKMproj_space(3)
+G = projective_space(GKM_graph, 3)
 #G = blowupGKM(GKMsubgraph_from_vertices(G, [1, 2])).super
-beta = edgeCurveClass(G, Edge(1, 2))
-class1 = pointClass(1, G)
-class2 = pointClass(2, G)
+beta = curve_class(G, Edge(1, 2))
+class1 = point_class(1, G)
+class2 = point_class(2, G)
 #class3 = pointClass(3, G)
 t1, t2 = gens(G.equivariantCohomology.coeffRing)
 
@@ -26,22 +26,22 @@ end
 # P1 example in nice base:
 
 P1 = GKMproj_space(1)
-beta1 = edgeCurveClass(P1, Edge(1, 2))
+beta1 = curve_class(P1, Edge(1, 2))
 u0, u1 = gens(P1.equivariantCohomology.coeffRing)
 S1 = GKMtest.QH_structure_constants(P1)
 
 base1 = [1 1; u0-u1 0 ]
-SB1 = GKMtest.QH_Structure_constants_in_basis(P1, base1)
+SB1 = GKMtest.QH_structure_constants_in_basis(P1, base1)
 
 # P2 example in nice base:
 
 P2 = GKMproj_space(2)
-beta = edgeCurveClass(P2, Edge(1, 2))
+beta = curve_class(P2, Edge(1, 2))
 u0, u1, u2 = gens(P2.equivariantCohomology.coeffRing)
 S2 = GKMtest.QH_structure_constants(P2)
 
 base = [1 1 1 ; u0-u2 u1-u2 0 ; (u0-u1)*(u0-u2) 0 0 ]
-SB2 = GKMtest.QH_Structure_constants_in_basis(P2, base)
+SB2 = GKMtest.QH_structure_constants_in_basis(P2, base)
 
 H = [u0, u1, u2]
 quantumProduct(P2, beta, H.-u1, (H.-u2).*(H.-u0)) # evaluates to one, as required!

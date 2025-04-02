@@ -1,7 +1,5 @@
 # Curve Classes
 
-**TODO:** Rename `GKM_second_homology` and `GKM_H2`. 
-
 Given a GKM variety $X$, every edge $e$ of its GKM graph corresponds to a $T$-invariant rational curve $C_e$ in $X$, and hence to a second
 homology class $[C_e]\in H_2(X;\mathbb{Z})$.
 As we discuss in the supporting paper, it turns out that:
