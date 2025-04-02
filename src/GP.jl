@@ -161,13 +161,18 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
         ei = Edge(_v, _w)
         beta = get_root[ei in edges(g) ? ei : reverse(ei)]
         
-        a[(Edge(E[i], E[3-i]), ei)] = -ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
+        # Daniel: I removed the minus sign here, as otherwise we got an error
+        # for A1. (We always need to have a[(e,e)] = 2 and it was -2.).
+        # However, we still get an error for full flags in type A2!
+        # So there is some inconsistency with the weights and the a's.
+        a[(Edge(E[i], E[3-i]), ei)] = ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
       end
     end
   end
-# println(a)
-  #TODO define connection using a
-  return gkm_graph(g, labs, M, W)
+  GP = gkm_graph(g, labs, M, W)
+  con = build_GKM_connection(GP, a)
+  set_connection!(GP, con)
+  return GP
 end
 
 function _dimension_ambient(RT::Tuple{Symbol, Int64})::Int64
