@@ -15,5 +15,5 @@ blow_up
 
 ## Products
 ```@docs
-*
+*(::GKMtest.AbstractGKM_graph, ::GKMtest.AbstractGKM_graph)
 ```

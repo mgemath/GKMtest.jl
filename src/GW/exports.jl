@@ -10,7 +10,7 @@ export Euler_inv
 export _ev
 
 # QH.jl
-export quantumProduct
+export quantum_product
 export QH_structure_constants
 export QH_structure_constants_in_basis
 export QH_class
