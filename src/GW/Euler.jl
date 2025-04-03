@@ -90,7 +90,7 @@ function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check:
 
   if check_degrees
     r = valency(R.gkm)
-    ce = chernNumber(e, R.gkm)
+    ce = chern_number(e, R.gkm)
     corDeg = -(r-1) - d * ce
     if corDeg != _get_degree(res)
       println("Wrong h class for e=$e, d=$d")

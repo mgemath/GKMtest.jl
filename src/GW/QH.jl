@@ -3,9 +3,11 @@
 
 Return the structure constants of the equivariant quantum cohomology $QH_T^*(X)$ where $X$ is the GKM variety realizing the GKM graph.
 
-!!! note
+!!! warning
     - This requires `is_strictly_nef(G)==true`, as this guarantees that there are at most finitely many curve classes $\beta$ with non-zero coefficients for $q^\beta$.
     - If `is_strictly_nef(G)==false`, use the method of `QH_structure_constants` below that specifies a specific $\beta$.
+
+!!! note
     - As this computation might be expensive, the result is stored in `G` for later use. If the requested structure constants have been computed before, they will not be
       computed afresh unless the optional argument `refresh` is set to `true`.
 
@@ -167,7 +169,32 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
   return G.QH_structure_consts[beta]
 end
 
-function quantumProduct(
+@doc raw"""
+    quantum_product(G::AbstractGKM_graph, beta::CurveClass_type, class1, class2; useStructureConstants::Bool = true)
+
+Calculate the $q^\beta$-coefficient of the equivariant quantum product of the equivariant cohomology classes `class1` and `class2` on `G`.
+This does not require
+
+If the optional argument `useStructureConstants` is set to `false`, then this will always calculate the relevant Gromov--Witten invariants
+freshly using `gromov_witten`, even if they have been calculated before.
+
+# Example
+```jldoctest quantum_product
+julia> P2 = projective_space(GKM_graph, 2);
+
+julia> beta = curve_class(P2, Edge(1, 2));
+
+julia> quantum_product(P2, beta, point_class(P2, 1), point_class(P2, 2))
+(t1 - t3, t2 - t3, 0)
+
+julia> quantum_product(P2, 0*beta, point_class(P2, 1), point_class(P2, 2))
+(0, 0, 0)
+
+julia> quantum_product(P2, 2*beta, point_class(P2, 1), point_class(P2, 2))
+(0, 0, 0)
+```
+"""
+function quantum_product(
   G::AbstractGKM_graph,
   beta::CurveClass_type,
   class1, #class1 and class2 should be free module elements over the coefficient ring (or its frac field)
@@ -181,7 +208,7 @@ function quantumProduct(
   nv = n_vertices(G.g)
 
   if useStructureConstants
-    C = QH_structure_constants(G, beta)
+    C = QH_structure_constants(G, beta; show_progress=false)
     res = zero(G.equivariantCohomology.cohomRingLocalized)
     for i in 1:nv, j in 1:nv, k in 1:nv
       eulerI = euler_class(i, G)
@@ -219,7 +246,7 @@ The same as that of `QH_structure_constants`, i.e. of type `Dict{CurveClass_type
 # Examples
 The following example shows that $QH_T(X;\mathbb{Q}) \cong\mathbb{Q}[t_1, t_2, e]/(e^2 - (t_1-t_2)e - q)$ where $e=PD([1:0])$ and $q$
 corresponds to the curve class $[\mathbb{P}^1]\in H_2(\mathbb{P}^1;\mathbb{Z})$.
-```jldoctest
+```jldoctest QH_structure_constants_in_basis
 julia> P1 = projective_space(GKM_graph, 1);
 
 julia> QH_structure_constants(P1; show_progress=false);
@@ -241,9 +268,46 @@ Dict{AbstractAlgebra.FPModuleElem{ZZRingElem}, Array{Any, 3}} with 2 entries:
   (1) => [0 0; 0 1;;; 0 0; 0 0]
 ```
 
-**TODO** Add GP2 example as well!
-"""
+Similarly, choosing a nice basis simplifies the presentation of $QH_T(\mathbb{P}^2)$.
+By the below, it is isomorphic as $H_T^*(\text{pt};\mathbb{Q})$-algebra to
+$\mathbb{Q}[t_1,t_2,t_3, e, 1]/(e(e-t_1+t_2)(e-t_1+t_3) - q)$, 
+where $e = PD(\mathbb{P}^1_{[x:y:0]})$.
+```jldoctest QH_structure_constants_in_basis
+julia> P2 = projective_space(GKM_graph, 2);
 
+julia> QH_structure_constants(P2; show_progress=false); # Calculate all relevant structure constants.
+
+julia> (t1, t2, t3) = gens(P2.equivariantCohomology.coeffRing);
+
+julia> base = [1 1 1; t1-t3 t2-t3 0 ; (t1-t2)*(t1-t3) 0 0];
+
+julia> S = QH_structure_constants_in_basis(P2, base)
+Dict{AbstractAlgebra.FPModuleElem{ZZRingElem}, Array{Any, 3}} with 2 entries:
+  (0) => [1 0 0; 0 0 0; 0 0 0;;; 0 1 0; 1 t2 - t3 0; 0 0 0;;; 0 0 1; 0 1 t1 - t3; 1 t1 - t3 t1^2 - t1*t2 - t1*t3 + t2*t3]
+  (1) => [0 0 0; 0 0 1; 0 1 t1 - t2;;; 0 0 0; 0 0 0; 0 0 1;;; 0 0 0; 0 0 0; 0 0 0]
+
+julia> beta = curve_class(P2, Edge(1, 2));
+
+julia> S[beta][:,:,1]
+3×3 Matrix{Any}:
+ 0  0  0
+ 0  0  1
+ 0  1  t1 - t2
+
+julia> S[beta][:,:,2]
+3×3 Matrix{Any}:
+ 0  0  0
+ 0  0  0
+ 0  0  1
+
+julia> S[beta][:,:,3]
+3×3 Matrix{Any}:
+ 0  0  0
+ 0  0  0
+ 0  0  0
+```
+
+"""
 function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
   s = size(b)
   @req s[1] == s[2] "Base matrix must be square"
@@ -264,7 +328,7 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
   for beta in keys(G.QH_structure_consts)
     resBeta = zeros(G.equivariantCohomology.coeffRingLocalized, (nv, nv, nv)...)
     for i in 1:nv, j in 1:nv
-      prodIJ = quantumProduct(G, beta, baseClasses[i], baseClasses[j])
+      prodIJ = quantum_product(G, beta, baseClasses[i], baseClasses[j])
       prodIJVect = [prodIJ[k] for k in 1:nv]
       inBasis = bMatrixInv * prodIJVect
       resBeta[i,j,:] = inBasis
@@ -274,9 +338,38 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
   return res
 end
 
+
+@doc raw"""
+    quantum_product_at_q1(G::AbstractGKM_graph, class)
+
+Return the matrix of equivariant quantum multiplication on `G` by the class `class` after setting $q=1$.
+
+!!! note
+    This matrix is in the basis $(1, 0, \dots, 0), (0, 1, 0,.\dots, 0), \dots, (0,\d0ts,0,1)$ of $H_T^*(X;\mathbb{Q})$ localized at the 
+    fraction field of the coefficient ring. These classes do not represent classes in $H_T^*(X;\mathbb{Q})$ without localizing the coefficient ring,
+    so in particular the output will consist of rational functions even when `G` is the GKM graph of a (smooth projective) GKM variety.
+
+!!! warning
+    This requires `is_strictly_nef(G)==true` as otherwise the quantum product might have infinitely many summands, so setting $q=1$ is not well-defined.
+
+# Example
+```jldoctest quantum_product_at_q1
+julia> P1 = projective_space(GKM_graph, 1);
+
+julia> quantum_product_at_q1(P1, point_class(P1, 1))
+[(t1^2 - 2*t1*t2 + t2^2 + 1)//(t1 - t2)    1//(t1 - t2)]
+[                         -1//(t1 - t2)   -1//(t1 - t2)]
+
+julia> (t1, t2) = gens(P1.equivariantCohomology.coeffRing);
+
+julia> quantum_product_at_q1(P1, [t1, t2])
+[(t1^2 - t1*t2 + 1)//(t1 - t2)                    1//(t1 - t2)]
+[                -1//(t1 - t2)   (t1*t2 - t2^2 - 1)//(t1 - t2)]
+```
+"""
 function quantum_product_at_q1(G::AbstractGKM_graph, class)
 
-  SC = QH_structure_constants(G)
+  SC = QH_structure_constants(G; show_progress=false)
   nv = n_vertices(G.g)
 
   M = zero_matrix(G.equivariantCohomology.coeffRingLocalized, nv, nv)
@@ -284,7 +377,7 @@ function quantum_product_at_q1(G::AbstractGKM_graph, class)
 
   for beta in keys(SC)
     for i in 1:nv
-      cg = quantumProduct(G, beta, class, g[i])
+      cg = quantum_product(G, beta, class, g[i])
       M[i,:] += [cg[j] for j in 1:nv]
 
     end
@@ -293,13 +386,62 @@ function quantum_product_at_q1(G::AbstractGKM_graph, class)
   return M
 end
 
+@doc raw"""
+    c1_at_q1(G::AbstractGKM_graph)
+
+The same as `quantum_product_at_q1(G, first_chern_class(G))` (see above).
+
+# Example
+```jldoctest c1_at_q1
+julia> c1_at_q1(projective_space(GKM_graph, 1))
+[(t1^2 - 2*t1*t2 + t2^2 + 2)//(t1 - t2)                              2//(t1 - t2)]
+[                         -2//(t1 - t2)   (-t1^2 + 2*t1*t2 - t2^2 - 2)//(t1 - t2)]
+```
+"""
 function c1_at_q1(G::AbstractGKM_graph)
   return quantum_product_at_q1(G, first_chern_class(G))
 end
 
-"""
-Return the eigenvalues of quantum multiplication by the first Chern class of the tangent bundle at q=1, t=0,
-where t are the equivariant parameters.
+@doc raw"""
+    conjecture_O_eigenvalues(G::AbstractGKM_graph; printData::Bool=true)
+
+Return the eigenvalues of quantum multiplication by $c_1^T(TX)$, the equivariant first Chern class of the tangent bundle at $q=1, t=0$,
+where $t$ are the equivariant parameters.
+
+!!! warning
+    This requires `is_strictly_nef(G)==true` as otherwise the quantum product might have infinitely many summands, so setting $q=1$ is not well-defined.
+
+# Example
+```jldoctest conjecture_O_eigenvalues
+julia> c1_at_q1(projective_space(GKM_graph, 1))
+[(t1^2 - 2*t1*t2 + t2^2 + 2)//(t1 - t2)                              2//(t1 - t2)]
+[                         -2//(t1 - t2)   (-t1^2 + 2*t1*t2 - t2^2 - 2)//(t1 - t2)]
+
+julia> conjecture_O_eigenvalues(projective_space(GKM_graph, 1))
+Characteristic poly of c1(TX)* at q=1, t=0:
+x^2 - 4
+2-element Vector{QQBarFieldElem}:
+ Root 2.00000 of x - 2
+ Root -2.00000 of x + 2
+
+julia> conjecture_O_eigenvalues(projective_space(GKM_graph, 2))
+Characteristic poly of c1(TX)* at q=1, t=0:
+x^3 - 27
+3-element Vector{QQBarFieldElem}:
+ Root 3.00000 of x - 3
+ Root -1.50000 + 2.59808*im of x^2 + 3x + 9
+ Root -1.50000 - 2.59808*im of x^2 + 3x + 9
+
+julia> conjecture_O_eigenvalues(projective_space(GKM_graph, 3))
+Characteristic poly of c1(TX)* at q=1, t=0:
+x^4 - 256
+4-element Vector{QQBarFieldElem}:
+ Root 4.00000 of x - 4
+ Root -4.00000 of x + 4
+ Root 4.00000*im of x^2 + 16
+ Root -4.00000*im of x^2 + 16
+
+```
 """
 function conjecture_O_eigenvalues(G::AbstractGKM_graph; printData::Bool=true)
   c1Mat = c1_at_q1(G)
@@ -313,7 +455,27 @@ function conjecture_O_eigenvalues(G::AbstractGKM_graph; printData::Bool=true)
   return roots(QQBar, chi0)
 end
 
-function QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool = true)::Bool
+@doc raw"""
+    QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool) -> Bool
+
+Return whether the calculated structure constants of $QH_T^*(X)$ are associative.
+If `G` is the GKM graph of a (smooth projective) GKM variety, then this should always return `true`.
+
+!!! warning
+    This requires `is_strictly_nef(G)==true` as otherwise there might be infinitely many structure constants to check.
+
+# Optional arguments
+ - `printDiagnostics::Bool`: If this is `true` and the function's output is `false`, then the indices where associativity fails are printed.
+
+# Example
+```jldoctest QH_is_associative
+julia> P3 = projective_space(GKM_graph, 3);
+
+julia> QH_is_associative(P3)
+true
+```
+"""
+function QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool = true)::Bool #TODO: make this usable with non-nef spaces!
   nv = n_vertices(G.g)
   g = [QH_class(G, x) for x in gens(G.equivariantCohomology.cohomRingLocalized)]
   for i in 1:nv, j in 1:nv, k in 1:nv
@@ -325,7 +487,24 @@ function QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool = true):
   return true
 end
 
-function QH_is_commutative(G::AbstractGKM_graph)::Bool
+@doc raw"""
+    QH_is_commutative(G::AbstractGKM_graph) -> Bool
+
+Return whether the calculated structure constants of $QH_T^*(X)$ are commutative.
+If `G` is the GKM graph of a (smooth projective) GKM variety, then this should always return `true`.
+
+!!! warning
+    This requires `is_strictly_nef(G)==true` as otherwise there might be infinitely many structure constants to check.
+
+# Example
+```jldoctest QH_is_commutative
+julia> P3 = projective_space(GKM_graph, 3);
+
+julia> QH_is_commutative(P3)
+true
+```
+"""
+function QH_is_commutative(G::AbstractGKM_graph)::Bool #TODO: make this usable with non-nef spaces!
   nv = n_vertices(G.g)
   g = [QH_class(G, x) for x in gens(G.equivariantCohomology.cohomRingLocalized)]
   for i in 1:nv, j in 1:nv
@@ -336,6 +515,25 @@ function QH_is_commutative(G::AbstractGKM_graph)::Bool
   return true
 end
 
+
+@doc raw"""
+    QH_is_polynomial(G::AbstractGKM_graph) -> Bool
+
+Return whether all structure constants of the equivariant quantum product of `G` calculated so far are polynomial (rather than fractions of polynomials).
+!!! note
+    This does not calculate any structure constants afresh but checks all constants calculated so far.
+    To calculate them, use `QH_structure_constants` (see above).
+
+# Example
+```jldoctest QH_is_polynomial
+julia> P3 = projective_space(GKM_graph, 3);
+
+julia> QH_structure_constants(P3; show_progress=false);
+
+julia> QH_is_polynomial(P3)
+true
+```
+"""
 function QH_is_polynomial(G::AbstractGKM_graph)::Bool
   S = G.QH_structure_consts
   for b in keys(S)
@@ -350,6 +548,24 @@ function QH_is_polynomial(G::AbstractGKM_graph)::Bool
   return true
 end
 
+"""
+    QH_is_homogeneous(G::AbstractGKM_graph) -> Bool
+
+Return whether all structure constants of the equivariant quantum product of `G` calculated so far are homogeneous.
+!!! note
+    This does not calculate any structure constants afresh but checks all constants calculated so far.
+    To calculate them, use `QH_structure_constants` (see above).
+
+# Example
+```jldoctest
+julia> P3 = projective_space(GKM_graph, 3);
+
+julia> QH_structure_constants(P3; show_progress=false);
+
+julia> QH_is_homogeneous(P3)
+true
+```
+"""
 function QH_is_homogeneous(G::AbstractGKM_graph)::Bool
   S = G.QH_structure_consts
   for b in keys(S)
@@ -364,8 +580,14 @@ function QH_is_homogeneous(G::AbstractGKM_graph)::Bool
   return true
 end
 
-# Return all QH structure constants that are nonzero and have been calculated.
-# This does not calculate potentially non-zero constants that have not yet been calculated.
+"""
+    QH_supporting_curve_classes(G::AbstractGKM_graph)
+
+Return a list of all curve classes of `G` in which a non-zero structure constant for the equivariant quantum product has been calculated.
+!!! note
+    This does not calculate any structure constants afresh but works with all constants calculated so far.
+    To calculate them, use `QH_structure_constants` (see above).
+"""
 function QH_supporting_curve_classes(G::AbstractGKM_graph)
   S = G.QH_structure_consts
   res = CurveClass_type[]

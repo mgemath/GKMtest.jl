@@ -3,6 +3,28 @@ import Oscar: is_zero
 
 _CohomType = Union{AbstractAlgebra.Generic.FreeModuleElem, FreeModElem, Array}
 
+@doc raw"""
+    QH_class(G::AbstractGKM_graph, class; beta::Union{Nothing, CurveClass_type} = nothing)
+
+Turn the given equivariant cohomology class `class` into an equivariant quantum cohomology class on `G`.
+The optional argument `beta` can be used to multiply the result by the coefficient $q^\beta$ for a curve class $\beta$.
+
+# Example
+```jldoctest QH_class
+julia> P2 = projective_space(GKM_graph, 2);
+
+julia> QH_class(P2, point_class(P2, 1))
+(t1^2 - t1*t2 - t1*t3 + t2*t3, 0, 0) q^(0)
+
+julia> QH_class(P2, point_class(P2, 1); beta = curve_class(P2, Edge(1, 2)))
+(t1^2 - t1*t2 - t1*t3 + t2*t3, 0, 0) q^(1)
+
+julia> (t1, t2, t3) = gens(P2.equivariantCohomology.coeffRing); # hyperplane class
+
+julia> QH_class(P2, [t1, t2, t3])
+(t1, t2, t3) q^(0)
+```
+"""
 function QH_class(G::AbstractGKM_graph, class; beta::Union{Nothing, CurveClass_type} = nothing)
   H2 = GKM_second_homology(G)
   if isnothing(beta)
@@ -84,15 +106,45 @@ function *(c::QHRingElem, s)::QHRingElem
   return *(s, c)
 end
 
+@doc raw"""
+    *(c1::QHRingElem, c2::QHRingElem) -> QHRingElem
+
+Multiply the classes `c1` and `c2` using the equivariant quantum product in $QH_T^*(X)$.
+
+!!! warning
+    This requires `is_strictly_nef(G)==true` for the underlying GKM graph `G`.
+    If this does not hold, there could potentially be infinitely many $\beta$ contributing a non-zero $q^\beta$-term to the quantum product.
+    In this case, use `quantum_product` to calculate the coefficient of $q^\beta$ in the quantum product for a specified choice of $\beta$.
+
+# Example
+```jldoctest QH_product_*
+julia> P2 = projective_space(GKM_graph, 2);
+
+julia> (t1, t2, t3) = gens(P2.equivariantCohomology.coeffRing);
+
+julia> H = QH_class(P2, [t1, t2, t3]) # The equivariant hyperplane class as element of QH_T(X)
+(t1, t2, t3) q^(0)
+
+julia> (H - t1) * (H - t2) * (H - t3)
+(1, 1, 1) q^(1)
+
+julia> p = QH_class(P2, point_class(P2, 1))
+(t1^2 - t1*t2 - t1*t3 + t2*t3, 0, 0) q^(0)
+
+julia> p * H
+(t1^3 - t1^2*t2 - t1^2*t3 + t1*t2*t3, 0, 0) q^(0)
+ + (1, 1, 1) q^(1)
+```
+"""
 function *(c1::QHRingElem, c2::QHRingElem)::QHRingElem
   @req c1.gkm == c2.gkm "QH ring elements don't belong to the same GKM graph"
   #calculate QH structure constants in all beta. This throws an error if G is not strictly NEF.
-  SC = QH_structure_constants(c1.gkm)
+  SC = QH_structure_constants(c1.gkm; show_progress=false)
   res = QHRingElem(c1.gkm, Dict{CurveClass_type, QH_coeff_type}())
   for b1 in keys(c1.coeffs)
     for b2 in keys(c2.coeffs)
       for b in keys(SC)
-        tmp = quantumProduct(c1.gkm, b, c1.coeffs[b1], c2.coeffs[b2])
+        tmp = quantum_product(c1.gkm, b, c1.coeffs[b1], c2.coeffs[b2])
         k = b1+b2+b
         if haskey(res.coeffs, k)
           res.coeffs[k] += tmp
