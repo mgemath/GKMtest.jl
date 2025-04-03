@@ -14,7 +14,7 @@ is the degree of the curve projected along $S_X\rightarrow\mathbb{P}^1$.
  - The inclusions of the fibre $X$ over $0$ and $\infty$ simply send $\beta \mapsto (\beta,0)$.
  - Each fixed point $v\in X^T$ gives an invariant curve that is a section of $S_X\rightarrow \mathbb{P}^1$.
     Its curve class is $(\beta_v,1)$, where the $\beta_v$ are only uniquely determined up to an overall constant.
-    The Seidle space used in this function is normalized such that $\beta_1=0$, where $1$ is the fixed point represented by the GKM graph vertex with index `1`.
+    The Seidel space used in this function is normalized such that $\beta_1=0$, where $1$ is the fixed point represented by the GKM graph vertex with index `1`.
 
 # Example
 ```jldoctest
