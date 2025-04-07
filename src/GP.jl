@@ -124,54 +124,124 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
   end
 
   gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
-  labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
+  # labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
+  labs = ["$i" for i in 1:length(reprs)]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
   M = free_module(parent(zero(type_of_graph)), n_columns(gen_matrix))
   W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{type_of_graph}}()
 
+  # println("cosets[1] = $(cosets[1])")
+  # println("cosets[2] = $(cosets[2])")
+  # println("cosets[3] = $(cosets[3])")
   get_root = Dict{Edge, RootSpaceElem}()
 
   for i in 1:length(reprs)
-    r1 = reprs[i]
-    for t in positive_roots(R)
+    omega = reprs[i]
+    for t in positive_roots(R)  #Delta_G
+
+      # Remove roots from S
+      reflection(t) in WP && continue  #now I run on Delta_G,K
+      
+      # A representative of the coset which we are connecting to
       # new_rep = reflection(t)*r1
-      new_rep = r1*reflection(t)
-      j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
+      
+      # new_rep = reflection(t*r1)
+      # new_rep = reflection(t)*r1
+      new_rep = omega*reflection(t)   # w*sigma_t
+      # j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
+      # j = findfirst(index ->  (index != i && new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
+
+      # Find the representative of the new coset smallest length
+      j = findfirst(var ->  var != i && new_rep in cosets[var], 1:length(reprs)) #change index != i if you want double ways 
+      # j === nothing && error() # a representative must existk
       j === nothing && continue
-      add_edge!(g, j, i)
-      vec = matrix(parent(zero(type_of_graph)), coefficients(t)*gen_matrix)
-      sign::Int64 = length(r1) < length(new_rep) ? -1 : 1
-      W[Edge(j, i)] = sign*sum(i -> vec[i]*gens(M)[i], 1:rank(M))
-      get_root[Edge(j, i)] = t
+
+      # Let us deal with the weights, we add the weight to W only if (j > i)
+
+      
+      if j > i
+        # We orient the edge from maximum(i,j) to minimum(i,j)
+        add_edge!(g, j, i)
+
+        # We assign a "positive" value if length(r1) < length(reprs[j]), otherwise we assign negative
+        sign::Int64 = (length(omega) < length(reprs[j]) ? -1 : 1)
+
+        # The weight
+        vec = matrix(parent(zero(type_of_graph)), coefficients(t*omega)*gen_matrix)    #t*r1 = w(root)  
+        W[Edge(j, i)] = sign*sum(_i -> vec[_i]*gens(M)[_i], 1:rank(M))
+        
+        println("vec = $vec")
+        println("W[Edge($j, $i)]=$(W[Edge(j, i)])")
+        println("t*omega=$(t*omega)")
+        println("t=$t, omega=$omega")
+        println("")
+        
+      end
+
+      # if i==3
+      #   println("i=$i, j=$j, t*omega=$(t*omega), vec=$(matrix(parent(zero(type_of_graph)), coefficients(t*omega)*gen_matrix))")
+      # end
+
+      # if j==3
+      #   println("i=$i, t*omega=$(t*omega), vec=$(matrix(parent(zero(type_of_graph)), coefficients(t*omega)*gen_matrix))")
+      # end
+
+      # get_root[Edge(i, j)] = is_positive_root(t*r1) ? t*r1 : -t*r1
+      get_root[Edge(i, j)] = t
+      # println(Edge(i, j), " ", t)
+      # println("r1=$r1, reprs[j]=$(reprs[j]), new_rep=$new_rep, t=$t, t*r1=$(t*r1), t*r1^-1=$(t*((r1)^(-1)))")
     end
   end
-
+println(get_root)
 
   ## construct connection
   a::Dict{Tuple{Edge, Edge}, ZZRingElem} = Dict{Tuple{Edge, Edge}, ZZRingElem}()
-  for e in edges(g)
+  # a = Dict()
+  for _v in vertices(g)
+    for _w in all_neighbors(g, _v)
 
-    alpha = get_root[e]
-    E = (src(e), dst(e))
+      alpha = get_root[Edge(_v, _w)]
 
-    for i in 1:2
-      _v = E[i]
-      for _w in all_neighbors(g, _v)
 
-        ei = Edge(_v, _w)
-        beta = get_root[ei in edges(g) ? ei : reverse(ei)]
+      for _u in all_neighbors(g, _v)
+        # e = (_v, _w)
+        # e'= (_v, _u)
+
+        beta = get_root[Edge(_v, _u)]
         
-        # Daniel: I removed the minus sign here, as otherwise we got an error
-        # for A1. (We always need to have a[(e,e)] = 2 and it was -2.).
-        # However, we still get an error for full flags in type A2!
-        # So there is some inconsistency with the weights and the a's.
-        a[(Edge(E[i], E[3-i]), ei)] = ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
+        a[(Edge(_v, _w), Edge(_v, _u))] = ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
       end
     end
   end
+
+  # for e in edges(g)
+
+  #   alpha = get_root[e]
+  #   E = (src(e), dst(e))
+
+  #   for i in 1:2
+  #     _v = E[i]
+  #     for _w in all_neighbors(g, _v)
+
+  #       ei = Edge(_v, _w)
+  #       # beta = get_root[ei in edges(g) ? ei : reverse(ei)]
+  #       beta = get_root[ei]
+        
+  #       # Daniel: I removed the minus sign here, as otherwise we got an error
+  #       # for A1. (We always need to have a[(e,e)] = 2 and it was -2.).
+  #       # However, we still get an error for full flags in type A2!
+  #       # So there is some inconsistency with the weights and the a's.
+  #       # a[(Edge(E[i], E[3-i]), ei)] = ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
+  #       a[(Edge(E[i], E[3-i]), ei), alpha, beta] = ZZ(2*dot(beta, alpha)//dot(alpha, alpha))
+  #     end
+  #   end
+  # end
   GP = gkm_graph(g, labs, M, W)
-  con = build_GKM_connection(GP, a)
-  set_connection!(GP, con)
+  
+  println(a)
+  # con = build_GKM_connection(GP, a)
+  # println(con); 
+  # set_connection!(GP, con)
   return GP
 end
 
