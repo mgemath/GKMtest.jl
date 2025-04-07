@@ -73,6 +73,7 @@ function _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)
   # generate dual cone of effective cone in H2.
   rkH2 = length(gens(H2))
   ImodElts = [ quotientMap(gens(edgeLattice)[i]) for i in 1:nEdges]
+  @req all([!iszero(v) for v in ImodElts]) "Some edge is zero in homology, which cannot happen for smooth projective GKM spaces!"
   I = [[v[j] for j in 1:rkH2] for v in ImodElts]
   C = cone_from_inequalities(-I) # this is the dual cone of the T-invariant curve classes
   s = sum(rays(C))
@@ -150,7 +151,7 @@ function _remove_torsion(M::AbstractAlgebra.FPModule{ZZRingElem})
 
   normalForm, s = snf(M)
   invariantFactors = normalForm.invariant_factors
-  torsionGenerators = Vector{}()
+  torsionGenerators = Vector{AbstractAlgebra.FPModuleElem{ZZRingElem}}()
 
   for i in 1:length(invariantFactors)
     if invariantFactors[i] != 0

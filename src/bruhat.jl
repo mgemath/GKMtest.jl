@@ -187,7 +187,7 @@ s1*s2 -> s1 => (0, -1)
 s1*s2 -> s2 => (-1, -1)
 ```
 
-As before, the subset S can be an subset of simple roots or a subset of indices.
+As before, the subset S can be a subset of simple roots or a subset of indices.
 ```jldoctest generalized_gkm_schubert
 julia> generalized_gkm_schubert(R, [1], "s2")
 GKM subgraph of:

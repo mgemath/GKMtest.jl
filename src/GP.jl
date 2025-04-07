@@ -1,6 +1,6 @@
 export generalized_gkm_flag
 
-
+#TODO: (Daniel:) Should it be "semisimple" group G rather than "simple"?
 @doc raw"""
     generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}) -> AbstractGKM_graph
 
