@@ -1,10 +1,12 @@
 # Constructors
+
 These functions allow the construction of GKM varieties.
 
 ```@docs
 gkm_graph
 empty_gkm_graph
-GKMadd_edge!
+add_edge!
+initialize!
 convert_weights
-GKM_isValid
+isvalid(::GKMtest.AbstractGKM_graph; ::Bool)
 ```

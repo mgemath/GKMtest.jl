@@ -1,11 +1,53 @@
 @doc raw"""
-    get_GKM_connection(gkm::AbstractGKM_graph) -> Union{Nothing, GKM_connection}
+    get_connection(gkm::AbstractGKM_graph) -> Union{Nothing, GKM_connection}
 
-It returns the GKM_connection of the given GKM graph if it is unique or has been set manually.
-If it is unique and hasn't been calculated, it is saved in the gkm object.
-If the connection is not unique and hasn't been defined manually, it returns nothing.
+Return the connection of the given GKM graph if it is unique or has been set manually.
+If it is unique and hasn't been calculated, it is saved in the `gkm` object for later use.
+If the connection is not unique and hasn't been defined manually, return `nothing`.
+
+# Example
+The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$,
+  and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
+# ```jldoctest get_connection
+# julia> G = projective_space(GKM_graph, 2)
+# GKM graph with 3 nodes, valency 2 and axial function:
+# 2 -> 1 => (-1, 1, 0)
+# 3 -> 1 => (-1, 0, 1)
+# 3 -> 2 => (0, -1, 1)
+
+# julia> C = get_connection(G)
+# GKM connection for GKM graph with 3 nodes and valency 2:
+# Connection:
+# Dict{Tuple{Edge, Edge}, Edge} with 12 entries:
+#   (Edge(2, 1), Edge(2, 3)) => Edge(1, 3)
+#   (Edge(1, 3), Edge(1, 2)) => Edge(3, 2)
+#   (Edge(1, 2), Edge(1, 3)) => Edge(2, 3)
+#   (Edge(1, 3), Edge(1, 3)) => Edge(3, 1)
+#   (Edge(3, 1), Edge(3, 2)) => Edge(1, 2)
+#   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+#   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+#   (Edge(3, 1), Edge(3, 1)) => Edge(1, 3)
+#   (Edge(3, 2), Edge(3, 2)) => Edge(2, 3)
+#   (Edge(3, 2), Edge(3, 1)) => Edge(2, 1)
+#   (Edge(2, 3), Edge(2, 1)) => Edge(3, 1)
+#   (Edge(2, 3), Edge(2, 3)) => Edge(3, 2)
+#  a_i's:
+# Dict{Tuple{Edge, Edge}, ZZRingElem} with 12 entries:
+#   (Edge(2, 1), Edge(2, 3)) => 1
+#   (Edge(1, 3), Edge(1, 2)) => 1
+#   (Edge(1, 2), Edge(1, 3)) => 1
+#   (Edge(1, 3), Edge(1, 3)) => 2
+#   (Edge(3, 1), Edge(3, 2)) => 1
+#   (Edge(2, 1), Edge(2, 1)) => 2
+#   (Edge(1, 2), Edge(1, 2)) => 2
+#   (Edge(3, 1), Edge(3, 1)) => 2
+#   (Edge(3, 2), Edge(3, 2)) => 2
+#   (Edge(3, 2), Edge(3, 1)) => 1
+#   (Edge(2, 3), Edge(2, 1)) => 1
+#   (Edge(2, 3), Edge(2, 3)) => 2
+# ```
 """
-function get_GKM_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
+function get_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
   if isnothing(gkm.connection)
     if (valency(gkm) >= 3 && is3_indep(gkm)) || (valency(gkm) == 2 && is2_indep(gkm)) || (valency(gkm)==1)
       gkm.connection = _build_GKM_connection(gkm)
@@ -16,13 +58,42 @@ end
 
 
 @doc raw"""
-    set_GKM_connection!(gkm::AbstractGKM_graph)
+    set_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
 
-It finds, if possible, a GKM connection of G, and save it in the gkm object.
+Manually set the GKM connection of `gkm` to `con`.
+This will overwrite any previously set connection.
+
+# Example
+After building the `GKM_connection` using `build_GKM_connection` like in the example above, we may assign it to the GKM graph using `set_connection!`:
+# ```jldoctest set_connection
+# julia> G = projective_space(GKM_graph, 1);
+
+# julia> a = Dict{Tuple{Edge, Edge}, ZZRingElem}();
+
+# julia> a[(Edge(1, 2), Edge(1, 2))] = 2;
+
+# julia> a[(Edge(2, 1), Edge(2, 1))] = 2;
+
+# julia> C = build_GKM_connection(G, a);
+
+# julia> set_connection!(G, C)
+# GKM connection for GKM graph with 2 nodes and valency 1:
+# Connection:
+# Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+#   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+#  a_i's:
+# Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => 2
+#   (Edge(1, 2), Edge(1, 2)) => 2
+# ```
+# !!! note
+#     In this example, it is unnecessary to set the connection manually, since there is a unique one.
+#     To get it, simply use `get_connection(G)`.
 """
-function set_GKM_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
+function set_connection!(gkm::AbstractGKM_graph, con::GKM_connection)
   @req gkm == con.gkm "Connection belongs to the wrong GKM graph!"
-  @req GKM_isValidConnection(con) "GKM connection is invalid!"
+  @req isvalid(con) "GKM connection is invalid!"
   
   gkm.connection = con
 end
@@ -32,7 +103,7 @@ end
 
 # Warning:
 #   1. This does not save the newly calculated GKM connection in the gkm object.
-#   2. If the connection is unique or was set before, one should instead use get_GKM_connection().
+#   2. If the connection is unique or was set before, one should instead use get_connection().
 #################
 function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   
@@ -69,35 +140,102 @@ function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
           break
         end
       end
+      @req haskey(con, (e, ei)) "No connection image found for ($e, $ei)! The GKM graph does not admit a connection."
     end
   end
 
   return build_GKM_connection(gkm, con)
 end
 
-"""
-Return the GKM connection object (including information of the ai's) determined by the given connection map.
-Warning:
-  1. This function does not check whether the given connection map is valid.
-  2. This does not save the new connection to the gkm object.
+@doc raw"""
+    build_GKM_connection(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}) -> GKM_connection
+
+Return the `GKM_connection` object (including information of the integers $a$) defined by the given connection map.
+!!! warning
+    1. This function does not check whether the given connection map is valid (use `isvalid(::GKM_connection)` for that).
+    2. This does not save the new connection to the gkm object (use `set_connection!(::AbstractGKM_graph, ::GKM_connection)` for that).
+
+# Example
+# ```jldoctest build_GKM_connection_from_a
+# julia> G = projective_space(GKM_graph, 1)
+# GKM graph with 2 nodes, valency 1 and axial function:
+# 2 -> 1 => (-1, 1)
+
+# julia> con = Dict{Tuple{Edge, Edge}, Edge}()
+# Dict{Tuple{Edge, Edge}, Edge}()
+
+# julia> con[(Edge(1, 2), Edge(1, 2))] = Edge(2, 1)
+# Edge(2, 1)
+
+# julia> con[(Edge(2, 1), Edge(2, 1))] = Edge(1, 2)
+# Edge(1, 2)
+
+# julia> C = build_GKM_connection(G, con)
+# GKM connection for GKM graph with 2 nodes and valency 1:
+# Connection:
+# Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+#   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+#  a_i's:
+# Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => 2
+#   (Edge(1, 2), Edge(1, 2)) => 2
+# ```
+# !!! note
+#     In this example, it is unnecessary to define the connection manually, since there is a unique one.
+#     To get it, simply use `get_connection(G)`.
 """
 function build_GKM_connection(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}) :: GKM_connection
   a = connection_a_from_con(gkm, con)
   return GKM_connection(gkm, con, a)
 end
 
-"""
-Warning: this does not save the new connection to the gkm object.
+@doc raw"""
+    build_GKM_connection(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem}) -> GKM_connection
+
+Return the `GKM_connection` object (including the connection map $\nabla$) defined by the given integers `a`.
+
+!!! warning
+    1. This function does not check whether the given connection map is valid (use `isvalid(::GKM_connection)` for that).
+    2. This does not save the new connection to the gkm object (use `set_connection!(::AbstractGKM_graph, ::GKM_connection)` for that).
+
+# Example
+# ```jldoctest build_GKM_connection_from_a
+# julia> G = projective_space(GKM_graph, 1)
+# GKM graph with 2 nodes, valency 1 and axial function:
+# 2 -> 1 => (-1, 1)
+
+# julia> a = Dict{Tuple{Edge, Edge}, ZZRingElem}()
+# Dict{Tuple{Edge, Edge}, ZZRingElem}()
+
+# julia> a[(Edge(1, 2), Edge(1, 2))] = 2
+# 2
+
+# julia> a[(Edge(2, 1), Edge(2, 1))] = 2
+# 2
+
+# julia> C = build_GKM_connection(G, a)
+# GKM connection for GKM graph with 2 nodes and valency 1:
+# Connection:
+# Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+#   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+#  a_i's:
+# Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => 2
+#   (Edge(1, 2), Edge(1, 2)) => 2
+# ```
+# !!! note
+#     In this example, it is unnecessary to define the connection manually, since there is a unique one.
+#     To get it, simply use `get_connection(G)`.
 """
 function build_GKM_connection(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem}) :: GKM_connection
   con = connection_map_from_a(gkm, a)
   return GKM_connection(gkm, con, a)
 end
 
-"""
-Return the ai's belonging to the given GKM connection.
-Warning: This function does not check whether the given connection map is valid.
-"""
+# Return the ai's belonging to the given GKM connection.
+# Warning: This function does not check whether the given connection map is valid.
 function connection_a_from_con(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edge}, Edge}; check::Bool = true)::Dict{Tuple{Edge, Edge}, ZZRingElem}
 
   a = Dict{Tuple{Edge, Edge}, ZZRingElem}()
@@ -136,11 +274,11 @@ function connection_a_from_con(gkm::AbstractGKM_graph, con::Dict{Tuple{Edge, Edg
   return a
 end
 
-"""
-Build the connection map from the given collection of a's [cf. Liu--Sheshmani 2.(b) on p.4]
-Warning: The returned value is only unique if the GKM has no repeated weights at any vertex (which is required for it to be valid).
-"""
+# Build the connection map from the given collection of a's [cf. Liu--Sheshmani 2.(b) on p.4]
+# Warning: The returned value is only unique if the GKM has no repeated weights at any vertex (which is required for it to be valid).
 function connection_map_from_a(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}, ZZRingElem})::Dict{Tuple{Edge, Edge}, Edge}
+
+  #TODO: check uniqueness as well!
 
   con = Dict{Tuple{Edge, Edge}, Edge}()
   for e in edges(gkm.g)
@@ -168,15 +306,38 @@ function connection_map_from_a(gkm::AbstractGKM_graph, a::Dict{Tuple{Edge, Edge}
 end
 
 @doc raw"""
-    GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true) -> Bool
+    isvalid(con::GKM_connection; printDiagnostics::Bool=true) -> Bool
 
-It returns true if the given GKM connection is valid. This holds if and only if all of the following hold:
-  1. con and a are set for all (Edge(v,w), Edge(v,u)) where vw and vu are connected in the graph
-  2. con maps every (e,e) to reverse(e)
-  3. a maps every (e,e) to 2
-  4. Every pair (e,ei) with same source satisfies the relation of the associated a's, i.e. w[ei'] = w[ei] - a[(e,ei)] * w[e]
+Return `true` if the given connection is valid for its GKM graph. This holds if and only if all of the following hold:
+  1. `con.con` and `con.a` are set for all `(Edge(v,w), Edge(v,u))` where $vw$ and $vu$ are edges in the graph
+  2. con maps every `(e,e)` to `reverse(e)`
+  3. a maps every `(e,e)` to `2`
+  4. Every pair of edges `(e,ei)` with same source satisfies the relation of the associated a's (see above), i.e. `con.gkm.w[ei'] = con.gkm.w[ei] - con.a[(e,ei)] * con.gkm.w[e]`
+
+# Example
+# ```jldoctest isvalid_con
+# julia> G = projective_space(GKM_graph, 1);
+
+# julia> C = get_connection(G)
+# GKM connection for GKM graph with 2 nodes and valency 1:
+# Connection:
+# Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+#   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+#  a_i's:
+# Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
+#   (Edge(2, 1), Edge(2, 1)) => 2
+#   (Edge(1, 2), Edge(1, 2)) => 2
+
+# julia> C.con[(Edge(1, 2), Edge(1, 2))] = Edge(1, 2) # Should be Edge(2, 1)!
+# Edge(1, 2)
+
+# julia> isvalid(C)
+# Connection doesn't map (e,e) to reverse(e) for e=Edge(1, 2).
+# false
+# ```
 """
-function GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true)::Bool
+function isvalid(con::GKM_connection; printDiagnostics::Bool=true)::Bool
 
   for e in edges(con.gkm.g)
     if !haskey(con.con, (e,e))
@@ -195,7 +356,7 @@ function GKM_isValidConnection(con::GKM_connection; printDiagnostics::Bool=true)
       printDiagnostics && println("Connection doesn't map (e,e) to reverse(e) for e=$e.")
       return false
     elseif con.con[(reverse(e),reverse(e))] != e
-      printDiagnostics && println("Connection doesn't map (e,e) to reverse(e) for e=$e.")
+      printDiagnostics && println("Connection doesn't map (e,e) to reverse(e) for e=$(reverse(e)).")
       return false
     elseif con.a[(e,e)] != ZZ(2)
       printDiagnostics && println("Connection does not satisfy a(e,e)=2 for e=$e.")

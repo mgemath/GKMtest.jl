@@ -1,20 +1,31 @@
 import Base: *, //, +, -, one, zero, ==
+import Oscar: is_zero
 
 _CohomType = Union{AbstractAlgebra.Generic.FreeModuleElem, FreeModElem, Array}
 
-function QH_class(G::AbstractGKM_graph, class)
+function QH_class(G::AbstractGKM_graph, class; beta::Union{Nothing, CurveClass_type} = nothing)
   H2 = GKM_second_homology(G)
-  beta0 = zero(H2.H2)
+  if isnothing(beta)
+    beta = zero(H2.H2)
+  end
+  return QH_class(G, Dict{CurveClass_type, Any}([beta => class]))
+end
+
+function QH_class(G::AbstractGKM_graph, classes::Dict{CurveClass_type, Any})
+  H2 = GKM_second_homology(G)
   nv = n_vertices(G.g)
   coeffs = Dict{CurveClass_type, QH_coeff_type}()
-  c0 = zero(G.equivariantCohomology.cohomRingLocalized)
   Rloc = G.equivariantCohomology.coeffRingLocalized
   g = gens(G.equivariantCohomology.cohomRingLocalized)
-  for i in 1:nv
-    c0 += Rloc(class[i]) * g[i]
+  for beta in keys(classes)
+    @req parent(beta) == H2.H2 "Beta belongs to the wrong second homology group."
+    c0 = zero(G.equivariantCohomology.cohomRingLocalized)
+    for i in 1:nv
+      c0 += Rloc(classes[beta][i]) * g[i]
+    end
+    coeffs[beta] = c0
   end
-  coeffs[beta0] = c0
-  return QHRingElem(G, coeffs)
+  return _QH_remove_zero_coeffs!(QHRingElem(G, coeffs))
 end
 
 function _QH_remove_zero_coeffs!(c::QHRingElem)::QHRingElem
@@ -161,20 +172,29 @@ function zero(c::QHRingElem)::QHRingElem
   return res
 end
 
+function is_zero(c::QHRingElem)::Bool
+  for b in keys(c.coeffs)
+    if !is_zero(c.coeffs[b])
+      return false
+    end
+  end
+  return true
+end
+
 function ==(c1::QHRingElem, c2::QHRingElem)::Bool
   c1.gkm != c2.gkm && return false
   for b in keys(c1.coeffs)
     if haskey(c2.coeffs, b)
       c1.coeffs[b] != c2.coeffs[b] && return false
     else
-      c1.coeffs[b] != 0 && return false
+      !is_zero(c1.coeffs[b]) && return false
     end
   end
   for b in keys(c2.coeffs)
     if haskey(c1.coeffs, b)
       c2.coeffs[b] != c1.coeffs[b] && return false
     else
-      c2.coeffs[b] != 0 && return false
+      !is_zero(c2.coeffs[b]) && return false
     end
   end
   return true

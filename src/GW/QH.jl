@@ -1,6 +1,6 @@
 function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
 
-  @req isStrictlyNEF(G) "G is not strictly NEF, so need to specify beta"
+  @req is_strictly_nef(G) "G is not strictly NEF, so need to specify beta"
 
   if !refresh && G.know_all_QH_structure_consts
     return G.QH_structure_consts
@@ -20,7 +20,7 @@ function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
   # Generating P_input takes a little if we have many vertices. So we calculate it here and reuse it.
   println("Building classes to integrate over the moduli space...")
   nv = n_vertices(G.g)
-  evClasses = [ev(i, pointClass(j, G)) for i in 1:3, j in 1:nv]
+  evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
   P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
   println("Starting integration:")
 
@@ -51,7 +51,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
       G.QH_structure_consts[beta] = res
       return res
     end
-    if !isEffectiveCurveClass(G, beta)
+    if !is_effective(G, beta)
       G.QH_structure_consts[beta] = res
       return res
     end
@@ -61,7 +61,7 @@ function QH_structure_constants(G::AbstractGKM_graph, beta::CurveClass_type; ref
     # For example for n=16 vertices it takes around 10 seconds.
     if isnothing(P_input)
       println("Building classes to integrate over the moduli space...")
-      evClasses = [ev(i, pointClass(j, G)) for i in 1:3, j in 1:nv]
+      evClasses = [ev(i, point_class(j, G)) for i in 1:3, j in 1:nv]
       P_input = [evClasses[1, i]*evClasses[2, j]*evClasses[3, k] for i in 1:nv, j in 1:nv, k in 1:nv]
       println("Starting integration:")
     end
@@ -96,7 +96,7 @@ function quantumProduct(
     return res
   end
 
-  P_input = [ev(1, class1)*ev(2, class2)*ev(3, pointClass(v, G)) for v in 1:nv]
+  P_input = [ev(1, class1)*ev(2, class2)*ev(3, point_class(v, G)) for v in 1:nv]
   GW_invts = integrateGKM(G, beta, 3, P_input)
 
   return sum([GW_invts[i] * gens(G.equivariantCohomology.cohomRingLocalized)[i] for i in 1:nv])
@@ -152,7 +152,7 @@ function quantum_product_at_q1(G::AbstractGKM_graph, class)
 end
 
 function c1_at_q1(G::AbstractGKM_graph)
-  return quantum_product_at_q1(G, firstChernClass(G))
+  return quantum_product_at_q1(G, first_chern_class(G))
 end
 
 """
@@ -171,11 +171,12 @@ function conjecture_O_eigenvalues(G::AbstractGKM_graph; printData::Bool=true)
   return roots(QQBar, chi0)
 end
 
-function QH_is_associative(G::AbstractGKM_graph)::Bool
+function QH_is_associative(G::AbstractGKM_graph; printDiagnostics::Bool = true)::Bool
   nv = n_vertices(G.g)
   g = [QH_class(G, x) for x in gens(G.equivariantCohomology.cohomRingLocalized)]
   for i in 1:nv, j in 1:nv, k in 1:nv
     if (g[i]*g[j])*g[k] != g[i]*(g[j]*g[k])
+      printDiagnostics && println("Not associative for: ($i, $j, $k)")
       return false
     end
   end
@@ -191,4 +192,45 @@ function QH_is_commutative(G::AbstractGKM_graph)::Bool
     end
   end
   return true
+end
+
+function QH_is_polynomial(G::AbstractGKM_graph)::Bool
+  S = G.QH_structure_consts
+  for b in keys(S)
+    for k in keys(S[b])
+      s = S[b][k]
+      if !_is_polynomial(s)
+        println("QH is not polynomial for curve class $b at index $k.")
+        return false
+      end
+    end
+  end
+  return true
+end
+
+function QH_is_homogeneous(G::AbstractGKM_graph)::Bool
+  S = G.QH_structure_consts
+  for b in keys(S)
+    for k in keys(S[b])
+      s = S[b][k]
+      if !_is_homogeneous(s)
+        println("QH is not homogeneous for curve class $b at index $k.")
+        return false
+      end
+    end
+  end
+  return true
+end
+
+# Return all QH structure constants that are nonzero and have been calculated.
+# This does not calculate potentially non-zero constants that have not yet been calculated.
+function QH_supporting_curve_classes(G::AbstractGKM_graph)
+  S = G.QH_structure_consts
+  res = CurveClass_type[]
+  for b in keys(S)
+    if !all(s -> iszero(s), S[b])
+      push!(res, b)
+    end
+  end
+  return res
 end

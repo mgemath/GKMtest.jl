@@ -1,5 +1,5 @@
 @doc"""
-    blowupGKM(gkmSub::AbstractGKM_subgraph) -> AbstractGKM_subgraph
+    blow_up(gkmSub::AbstractGKM_subgraph) -> AbstractGKM_subgraph
 
 Return the tuple (GKM graph of blowup, GKM graph of exceptional divisor)
 from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded as AbstractGKM_subgraph.
@@ -10,11 +10,11 @@ from (GKM graph, GKM subgraph, connection on supergraph), where both are encoded
     Mathematically, this follows [GZ01; section 2.2.1](@cite).
 
 !!! warning
-    This will build an Undirected graph. Behaviour with directed graphs as input is not tested.
+    This will build an undirected graph. Behaviour with directed graphs as input is not tested.
 
 # Examples
 ```jldoctest
-julia> G = grassmannian(GKM_graph, 1, 3) # 3-dimensional projective space
+julia> G = projective_space(GKM_graph, 3) # 3-dimensional projective space
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
 3 -> 1 => (-1, 0, 1, 0)
@@ -23,7 +23,7 @@ GKM graph with 4 nodes, valency 3 and axial function:
 4 -> 2 => (0, -1, 0, 1)
 4 -> 3 => (0, 0, -1, 1)
 
-julia> S = GKMsubgraph_from_vertices(G, [1, 2]) # we take the subgraph of two vertices, it corresponds to a line
+julia> S = gkm_subgraph_from_vertices(G, [1, 2]) # we take the subgraph of two vertices, it corresponds to a line
 GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
@@ -36,7 +36,7 @@ Subgraph:
 GKM graph with 2 nodes, valency 1 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
 
-julia> blowupSub = blowupGKM(S) # blowup of P3 along the line S
+julia> blowupSub = blow_up(S) # blowup of P3 along the line S
 GKM subgraph of:
 GKM graph with 6 nodes, valency 3 and axial function:
 [1>4] -> [1>3] => (0, 0, -1, 1)
@@ -55,7 +55,7 @@ GKM graph with 4 nodes, valency 2 and axial function:
 [2>4] -> [1>4] => (-1, 1, 0, 0)
 [2>4] -> [2>3] => (0, 0, -1, 1)
 
-julia> Spoint = GKMsubgraph_from_vertices(G, [1]) # we take the subgraphof one vertex, that is an invariant point
+julia> Spoint = gkm_subgraph_from_vertices(G, [1]) # we take the subgraph of one vertex that is an invariant point
 GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 2 -> 1 => (-1, 1, 0, 0)
@@ -67,7 +67,7 @@ GKM graph with 4 nodes, valency 3 and axial function:
 Subgraph:
 GKM graph with 1 nodes, valency 0 and axial function:
 
-julia> blowupPt = blowupGKM(Spoint) # blowup of P3 at a point
+julia> blowupPt = blow_up(Spoint) # blowup of P3 at a point
 GKM subgraph of:
 GKM graph with 6 nodes, valency 3 and axial function:
 [1>3] -> [1>2] => (0, -1, 1, 0)
@@ -86,14 +86,14 @@ GKM graph with 3 nodes, valency 2 and axial function:
 [1>4] -> [1>3] => (0, 0, -1, 1)
 ```
 """
-function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
+function blow_up(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   
-  con = get_GKM_connection(gkmSub.super)
+  con = get_connection(gkmSub.super)
   @req !isnothing(con) "Supergraph needs a connection"
 
-  @req GKM_isValidSubgraph(gkmSub) "invalid graph/subgraph pair"
-  @req GKM_isValidConnection(con) "invalid connection"
-  @req isCompatible(gkmSub, con) "connection incompatible with subgraph"
+  @req isvalid(gkmSub) "invalid graph/subgraph pair"
+  @req isvalid(con) "invalid connection"
+  @req is_compatible_with_connection(gkmSub, con) "connection incompatible with subgraph"
 
   nvSub = n_vertices(gkmSub.self.g)
   nv = n_vertices(gkmSub.super.g)
@@ -104,7 +104,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   c = n - d # codimension
 
   if d == n
-    return (GKMsubgraph_from_vertices(gkmSub.super, Array(1:nv)), con)
+    return (gkm_subgraph_from_vertices(gkmSub.super, Array(1:nv)), con)
   end
   
   externalVertices = Int64[]
@@ -151,7 +151,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
       end
       weight = gkmSub.super.w[Edge(vDict[v], j)] - gkmSub.super.w[Edge(vDict[v], i)]
       newEdge = Edge(_intVindex(v, c, i, normalNeighbors), _intVindex(v, c, j, normalNeighbors))
-      GKMadd_edge!(gkmBlowup, src(newEdge), dst(newEdge), weight)
+      add_edge!(gkmBlowup, src(newEdge), dst(newEdge), weight)
       push!(exceptionalEdges, newEdge)
 
       # println("connection for new edge $newEdge:")
@@ -214,7 +214,7 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
       sInd = _extFlagToIndex(gkmSub, e, normalNeighbors, externalVertices, nvBlowup, c)
       dInd = _extFlagToIndex(gkmSub, reverse(e), normalNeighbors, externalVertices, nvBlowup, c)
       w = gkmSub.super.w[e]
-      GKMadd_edge!(gkmBlowup, sInd, dInd, w)
+      add_edge!(gkmBlowup, sInd, dInd, w)
       _addToConnection!(blowupCon, con, e, Edge(sInd, dInd), flagBij)
     else
 
@@ -228,15 +228,15 @@ function blowupGKM(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
         dIndi = _extFlagToIndex(gkmSub, epi, normalNeighbors, externalVertices, nvBlowup, c)
         w = gkmSub.super.w[e]
 
-        GKMadd_edge!(gkmBlowup, sIndi, dIndi, w)
+        add_edge!(gkmBlowup, sIndi, dIndi, w)
         _addToConnection!(blowupCon, con, e, Edge(sIndi, dIndi), flagBij)
         push!(exceptionalEdges, Edge(sIndi, dIndi))
       end
     end
   end
 
-  set_GKM_connection!(gkmBlowup, build_GKM_connection(gkmBlowup, blowupCon))
-  gkmSubgraphBlowup = GKMsubgraph_from_edges(gkmBlowup, exceptionalEdges)
+  set_connection!(gkmBlowup, build_GKM_connection(gkmBlowup, blowupCon))
+  gkmSubgraphBlowup = gkm_subgraph_from_edges(gkmBlowup, exceptionalEdges)
   
   # Base.show(stdout, MIME"text/plain"(), gkmSubgraphBlowup)
   #println("Resulting connection dict:")

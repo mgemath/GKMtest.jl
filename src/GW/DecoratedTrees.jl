@@ -1,8 +1,6 @@
-"""
-Create a decorated tree corresponding to the given GKM graph from the given data.
-If the tree has a single vertex, it must have at least three marked points.
-Warning: This does not check if the given tree is actually a tree.
-"""
+# Create a decorated tree corresponding to the given GKM graph from the given data.
+# If the tree has a single vertex, it must have at least three marked points.
+# Warning: This does not check if the given tree is actually a tree.
 function decoratedTree(
   gkm::AbstractGKM_graph,
   tree::Graph,
@@ -30,16 +28,12 @@ function decoratedTree(
   return GW_decorated_tree(gkm, tree, vDict, edgeMult, marks)
 end
 
-"""
-Return the image of the edge e of the decorated tree t in the corresponding GKM graph.
-"""
+# Return the image of the edge e of the decorated tree t in the corresponding GKM graph.
 function imageOf(e::Edge, t::GW_decorated_tree)::Edge
   return Edge(t.vDict[src(e)], t.vDict[dst(e)])
 end
 
-"""
-Return the image of the vertex v of the decorated tree t in the corresponding GKM graph
-"""
+# Return the image of the vertex v of the decorated tree t in the corresponding GKM graph
 function imageOf(v::Int, t::GW_decorated_tree)::Int
   return t.vDict[v]
 end

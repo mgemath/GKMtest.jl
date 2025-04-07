@@ -1,6 +1,6 @@
-using Documenter
-using GKMtest
-using DocumenterCitations
+using Documenter, DocumenterCitations
+using Oscar, GKMtest
+
 
 bib = CitationBibliography(
     joinpath(@__DIR__, "src", "gkm_references.bib");
@@ -14,11 +14,14 @@ pages = [
         "Home" => "index.md",
         "GKM varieties" => ["GKM" => "GKM/GKM.md", 
                             "Constructors" => "GKM/Constructors.md", 
-                            "Properties" => "GKM/Properties.md", 
+                            "Properties" => "GKM/Properties.md",
+                            "Connections" => "GKM/Connections.md", 
                             "Standard Constructions" => "GKM/STDconstructions.md",
                             "Operators" => "GKM/Operators.md", 
-                            "Connections" => "GKM/Connections.md",
-                            "Cohomology" => "GKM/Cohomology.md"],
+                            "Cohomology" => "GKM/Cohomology.md",
+                            "Curve Classes" => "GKM/CurveClasses.md",
+                            "Vector Bundles" => "GKM/Vectorbundles.md",
+                            "Seidel Space" => "GKM/Seidelspace.md"],
         "GW invariants" => "GW/GW.md",
         "References" => "references.md"]
 
@@ -29,7 +32,7 @@ makedocs(
     warnonly = true,
     pages = pages,
     plugins=[bib],
-    doctest = false,
+    doctest = true,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

@@ -1,5 +1,3 @@
-import Oscar.direct_sum, Oscar.line_bundle
-
 function line_bundle(
   G::AbstractGKM_graph,
   M::AbstractAlgebra.Generic.FreeModule{R},
@@ -9,6 +7,31 @@ function line_bundle(
   return vector_bundle(G, M, GMtoM, reshape(weights, length(weights), 1))
 end
 
+
+@doc raw"""
+    vector_bundle(G::AbstractGKM_graph, M::AbstractAlgebra.Generic.FreeModule{R}, GMtoM::AbstractAlgebra.Generic.ModuleHomomorphism{R}, weights::Matrix{AbstractAlgebra.Generic.FreeModuleElem{R}}; calculateConnection::Bool=true) -> GKM_vector_bundle
+
+It constructs the vector bundle given by the following datam:#
+# Arguments
+- `g::G::AbstractGKM_graph`: A GKM graph
+- `M::AbstractAlgebra.Generic.FreeModule{R}`: 
+
+# Examples
+```jldoctest
+julia> G = projective_space(GKM_graph, 2);
+
+julia> M = free_module(ZZ, 4);
+
+julia> GMtoM = ModuleHomomorphism(G.M, M, [gens(M)[1], gens(M)[2], gens(M)[3]]);
+
+julia> V1 = line_bundle(G, M, GMtoM, [gens(M)[1], gens(M)[2], gens(M)[3]])
+GKM vector bundle of rank 1 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, 0, 0, 0)
+2: (0, 1, 0, 0)
+3: (0, 0, 1, 0)
+
+```
+"""
 function vector_bundle(
   G::AbstractGKM_graph,
   M::AbstractAlgebra.Generic.FreeModule{R},
@@ -138,17 +161,16 @@ end
 # detailed show
 function Base.show(io::IO, ::MIME"text/plain", V::GKM_vector_bundle)
 
-  println(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over $(V.gkm) with weights:")
+  print(io, "GKM vector bundle of rank $(vector_bundle_rank(V)) over $(V.gkm) with weights:")
   rk = vector_bundle_rank(V)
   for v in 1:n_vertices(V.gkm.g)
-    print(io, "$(V.gkm.labels[v]): ")
+    print(io, "\n$(V.gkm.labels[v]): ")
     for i in 1:rk
       print(io, V.w[v,i])
       if i<rk
         print(io, ", ")
       end
     end
-    print("\n")
   end
 end
 
@@ -177,7 +199,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
   weightType = typeof(_get_weight_type(G))
   res = gkm_graph(Gres, labels, V.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{weightType}}(); checkLabels=false)
 
-  Gcon = get_GKM_connection(G)
+  Gcon = get_connection(G)
   resCon = Dict{Tuple{Edge, Edge}, Edge}()
 
   # add edges corresponding to original edges
@@ -188,7 +210,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
       vInd = (v-1)*rk + i
       j = con[(e, i)]
       wInd = (w-1)*rk + j
-      GKMadd_edge!(res, vInd, wInd, V.GMtoM(G.w[e]))
+      add_edge!(res, vInd, wInd, V.GMtoM(G.w[e]))
 
       if !isnothing(Gcon)
         eNew = Edge(vInd, wInd)
@@ -222,7 +244,7 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
         vjInd = (v-1)*rk + j
         wNew = V.w[v, j] - V.w[v, i]
         @req !iszero(wNew) "Vector bundle has two identical weights over vertex $v (indices $i, $j)"
-        GKMadd_edge!(res, viInd, vjInd, wNew)
+        add_edge!(res, viInd, vjInd, wNew)
 
         if !isnothing(Gcon)
           e = Edge(viInd, vjInd)
@@ -254,10 +276,10 @@ function projective_bundle(V::GKM_vector_bundle)::AbstractGKM_graph
 
   if !isnothing(Gcon)
     resConObj = build_GKM_connection(res, resCon)
-    set_GKM_connection!(res, resConObj)
+    set_connection!(res, resConObj)
   end
 
-  if !GKM_isValid(res)
+  if !isvalid(res)
     println("Warning: resulting projective bundle is not a valid GKM graph (see reason above).")
   end
 

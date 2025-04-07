@@ -52,8 +52,8 @@ function _product(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveCl
   
     if calculateConnection
       # connection for product:
-      con1 = get_GKM_connection(G1)
-      con2 = get_GKM_connection(G2)
+      con1 = get_connection(G1)
+      con2 = get_connection(G2)
       if isnothing(con1) || isnothing(con2)
         calculateConnection = false
       else
@@ -174,11 +174,11 @@ function _product(G1::AbstractGKM_graph, G2::AbstractGKM_graph; calculateCurveCl
 
     if calculateCurveClasses
       dualConeRaySum, C, H2ToCN = _finish_GKM_H2(edgeLattice, H2, q, res, edgeToGenIndex)
-      res.curveClasses = GKM_H2(res, edgeLattice, H2, edgeToGenIndex, q, dualConeRaySum, C, H2ToCN, nothing)
+      res.curveClasses = GKM_H2(res, edgeLattice, H2, edgeToGenIndex, q, dualConeRaySum, C, H2ToCN, nothing, nothing)
     end
     if calculateConnection
       newConObj = build_GKM_connection(res, newCon)
-      set_GKM_connection!(res, newConObj)
+      set_connection!(res, newConObj)
     end
 
     return res

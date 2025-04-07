@@ -163,12 +163,12 @@ function integrateGKM(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int6
   H2 = GKM_second_homology(G)
   R = G.equivariantCohomology
   res = zeros(R.coeffRingLocalized, inputSize...)
-  if !isEffectiveCurveClass(H2, beta)
+  if !is_effective(H2, beta)
     return res
   end
 
   P = [P_input[k].func for k in inputKeys]
-  con = get_GKM_connection(G)
+  con = get_connection(G)
   @req !isnothing(con) "GKM graph needs a connection!"
 
   ########
@@ -269,6 +269,14 @@ function _get_degree(f)
   end
   f = f//1
   return _get_deg_poly(numerator(f)) - _get_deg_poly(denominator(f))
+end
+
+function _is_polynomial(f)
+  if f == 0
+    return true
+  end
+  f = f//1
+  return _get_deg_poly(denominator(f)) == 0
 end
 
 function _get_deg_poly(f)

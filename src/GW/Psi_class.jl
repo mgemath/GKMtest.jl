@@ -62,8 +62,8 @@ function _Psi(dt::GW_decorated_tree, a::Vector{Int64})
 
         for w in all_neighbors(g, v)
             e = Edge(v,w)
-            # wev = weightClass(imageOf(e, dt), R) // edgeMult(e, dt)
-            s1 += edgeMult(e, dt) // weightClass(imageOf(e, dt), dt.gkm) #  1 // wev 
+            # wev = weight_class(imageOf(e, dt), R) // edgeMult(e, dt)
+            s1 += edgeMult(e, dt) // weight_class(imageOf(e, dt), dt.gkm) #  1 // wev 
         end
         ans *= M * (s1^(-Sum_ai))
     end

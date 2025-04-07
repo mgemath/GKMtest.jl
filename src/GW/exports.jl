@@ -19,6 +19,9 @@ export c1_at_q1
 export conjecture_O_eigenvalues
 export QH_is_associative
 export QH_is_commutative
+export QH_is_polynomial
+export QH_is_homogeneous
+export QH_supporting_curve_classes
 
 # Seidel_elements.jl
 export Seidel_element

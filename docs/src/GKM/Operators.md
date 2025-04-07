@@ -1,6 +1,9 @@
 # Operators
+
 ```@docs
-GKMsubgraph_from_vertices
-blowupGKM
+gkm_subgraph_from_vertices
+gkm_subgraph_from_edges
+isvalid(::GKMtest.AbstractGKM_subgraph; ::Bool)
+blow_up
 *
 ```

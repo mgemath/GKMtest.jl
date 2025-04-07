@@ -2,54 +2,42 @@
 
 export GKM_graph #abstract type
 export gkm_graph
-export GKM_initialize!
+export initialize!
 export valency
 export rank_torus
 export connection
 export GKMproj_space
 export is3_indep
 export is2_indep
-export GKMadd_edge!
 export empty_gkm_graph
 # export flag_gkm_graph
-export GKM_isValid
 export edgeFromLabels
 
 # GKMconnections.jl
-export get_GKM_connection
-export set_GKM_connection!
-export build_GKm_connection
-export connection_a_from_con
-export connection_map_from_a
-export GKM_isValidConnection
+export get_connection
+export set_connection!
+export build_GKM_connection
 
 # cohomology.jl
-export isGKMclass
-export weightClass
-export scalar, zero, one, multiply, eulerClass, pointClass, integrateClass, PDClass
-export integrateGKMClass
-export integrateOverEdge
-export firstChernClass
+export is_gkm_class
+export weight_class
+export scalar, zero, one, multiply, euler_class, poincare_dual
+export integrate_gkm_class
+export first_chern_class
 
 # betti.jl
 export betti_numbers
 
 # GKMsubgraphs.jl
-export GKMsubgraph_from_vertices
-export GKMsubgraph_from_edges
-export GKM_isValidSubgraph
-export isCompatible
-
-# blowup.jl
-export blowupGKM
+export gkm_subgraph_from_vertices
+export gkm_subgraph_from_edges
+export is_compatible_with_connection
 
 # curveClasses.jl
 export GKM_second_homology
-export edgeCurveClass
+export curve_class
 export all_classes
-export isEffectiveCurveClass
-export chernNumber
-export isStrictlyNEF
+export is_strictly_nef
 export print_curve_classes
 
 # Seidel_space.jl
