@@ -151,7 +151,7 @@ function _remove_torsion(M::AbstractAlgebra.FPModule{ZZRingElem})
 
   normalForm, s = snf(M)
   invariantFactors = normalForm.invariant_factors
-  torsionGenerators = Vector{AbstractAlgebra.FPModuleElem{ZZRingElem}}()
+  torsionGenerators = Vector{}()
 
   for i in 1:length(invariantFactors)
     if invariantFactors[i] != 0

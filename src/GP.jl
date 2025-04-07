@@ -119,13 +119,18 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
     any(i -> b in cosets[i], 1:index) && continue
     index += 1
     cosets[index] = b .* cosets[index]
+    # cosets[index] = [a * b for a in WP]
     reprs[index] = reduce((x, y) -> length(x) <= length(y) ? x : y,  cosets[index])
     index == length(cosets) && break
   end
 
+  #println("cosets: $cosets")
+  #println("reprs: $reprs")
+
   gen_matrix = AbstractAlgebra.perm(ordering)*block_diagonal_matrix([_generator_matrix(fam) for fam in fams])
-  # labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
-  labs = ["$i" for i in 1:length(reprs)]# repr.(reprs)
+  labs = [replace(repr(r), " " => "") for r in reprs]# repr.(reprs)
+  # println("gen_matrix = $gen_matrix")
+  # labs = ["$i" for i in 1:length(reprs)]# repr.(reprs)
   g = Graph{Undirected}(length(labs))
   M = free_module(parent(zero(type_of_graph)), n_columns(gen_matrix))
   W = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{type_of_graph}}()
@@ -147,7 +152,8 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
       
       # new_rep = reflection(t*r1)
       # new_rep = reflection(t)*r1
-      new_rep = omega*reflection(t)   # w*sigma_t
+      new_rep = omega * reflection(t)   # w*sigma_t
+      # new_rep = reflection(t) * omega
       # j = findfirst(index -> (index > i) && (new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
       # j = findfirst(index ->  (index != i && new_rep in cosets[index]), 1:length(reprs)) #change index != i if you want double ways 
 
@@ -163,18 +169,22 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
         # We orient the edge from maximum(i,j) to minimum(i,j)
         add_edge!(g, j, i)
 
-        # We assign a "positive" value if length(r1) < length(reprs[j]), otherwise we assign negative
-        sign::Int64 = (length(omega) < length(reprs[j]) ? -1 : 1)
+        sign = -1 # This is because the calculated weight is for Edge(i, j), but then we set it for Edge(j, i).
 
-        # The weight
-        vec = matrix(parent(zero(type_of_graph)), coefficients(t*omega)*gen_matrix)    #t*r1 = w(root)  
+        # The weight:-----------------------
+        # Explanation for inv(omega):
+        # OSCAR only supports right mutiplication by Weyl group elements.
+        # to right multiply a root by w = s1 s2 ... sn, it reflects the root first by s1, then by s2, ..., then by sn.
+        # Left multiplication by w should be reflecting the root by sn first, then by s(n-1), ..., then by s2, then by s1.
+        # Thus, omega * t = t * inv(omega).
+        vec = matrix(parent(zero(type_of_graph)), coefficients(t*inv(omega))*gen_matrix)    #t*r1 = w(root)  
         W[Edge(j, i)] = sign*sum(_i -> vec[_i]*gens(M)[_i], 1:rank(M))
         
-        println("vec = $vec")
-        println("W[Edge($j, $i)]=$(W[Edge(j, i)])")
-        println("t*omega=$(t*omega)")
-        println("t=$t, omega=$omega")
-        println("")
+        #println("t=$t, omega=$omega, new_rep = $new_rep, sign  = $sign")
+        #println("t*inv(omega)=$(t*inv(omega))")
+        #println("vec = $vec")
+        #println("W[Edge($j, $i)]=$(W[Edge(j, i)])")
+        #println("")
         
       end
 
@@ -192,7 +202,7 @@ function _generalized_gkm_flag(R::RootSystem, indices_of_S::Vector{Int64})
       # println("r1=$r1, reprs[j]=$(reprs[j]), new_rep=$new_rep, t=$t, t*r1=$(t*r1), t*r1^-1=$(t*((r1)^(-1)))")
     end
   end
-println(get_root)
+  #println(get_root)
 
   ## construct connection
   a::Dict{Tuple{Edge, Edge}, ZZRingElem} = Dict{Tuple{Edge, Edge}, ZZRingElem}()
@@ -238,10 +248,10 @@ println(get_root)
   # end
   GP = gkm_graph(g, labs, M, W)
   
-  println(a)
-  # con = build_GKM_connection(GP, a)
-  # println(con); 
-  # set_connection!(GP, con)
+  #println(a)
+  con = build_GKM_connection(GP, a)
+  #println(con); 
+  set_connection!(GP, con)
   return GP
 end
 
