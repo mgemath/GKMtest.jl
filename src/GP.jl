@@ -1,11 +1,10 @@
 export generalized_gkm_flag
 
-#TODO: (Daniel:) Should it be "semisimple" group G rather than "simple"?
 @doc raw"""
     generalized_gkm_flag(R::RootSystem, S::Vector{RootSpaceElem}) -> AbstractGKM_graph
 
 Given a root system ``R`` and a subset ``S`` of the set of simple roots, it constructs the 
-GKM graph of the generalized flag variety ``G/P``. Here ``G`` is the simple connected complex Lie group 
+GKM graph of the generalized flag variety ``G/P``. Here ``G`` is the simply-connected complex Lie group 
 with root system ``R``, and ``P`` is the parabolic subgroup with root system ``S``.
 If ``S`` is empty, it construct ``G/B`` where ``B`` is a Borel subgroup.
 The vertices of ``G/P`` correspond to the cosets ``W/W_P`` where ``W`` (resp., ``W_P``) is the Weyl group

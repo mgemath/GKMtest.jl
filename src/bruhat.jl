@@ -164,17 +164,17 @@ julia> generalized_gkm_schubert(R, "s1*s2")
 GKM subgraph of:
 GKM graph with 8 nodes, valency 4 and axial function:
 s1 -> id => (-1, 1)
-s2*s1 -> s1 => (-1, 0)
+s2*s1 -> s1 => (0, -1)
 s1*s2*s1 -> id => (-1, 0)
-s1*s2*s1 -> s2*s1 => (-1, -1)
+s1*s2*s1 -> s2*s1 => (-1, 1)
 s2 -> id => (0, -1)
-s2 -> s2*s1 => (1, -1)
-s1*s2 -> s1 => (0, -1)
-s1*s2 -> s1*s2*s1 => (1, -1)
-s1*s2 -> s2 => (-1, -1)
+s2 -> s2*s1 => (1, 1)
+s1*s2 -> s1 => (-1, 0)
+s1*s2 -> s1*s2*s1 => (1, 1)
+s1*s2 -> s2 => (-1, 1)
 s2*s1*s2 -> id => (-1, -1)
-s2*s1*s2 -> s2*s1 => (0, -1)
-s2*s1*s2 -> s1*s2 => (-1, 0)
+s2*s1*s2 -> s2*s1 => (-1, 0)
+s2*s1*s2 -> s1*s2 => (0, -1)
 s1*s2*s1*s2 -> s1 => (-1, -1)
 s1*s2*s1*s2 -> s1*s2*s1 => (0, -1)
 s1*s2*s1*s2 -> s2 => (-1, 0)
@@ -183,8 +183,8 @@ Subgraph:
 GKM graph with 4 nodes, valency 2 and axial function:
 s1 -> id => (-1, 1)
 s2 -> id => (0, -1)
-s1*s2 -> s1 => (0, -1)
-s1*s2 -> s2 => (-1, -1)
+s1*s2 -> s1 => (-1, 0)
+s1*s2 -> s2 => (-1, 1)
 ```
 
 As before, the subset S can be a subset of simple roots or a subset of indices.
@@ -194,10 +194,10 @@ GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 s2 -> id => (0, -1)
 s1*s2 -> id => (-1, 0)
-s1*s2 -> s2 => (-1, -1)
+s1*s2 -> s2 => (-1, 1)
 s2*s1*s2 -> id => (-1, -1)
 s2*s1*s2 -> s2 => (-1, 0)
-s2*s1*s2 -> s1*s2 => (-1, 0)
+s2*s1*s2 -> s1*s2 => (0, -1)
 Subgraph:
 GKM graph with 2 nodes, valency 1 and axial function:
 s2 -> id => (0, -1)
@@ -209,10 +209,10 @@ GKM subgraph of:
 GKM graph with 4 nodes, valency 3 and axial function:
 s1 -> id => (-1, 1)
 s2*s1 -> id => (-1, -1)
-s2*s1 -> s1 => (-1, 0)
+s2*s1 -> s1 => (0, -1)
 s1*s2*s1 -> id => (-1, 0)
 s1*s2*s1 -> s1 => (-1, -1)
-s1*s2*s1 -> s2*s1 => (-1, -1)
+s1*s2*s1 -> s2*s1 => (-1, 1)
 Subgraph:
 GKM graph with 2 nodes, valency 1 and axial function:
 s1 -> id => (-1, 1)
