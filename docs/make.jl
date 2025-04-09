@@ -1,5 +1,5 @@
 using Documenter, DocumenterCitations
-using Oscar, GKMtest
+using GKMtest
 
 
 bib = CitationBibliography(
