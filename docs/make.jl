@@ -1,5 +1,5 @@
 using Documenter, DocumenterCitations
-using Oscar, GKMtest
+using GKMtest
 
 
 bib = CitationBibliography(
@@ -44,5 +44,5 @@ deploydocs(
     repo = "github.com/mgemath/GKMtest.jl.git",
     devbranch = nothing,
     devurl = "dev",
-    versions = versions = ["stable" => "v^", "v#.#"],
+    versions = ["stable" => "v^", "v#.#"],
 )
