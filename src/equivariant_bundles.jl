@@ -166,18 +166,18 @@ GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weigh
 
 julia> get_connection(V)
 Dict{Tuple{Edge, Int64}, Int64} with 12 entries:
-  (Edge(2, 3), 2) => 2
-  (Edge(1, 2), 1) => 1
-  (Edge(1, 3), 2) => 2
-  (Edge(3, 2), 2) => 2
-  (Edge(2, 1), 2) => 2
   (Edge(3, 1), 2) => 2
-  (Edge(3, 2), 1) => 1
-  (Edge(1, 2), 2) => 2
-  (Edge(1, 3), 1) => 1
-  (Edge(2, 3), 1) => 1
-  (Edge(2, 1), 1) => 1
+  (Edge(1, 2), 1) => 1
   (Edge(3, 1), 1) => 1
+  (Edge(1, 2), 2) => 2
+  (Edge(3, 2), 1) => 1
+  (Edge(2, 3), 1) => 1
+  (Edge(3, 2), 2) => 2
+  (Edge(2, 3), 2) => 2
+  (Edge(1, 3), 1) => 1
+  (Edge(2, 1), 1) => 1
+  (Edge(1, 3), 2) => 2
+  (Edge(2, 1), 2) => 2
 ```
 It is visible here that the vector bundle is a direct sum of two line bundles, since we have `(e, i) => i` for each edge `e` and index `i`.
 The output will be more complicated when the vector bundle does not split into line bundles.

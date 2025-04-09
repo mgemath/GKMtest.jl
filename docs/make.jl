@@ -41,5 +41,8 @@ makedocs(
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
 deploydocs(
-    repo = "github.com/mgemath/GKMtest.jl.git"
+    repo = "github.com/mgemath/GKMtest.jl.git",
+    devbranch = nothing,
+    devurl = "dev",
+    versions = versions = ["stable" => "v^", "v#.#"],
 )

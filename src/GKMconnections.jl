@@ -80,12 +80,12 @@ julia> set_connection!(G, C)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
 Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
  a_i's:
 Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => 2
   (Edge(1, 2), Edge(1, 2)) => 2
+  (Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to set the connection manually, since there is a unique one.
@@ -174,12 +174,12 @@ julia> C = build_GKM_connection(G, con)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
 Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
  a_i's:
 Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => 2
   (Edge(1, 2), Edge(1, 2)) => 2
+  (Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to define the connection manually, since there is a unique one.
@@ -218,12 +218,12 @@ julia> C = build_GKM_connection(G, a)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
 Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
  a_i's:
 Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => 2
   (Edge(1, 2), Edge(1, 2)) => 2
+  (Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to define the connection manually, since there is a unique one.
@@ -322,12 +322,12 @@ julia> C = get_connection(G)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
 Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
  a_i's:
 Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(2, 1), Edge(2, 1)) => 2
   (Edge(1, 2), Edge(1, 2)) => 2
+  (Edge(2, 1), Edge(2, 1)) => 2
 
 julia> C.con[(Edge(1, 2), Edge(1, 2))] = Edge(1, 2) # Should be Edge(2, 1)!
 Edge(1, 2)

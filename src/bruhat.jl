@@ -411,23 +411,19 @@ to the i-th vertex of the given Schubert variety.
 # Examples
 Schubert classes on the Schubert variety $\overline{X_{s_1s_2s_3}}\subset SL_4/P_1$:
 ```jldoctest schubert_classes
-julia> R = root_system(:A, 3);
+julia> R = root_system(:A, 2);
 
 julia> S = simple_roots(R);
 
-julia> schubert = generalized_gkm_schubert(R, S[1:1], "s1*s2*s3");
+julia> schubert = generalized_gkm_schubert(R, S[1:1], "s1*s2");
 
 julia> BO = get_bruhat_order_of_generalized_flag(R, S[1:1]);
 
 julia> schubert_classes(schubert, BO)
-6×6 Matrix{QQMPolyRingElem}:
- t1*t2*t3 - t1*t2*t4 - t1*t3^2 + t1*t3*t4 - t2*t3^2 + t2*t3*t4 + t3^3 - t3^2*t4  0                             0        0                             0        0
- t1*t3 - t1*t4 - t3^2 + t3*t4                                                    t1*t2 - t1*t4 - t2^2 + t2*t4  0        0                             0        0
- t3 - t4                                                                         t2 - t4                       t1 - t4  0                             0        0
- t1*t2 - t1*t3 - t2*t3 + t3^2                                                    0                             0        t1*t2 - t1*t3 - t2*t3 + t3^2  0        0
- t1 - t3                                                                         t1 - t2                       0        t1 - t3                       t1 - t2  0
- 1                                                                               1                             1        1                             1        1
-
+3×3 Matrix{QQMPolyRingElem}:
+ t1*t2 - t1*t3 - t2*t3 + t3^2  0        0
+ t1 - t3                       t1 - t2  0
+ 1                             1        1
 ```
 """
 function schubert_classes(schubert::AbstractGKM_subgraph, BO::BruhatOrder)
