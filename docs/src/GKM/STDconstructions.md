@@ -16,6 +16,11 @@ projective_space
 get_bruhat_order_of_generalized_flag
 generalized_gkm_schubert
 ```
+## Schubert Classes
+```@docs
+schubert_class
+schubert_classes
+```
 
 ## Toric varieties
 

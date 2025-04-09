@@ -232,8 +232,8 @@ Return all structure constants of `G` that have been calculated so far with resp
 A smart choice of basis can drastically simplify the presentation of the ring $QH_T^*(X)$.
 
 !!! note
-    This does not calculate any structure constants afresh.
-    To do so, use `QH_structure_constants`.
+    - This does not calculate any structure constants afresh. To do so, use `QH_structure_constants`.
+    - This will omit any curve classes in which all structure constants are zero.
 
 # Output format:
 The same as that of `QH_structure_constants`, i.e. of type `Dict{CurveClass_type, Array{Any, 3}}`.
@@ -333,6 +333,7 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
       inBasis = bMatrixInv * prodIJVect
       resBeta[i,j,:] = inBasis
     end
+    all(x -> iszero(x), resBeta) && continue
     res[beta] = resBeta
   end
   return res

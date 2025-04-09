@@ -262,3 +262,239 @@ function _generalized_gkm_schubert(base::AbstractGKM_graph, pt::String, rev::Boo
 
   return gkm_subgraph_from_vertices(base, vertices)
 end
+
+@doc raw"""
+    schubert_class(schubert::AbstractGKM_subgraph, BO::BruhatOrder, label::String)
+
+Return the Poincare dual (as subvariety of the Schubert variety `schubert`) of the Schubert variety given by `label`.
+
+# Arguments
+ - `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph object of the corresponding generalized partial flag variety (as returned by `generalized_gkm_schubert`).
+- `BO::BruhatOrder`: The Bruhat order on the generalized partial flag variety (as returned by `get_bruhat_order_of_generalized_flag`).
+- `label:String`: The label of the Weyl group element or coset defining the Schubert variety as subvariety of the generalized partial flag variety.
+
+# Example
+```jldoctest schubert_class
+julia> R = root_system(:A, 3);
+
+julia> S = simple_roots(R);
+
+julia> BO = get_bruhat_order_of_generalized_flag(R, S[1:1]);
+
+julia> schubert = generalized_gkm_schubert(R, S[1:1], "s1*s2*s3")
+GKM subgraph of:
+GKM graph with 12 nodes, valency 5 and axial function:
+s2 -> id => (0, -1, 1, 0)
+s1*s2 -> id => (-1, 0, 1, 0)
+s1*s2 -> s2 => (-1, 1, 0, 0)
+s3*s2 -> s2 => (0, 0, -1, 1)
+s1*s3*s2 -> s1*s2 => (0, 0, -1, 1)
+s1*s3*s2 -> s3*s2 => (-1, 1, 0, 0)
+s2*s1*s3*s2 -> s1*s2 => (0, -1, 0, 1)
+s2*s1*s3*s2 -> s1*s3*s2 => (0, -1, 1, 0)
+s1*s2*s1*s3*s2 -> s2 => (-1, 0, 0, 1)
+s1*s2*s1*s3*s2 -> s3*s2 => (-1, 0, 1, 0)
+s1*s2*s1*s3*s2 -> s2*s1*s3*s2 => (-1, 1, 0, 0)
+s2*s3*s2 -> id => (0, -1, 0, 1)
+s2*s3*s2 -> s3*s2 => (0, -1, 1, 0)
+s2*s3*s2 -> s2*s1*s3*s2 => (1, 0, -1, 0)
+s1*s2*s3*s2 -> id => (-1, 0, 0, 1)
+s1*s2*s3*s2 -> s1*s3*s2 => (-1, 0, 1, 0)
+s1*s2*s3*s2 -> s1*s2*s1*s3*s2 => (0, 1, -1, 0)
+s1*s2*s3*s2 -> s2*s3*s2 => (-1, 1, 0, 0)
+s3 -> id => (0, 0, -1, 1)
+s3 -> s3*s2 => (0, 1, 0, -1)
+s3 -> s1*s3*s2 => (1, 0, 0, -1)
+s2*s3 -> s2 => (0, -1, 0, 1)
+s2*s3 -> s2*s1*s3*s2 => (1, 0, 0, -1)
+s2*s3 -> s2*s3*s2 => (0, 0, 1, -1)
+s2*s3 -> s3 => (0, -1, 1, 0)
+s1*s2*s3 -> s1*s2 => (-1, 0, 0, 1)
+s1*s2*s3 -> s1*s2*s1*s3*s2 => (0, 1, 0, -1)
+s1*s2*s3 -> s1*s2*s3*s2 => (0, 0, 1, -1)
+s1*s2*s3 -> s3 => (-1, 0, 1, 0)
+s1*s2*s3 -> s2*s3 => (-1, 1, 0, 0)
+Subgraph:
+GKM graph with 6 nodes, valency 3 and axial function:
+s2 -> id => (0, -1, 1, 0)
+s1*s2 -> id => (-1, 0, 1, 0)
+s1*s2 -> s2 => (-1, 1, 0, 0)
+s3 -> id => (0, 0, -1, 1)
+s2*s3 -> s2 => (0, -1, 0, 1)
+s2*s3 -> s3 => (0, -1, 1, 0)
+s1*s2*s3 -> s1*s2 => (-1, 0, 0, 1)
+s1*s2*s3 -> s3 => (-1, 0, 1, 0)
+s1*s2*s3 -> s2*s3 => (-1, 1, 0, 0)
+
+julia> schubert_class(schubert, BO, "s1*s2")
+(t3 - t4)*e[1] + (t2 - t4)*e[2] + (t1 - t4)*e[3]
+
+julia> schubert_class(schubert, BO, "s1*s2*s3")
+e[1] + e[2] + e[3] + e[4] + e[5] + e[6]
+
+```
+"""
+function schubert_class(schubert::AbstractGKM_subgraph, BO::BruhatOrder, label::String)
+  @req label in BO.labels "Label $label not found in Bruhat order."
+  i = indexin([label], BO.labels)[1]
+  return schubert_class(schubert, BO, i)
+end
+
+
+@doc raw"""
+    schubert_class(schubert::AbstractGKM_graph, BO::BruhatOrder, v::Int64)
+
+Like above, but the Weyl group element is given by the index `v` corresponding to its index as vertex of the GKM graph on the flag variety containing the Schubert variety.
+"""
+function schubert_class(schubert::AbstractGKM_subgraph, BO::BruhatOrder, v::Int64)
+  descendants = Int64[]
+  _add_all_descendants!(BO, v, descendants)
+  subgraphVertices = [indexin([i], schubert.vDict)[1] for i in descendants]
+  @req !any(a -> isnothing(a), subgraphVertices) "The demanded Schubert class is not contained in the given Schubert variety."
+  return poincare_dual(gkm_subgraph_from_vertices(schubert.self, subgraphVertices))
+end
+
+
+
+"""
+    schubert_class(flag::AbstractGKM_graph, BO::BruhatOrder, label::String)
+
+Return the Poincare dual (as subvariety of the generalized partial flag variety `flag`) of the Schubert variety determined by `label`.
+
+# Arguments
+ - `flag::AbstractGKM_graph`: The generalized partial flag variety (as returned by `generalized_gkm_flag`).
+- `BO::BruhatOrder`: The Bruhat order on the generalized partial flag variety (as returned by `get_bruhat_order_of_generalized_flag`).
+- `label:String`: The label of the Weyl group element or coset defining the Schubert variety as subvariety of the generalized partial flag variety.
+
+# Example
+```jldoctest
+julia> R = root_system(:G, 2);
+
+julia> BO = get_bruhat_order_of_generalized_flag(R);
+
+julia> flag = generalized_gkm_flag(R);
+
+julia> schubert_class(flag, BO, "s2*s1*s2*s1*s2")
+(-t2 + t3)*e[1] + (-t1 - t2 + 2*t3)*e[2] + (t1 - 2*t2 + t3)*e[3] + (-t1 + t3)*e[4] + (t1 - t2)*e[5] + (-t2 + t3)*e[7] + (-t1 - t2 + 2*t3)*e[8] + (t1 - 2*t2 + t3)*e[9] + (-t1 + t3)*e[10] + (t1 - t2)*e[11]
+
+```
+"""
+function schubert_class(flag::AbstractGKM_graph, BO::BruhatOrder, label::String)
+  @req label in BO.labels "Label $label not found in Bruhat order."
+  i = indexin([label], BO.labels)[1]
+  return schubert_class(flag, BO, i)
+end
+
+@doc raw"""
+    schubert_class(flag::AbstractGKM_graph, BO::BruhatOrder, v::Int64)
+
+Like above, but the Weyl group element is given by the index `v` corresponding to its index as vertex of the GKM graph on the Schubert variety.
+"""
+function schubert_class(flag::AbstractGKM_graph, BO::BruhatOrder, v::Int64)
+  descendants = Int64[]
+  _add_all_descendants!(BO, v, descendants)
+  return poincare_dual(gkm_subgraph_from_vertices(flag, descendants))
+end
+
+
+@doc raw"""
+    schubert_classes(schubert::AbstractGKM_subgraph, BO::BruhatOrder)
+
+Return all Schubert classes on the given generalized Schubert variety.
+The i-th row in the returned matrix is the Schubert class of the Weyl group element (or coset) corresponding
+to the i-th vertex of the given Schubert variety.
+
+# Arguments
+ - `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph of its generalized partial flag variety (as returned by `generalized_gkm_schubert`).
+ - `BO::BruhatOrder`: The Bruhat order for the generalized partial flag variety containing the Schubert variety (as returned by `get_bruhat_order_of_generalized_flag`).
+
+# Examples
+Schubert classes on the Schubert variety $\overline{X_{s_1s_2s_3}}\subset SL_4/P_1$:
+```jldoctest schubert_classes
+julia> R = root_system(:A, 3);
+
+julia> S = simple_roots(R);
+
+julia> schubert = generalized_gkm_schubert(R, S[1:1], "s1*s2*s3");
+
+julia> BO = get_bruhat_order_of_generalized_flag(R, S[1:1]);
+
+julia> schubert_classes(schubert, BO)
+6×6 Matrix{QQMPolyRingElem}:
+ t1*t2*t3 - t1*t2*t4 - t1*t3^2 + t1*t3*t4 - t2*t3^2 + t2*t3*t4 + t3^3 - t3^2*t4  0                             0        0                             0        0
+ t1*t3 - t1*t4 - t3^2 + t3*t4                                                    t1*t2 - t1*t4 - t2^2 + t2*t4  0        0                             0        0
+ t3 - t4                                                                         t2 - t4                       t1 - t4  0                             0        0
+ t1*t2 - t1*t3 - t2*t3 + t3^2                                                    0                             0        t1*t2 - t1*t3 - t2*t3 + t3^2  0        0
+ t1 - t3                                                                         t1 - t2                       0        t1 - t3                       t1 - t2  0
+ 1                                                                               1                             1        1                             1        1
+
+```
+"""
+function schubert_classes(schubert::AbstractGKM_subgraph, BO::BruhatOrder)
+  nv = n_vertices(schubert.self.g)
+  z = zero(schubert.self.equivariantCohomology.coeffRing)
+  M = fill(z, (nv, nv))
+  for v in 1:nv
+    sc = schubert_class(schubert, BO, schubert.self.labels[v])
+    for j in 1:nv
+      M[v, j] = sc[j]
+    end
+  end
+  return M
+end
+
+@doc raw"""
+    schubert_classes(flag::AbstractGKM_graph, BO::BruhatOrder)
+
+Return all Schubert classes on the given generalized partial flag variety.
+The i-th row in the returned matrix is the Schubert class of the Weyl group element (or coset) corresponding
+to the i-th vertex of the given partial flag variety.
+
+# Arguments
+ - `flag::AbstractGKM_graph`: The generalized partial flag variety (as returned by `generalized_gkm_flag`).
+ - `BO::BruhatOrder`: The Bruhat order for the generalized partial flag variety containing the Schubert variety (as returned by `get_bruhat_order_of_generalized_flag`).
+
+# Example
+```jldoctest schubert_classes_flag
+julia> R = root_system(:A, 2);
+
+julia> BO = get_bruhat_order_of_generalized_flag(R);
+
+julia> flag = generalized_gkm_flag(R);
+
+julia> schubert_classes(flag, BO)
+6×6 Matrix{QQMPolyRingElem}:
+ t1^2*t2 - t1^2*t3 - t1*t2^2 + t1*t3^2 + t2^2*t3 - t2*t3^2  0                             0        0  0                             0
+ t1*t2 - t1*t3 - t2*t3 + t3^2                               t1*t2 - t1*t3 - t2*t3 + t3^2  0        0  0                             0
+ t1 - t3                                                    t1 - t3                       t1 - t2  0  t1 - t2                       0
+ 1                                                          1                             1        1  1                             1
+ t1^2 - t1*t2 - t1*t3 + t2*t3                               0                             0        0  t1^2 - t1*t2 - t1*t3 + t2*t3  0
+ t1 - t3                                                    t2 - t3                       0        0  t1 - t3                       t2 - t3
+```
+"""
+function schubert_classes(flag::AbstractGKM_graph, BO::BruhatOrder)
+  nv = n_vertices(flag.g)
+  z = zero(flag.equivariantCohomology.coeffRing)
+  M = fill(z, (nv, nv))
+  for v in 1:nv
+    sc = schubert_class(flag, BO, flag.labels[v])
+    for j in 1:nv
+      M[v, j] = sc[j]
+    end
+  end
+  return M 
+end
+
+function _add_all_descendants!(BO::BruhatOrder, v::Int, descendants::Vector{Int64})
+  (v in descendants) && return
+  ord = BO.order
+  for k in keys(ord)
+    if k[1] == v
+      push!(descendants, v)
+      #println("Added $v")
+      for d in ord[k]
+        _add_all_descendants!(BO, d[1], descendants)
+      end
+    end
+  end
+end
