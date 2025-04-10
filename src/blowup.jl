@@ -86,7 +86,7 @@ GKM graph with 3 nodes, valency 2 and axial function:
 [1>4] -> [1>3] => (0, 0, -1, 1)
 ```
 """
-function blow_up(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
+function Oscar.blow_up(gkmSub::AbstractGKM_subgraph)::AbstractGKM_subgraph
   
   con = get_connection(gkmSub.super)
   @req !isnothing(con) "Supergraph needs a connection"

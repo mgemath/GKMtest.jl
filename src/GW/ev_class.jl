@@ -3,7 +3,7 @@
     ev(j::Int64, cc) -> EquivariantClass
 
 Return the equivariant cohomology class on $\overline{\mathcal{M}_{0,n}}(X,\beta)$ that is given by pulling back
-the cohomology class `cc` on $X$ along the evaluation map at the `j`-th point: $\text{ev}_j: \overline{\mathcal{M}_{0,n}}(X,\beta)\rightarrow X$.
+the cohomology class `cc` on $X$ along the evaluation map at the `j`-th point: $\text{ev}_j\colon \overline{\mathcal{M}_{0,n}}(X,\beta)\rightarrow X$.
 
 # Example
 ```jldoctest ev

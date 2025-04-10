@@ -426,7 +426,7 @@ julia> schubert_classes(schubert, BO)
  1                             1        1
 ```
 """
-function schubert_classes(schubert::AbstractGKM_subgraph, BO::BruhatOrder)
+function Oscar.schubert_classes(schubert::AbstractGKM_subgraph, BO::BruhatOrder)
   nv = n_vertices(schubert.self.g)
   z = zero(schubert.self.equivariantCohomology.coeffRing)
   M = fill(z, (nv, nv))
@@ -468,7 +468,7 @@ julia> schubert_classes(flag, BO)
  t1 - t3                                                    t2 - t3                       0        0  t1 - t3                       t2 - t3
 ```
 """
-function schubert_classes(flag::AbstractGKM_graph, BO::BruhatOrder)
+function Oscar.schubert_classes(flag::AbstractGKM_graph, BO::BruhatOrder)
   nv = n_vertices(flag.g)
   z = zero(flag.equivariantCohomology.coeffRing)
   M = fill(z, (nv, nv))

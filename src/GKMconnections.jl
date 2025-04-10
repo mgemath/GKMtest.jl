@@ -6,8 +6,8 @@ If it is unique and hasn't been calculated, it is saved in the `gkm` object for 
 If the connection is not unique and hasn't been defined manually, return `nothing`.
 
 # Example
-The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$,
-  and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
+The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$, and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
+
 ```jldoctest get_connection
  julia> G = projective_space(GKM_graph, 2)
  GKM graph with 3 nodes, valency 2 and axial function:

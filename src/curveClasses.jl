@@ -252,7 +252,7 @@ julia> is_effective(F3, 2*beta)
 true
 ```
 """
-function is_effective(
+function Oscar.is_effective(
   G::AbstractGKM_graph,
   beta::CurveClass_type
 )::Bool
@@ -265,7 +265,7 @@ end
 # Return whether beta is in the GW effective cone, i.e. whether it is a non-negative
 # linear combination of edge curve classes. Note that we consider the effective cone to be 
 #  closed and hence zero is also considered effective.
-function is_effective(
+function Oscar.is_effective(
   H2::GKM_H2,
   beta::CurveClass_type
 )::Bool
@@ -292,7 +292,7 @@ julia> chern_number(Edge(1, 2), partialFlagVariety)
 4
 ```
 """
-function chern_number(e::Edge, G::AbstractGKM_graph)::ZZRingElem
+function Oscar.chern_number(e::Edge, G::AbstractGKM_graph)::ZZRingElem
 
   R = G.equivariantCohomology
   cn = integrate(first_chern_class(R), R, e)
@@ -324,14 +324,14 @@ julia> chern_number(P2, -2 * curve_class(P2, Edge(1, 2)) + curve_class(P2, Edge(
 -3
 ```
 """
-function chern_number(G::AbstractGKM_graph, beta::CurveClass_type; check::Bool=true)::ZZRingElem
+function Oscar.chern_number(G::AbstractGKM_graph, beta::CurveClass_type; check::Bool=true)::ZZRingElem
   # Note: It wouldn't make sense to calculate G.curveClasses afresh here, since the user
   # must have gotten beta from somewhere, and it must be compatible with G.curveClasses.
   @req !isnothing(G.curveClasses) "G.curveClasses has not been calculated yet. Where did you get beta from?"
   return chern_number(G.curveClasses, beta; check)
 end
 
-function chern_number(H2::GKM_H2, beta::CurveClass_type; check::Bool=true)::ZZRingElem
+function Oscar.chern_number(H2::GKM_H2, beta::CurveClass_type; check::Bool=true)::ZZRingElem
   if check
     @req parent(beta) == H2.H2 "Beta must be element of H2.H2"
   end

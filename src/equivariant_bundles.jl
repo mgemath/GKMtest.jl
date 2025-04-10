@@ -128,7 +128,7 @@ julia> rank(direct_sum(L, L, L))
 ```
 
 """
-function rank(V::GKM_vector_bundle)::Int64
+function Oscar.rank(V::GKM_vector_bundle)::Int64
   return size(V.w)[2]
 end
 
@@ -349,7 +349,7 @@ GKM vector bundle of rank 1 over GKM graph with 4 nodes and valency 2 with weigh
 
 ```
 """
-function dual(V::GKM_vector_bundle)::GKM_vector_bundle
+function Oscar.dual(V::GKM_vector_bundle)::GKM_vector_bundle
   res = vector_bundle(V.gkm, V.M, V.GMtoM, -V.w; calculateConnection=false)
   res.con = V.con
   return res
@@ -397,7 +397,7 @@ GKM graph with 6 nodes, valency 3 and axial function:
 The naming convention for the vertices of the projectivization's GKM graph is `[v]_i` where `v` is a vertex of the original GKM graph and `i` is the index
 of the line bundle direct summand to which this vertex of the projectivization corresponds.
 """
-function projectivization(V::GKM_vector_bundle)::AbstractGKM_graph
+function Oscar.projectivization(V::GKM_vector_bundle)::AbstractGKM_graph
   con = get_connection(V)
   @req !isnothing(con) "GKM vector bundle needs connection for projectivization."
   G = V.gkm

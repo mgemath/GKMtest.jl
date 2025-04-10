@@ -146,7 +146,7 @@ end
 
 Same as before, but using the number of the vertex instead of the label.
 """
-function add_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
+function Oscar.add_edge!(G::AbstractGKM_graph, s::Int64, d::Int64, weight::AbstractAlgebra.Generic.FreeModuleElem{R}) where R<:GKM_weight_type
   
   @req (s in 1:n_vertices(G.g)) "Source $s not found"
   @req (d in 1:n_vertices(G.g)) "Destination $d not found"

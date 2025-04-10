@@ -12,7 +12,7 @@ The following mathematical ingredients are used in the package:
     where the sum is over certain decorated trees $\overrightarrow{\Gamma}$ mapping into the GKM graph of $X$, such that the edge multiplicities sum to the curve class $\beta\in H_2(X;\mathbb{Z})$.
     Here, $GW^T_{\overrightarrow{\Gamma}}$ is a rational function in $\dim{T}$ many variables, i.e. an element of $\text{Frac}H_T^*(\text{pt};\mathbb{Q})$.
 
-  - An efficient way of enumerating trees with marked points and counting their automorphisms (*see Giosuè's papers  -- which one should we cite here?*)
+  - An efficient way of enumerating trees with marked points and counting their automorphisms (inspired by [WROM86](@cite)).
 
   - A way of enumerating all combination of edges with multiplicities in the GKM graph that sum to a given curve class $\beta\in H_2(X;\mathbb{Z})$ (*see supporting paper*).
 
