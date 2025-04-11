@@ -20,11 +20,11 @@ Hence, this package represents elements of $H^*_T(X;\mathbb{Q})$ as tuples of po
 
 ```@docs
 is_gkm_class
-point_class
+Oscar.point_class
 poincare_dual
 weight_class
 euler_class
 integrate_gkm_class
-integrate
+Oscar.integrate
 first_chern_class
 ```

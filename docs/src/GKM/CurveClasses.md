@@ -13,7 +13,7 @@ This is the basis on which this package handles curve classes of GKM spaces.
 ```@docs
 print_curve_classes
 curve_class
-chern_number
-is_effective
+Oscar.chern_number
+Oscar.is_effective
 GKM_second_homology
 ```

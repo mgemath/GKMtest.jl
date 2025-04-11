@@ -8,7 +8,7 @@ In this section we present some functions that allow the construction of famous 
 generalized_gkm_flag
 flag_variety
 grassmannian
-projective_space
+Oscar.projective_space
 ```
 
 ## Generalized Schubert Varieties
@@ -18,8 +18,8 @@ generalized_gkm_schubert
 ```
 ## Schubert Classes
 ```@docs
-schubert_class
-schubert_classes
+Oscar.schubert_class
+Oscar.schubert_classes
 ```
 
 ## Toric varieties

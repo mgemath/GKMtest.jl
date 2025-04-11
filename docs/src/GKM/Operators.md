@@ -10,7 +10,7 @@ isvalid(::GKMtest.AbstractGKM_subgraph; ::Bool)
 
 ## Blowups
 ```@docs
-blow_up
+Oscar.blow_up
 ```
 
 ## Products
