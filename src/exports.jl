@@ -47,3 +47,6 @@ export Seidel_space
 export vector_bundle
 export line_bundle
 export direct_sum
+
+export rank
+export dual

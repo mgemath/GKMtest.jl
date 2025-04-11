@@ -8,7 +8,7 @@ In this section we present some functions that allow the construction of famous 
 generalized_gkm_flag
 flag_variety
 grassmannian
-Oscar.projective_space
+projective_space
 ```
 
 ## Generalized Schubert Varieties
