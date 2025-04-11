@@ -1,4 +1,4 @@
-export flag_variety, grassmannian, gkm_graph_of_toric, projective_space
+export flag_variety, grassmannian, gkm_graph_of_toric, projective_space, schubert_class, schubert_classes
 
 @doc raw"""
     flag_variety(::Type{GKM_graph}, s::Vector{Int64}) -> AbstractGKM_graph{ZZRingElem}

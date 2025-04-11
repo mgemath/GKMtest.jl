@@ -10,7 +10,6 @@ export GKMproj_space
 export is3_indep
 export is2_indep
 export empty_gkm_graph
-# export flag_gkm_graph
 export edgeFromLabels
 export add_edge!
 
@@ -26,6 +25,7 @@ export scalar, zero, one, multiply, euler_class, poincare_dual
 export integrate_gkm_class
 export first_chern_class
 export point_class
+export integrate
 
 # betti.jl
 export betti_numbers
@@ -41,6 +41,8 @@ export curve_class
 export all_classes
 export is_strictly_nef
 export print_curve_classes
+export chern_number
+export is_effective
 
 # Seidel_space.jl
 export Seidel_space
@@ -49,6 +51,9 @@ export Seidel_space
 export vector_bundle
 export line_bundle
 export direct_sum
-
 export rank
 export dual
+export projectivization
+
+# blowup.jl
+export blow_up
