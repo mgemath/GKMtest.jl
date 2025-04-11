@@ -12,6 +12,7 @@ export is2_indep
 export empty_gkm_graph
 # export flag_gkm_graph
 export edgeFromLabels
+export add_edge!
 
 # GKMconnections.jl
 export get_connection
@@ -24,6 +25,7 @@ export weight_class
 export scalar, zero, one, multiply, euler_class, poincare_dual
 export integrate_gkm_class
 export first_chern_class
+export point_class
 
 # betti.jl
 export betti_numbers

@@ -91,15 +91,15 @@ end
 Return the equivariant Poincare dual of the fixed point with given label.
 
 """
-function Oscar.point_class(vertexLabel::String, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
+function point_class(vertexLabel::String, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
   return point_class(vertexLabel, G.equivariantCohomology)
 end
 
-function Oscar.point_class(G::AbstractGKM_graph, vertexLabel::String)::FreeModElem{QQMPolyRingElem}
+function point_class(G::AbstractGKM_graph, vertexLabel::String)::FreeModElem{QQMPolyRingElem}
   return point_class(vertexLabel, G.equivariantCohomology)
 end
 
-function Oscar.point_class(vertexLabel::String, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+function point_class(vertexLabel::String, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   @req vertexLabel in R.gkm.labels "Vertex not found"
   return point_class(indexin([vertexLabel], R.gkm.labels)[1], R)
 end
@@ -123,15 +123,15 @@ julia> point_class(1, F3)
 
 ```
 """
-function Oscar.point_class(vertex::Int, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
+function point_class(vertex::Int, G::AbstractGKM_graph)::FreeModElem{QQMPolyRingElem}
   return point_class(vertex, G.equivariantCohomology)
 end 
 
-function Oscar.point_class(G::AbstractGKM_graph, vertex::Int)::FreeModElem{QQMPolyRingElem}
+function point_class(G::AbstractGKM_graph, vertex::Int)::FreeModElem{QQMPolyRingElem}
   return point_class(vertex, G.equivariantCohomology)
 end 
 
-function Oscar.point_class(vertex::Int, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
+function point_class(vertex::Int, R::GKM_cohomology_ring)::FreeModElem{QQMPolyRingElem}
   return euler_class(vertex, R) * gens(R.cohomRing)[vertex]
 end 
 
@@ -384,7 +384,7 @@ julia> integrate(first_chern_class(P2), P2, Edge(1, 2))
 3
 ```
 """
-function Oscar.integrate(
+function integrate(
   class::FreeModElem{QQMPolyRingElem},
   G::AbstractGKM_graph,
   e::Edge
@@ -392,7 +392,7 @@ function Oscar.integrate(
   return integrate(class, G.equivariantCohomology, e)
 end
 
-function Oscar.integrate(
+function integrate(
   class::FreeModElem{QQMPolyRingElem},
   R::GKM_cohomology_ring,
   e::Edge
@@ -437,11 +437,11 @@ julia> integrate(c, P1)
 (t1^2 - t2)//(t1 - t2)
 ```
 """
-function Oscar.integrate(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+function integrate(class::FreeModElem{QQMPolyRingElem}, G::AbstractGKM_graph)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
   return integrate(class, G.equivariantCohomology)
 end
 
-function Oscar.integrate(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+function integrate(class::FreeModElem{QQMPolyRingElem}, R::GKM_cohomology_ring)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
   res = R.coeffRing(0)
   for v in 1:n_vertices(R.gkm.g)
     euler = euler_class(v, R)

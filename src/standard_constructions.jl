@@ -145,7 +145,7 @@ GKM graph with 3 nodes, valency 2 and axial function:
 3 -> 2 => (0, -1, 1)
 ```
 """
-function Oscar.projective_space(::Type{GKM_graph}, d::Int)
+function projective_space(::Type{GKM_graph}, d::Int)
   @req d >= 0 "Dimension must be non-negative"
   
   return grassmannian(GKM_graph, 1, d+1)

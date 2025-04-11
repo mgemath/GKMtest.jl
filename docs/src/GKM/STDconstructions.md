@@ -18,8 +18,8 @@ generalized_gkm_schubert
 ```
 ## Schubert Classes
 ```@docs
-Oscar.schubert_class
-Oscar.schubert_classes
+schubert_class
+schubert_classes
 ```
 
 ## Toric varieties
