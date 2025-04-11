@@ -8,7 +8,7 @@ If the connection is not unique and hasn't been defined manually, return `nothin
 # Example
 The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$, and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
 
-```jldoctest get_connection
+```jldoctest
  julia> G = projective_space(GKM_graph, 2)
  GKM graph with 3 nodes, valency 2 and axial function:
  2 -> 1 => (-1, 1, 0)
@@ -65,7 +65,7 @@ This will overwrite any previously set connection.
 
 # Example
 After building the `GKM_connection` using `build_GKM_connection` like in the example above, we may assign it to the GKM graph using `set_connection!`:
-```jldoctest set_connection
+```jldoctest
 julia> G = projective_space(GKM_graph, 1);
 
 julia> a = Dict{Tuple{Edge, Edge}, ZZRingElem}();
