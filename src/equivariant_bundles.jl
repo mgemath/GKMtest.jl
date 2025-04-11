@@ -405,14 +405,22 @@ function Oscar.projectivization(V::GKM_vector_bundle)::AbstractGKM_graph
   rk = rank(V)
 
   Gres = Graph{Undirected}(nv * rk)
-  labels = String[]
-  sizehint!(labels, nv * rk)
-  #build labels
+  # labels = String[]
+  # sizehint!(labels, nv * rk)
+  # #build labels
+  # for v in 1:nv
+  #   for i in 1:rk
+  #     push!(labels, "[" * G.labels[v] * "]_$i")
+  #   end
+  # end
+  labels = Vector{String}(undef, nv * rk)
   for v in 1:nv
     for i in 1:rk
-      push!(labels, "[" * G.labels[v] * "]_$i")
+      labels[(v-1)*rk + i] = "[$(G.labels[v])]_$i"
     end
   end
+
+
   weightType = typeof(_get_weight_type(G))
   res = gkm_graph(Gres, labels, V.M, Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{weightType}}(); checkLabels=false)
 

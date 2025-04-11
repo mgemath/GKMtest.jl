@@ -9,43 +9,41 @@ If the connection is not unique and hasn't been defined manually, return `nothin
 The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$, and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
 
 ```jldoctest
- julia> G = projective_space(GKM_graph, 2)
- GKM graph with 3 nodes, valency 2 and axial function:
- 2 -> 1 => (-1, 1, 0)
- 3 -> 1 => (-1, 0, 1)
- 3 -> 2 => (0, -1, 1)
+julia> G = projective_space(GKM_graph, 2)
+GKM graph with 3 nodes, valency 2 and axial function:
+2 -> 1 => (-1, 1, 0)
+3 -> 1 => (-1, 0, 1)
+3 -> 2 => (0, -1, 1)
 
- julia> C = get_connection(G)
- GKM connection for GKM graph with 3 nodes and valency 2:
- Connection:
- Dict{Tuple{Edge, Edge}, Edge} with 12 entries:
-   (Edge(2, 1), Edge(2, 3)) => Edge(1, 3)
-   (Edge(1, 3), Edge(1, 2)) => Edge(3, 2)
-   (Edge(1, 2), Edge(1, 3)) => Edge(2, 3)
-   (Edge(1, 3), Edge(1, 3)) => Edge(3, 1)
-   (Edge(3, 1), Edge(3, 2)) => Edge(1, 2)
-   (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
-   (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
-   (Edge(3, 1), Edge(3, 1)) => Edge(1, 3)
-   (Edge(3, 2), Edge(3, 2)) => Edge(2, 3)
-   (Edge(3, 2), Edge(3, 1)) => Edge(2, 1)
-   (Edge(2, 3), Edge(2, 1)) => Edge(3, 1)
-   (Edge(2, 3), Edge(2, 3)) => Edge(3, 2)
-  a_i's:
- Dict{Tuple{Edge, Edge}, ZZRingElem} with 12 entries:
-   (Edge(2, 1), Edge(2, 3)) => 1
-   (Edge(1, 3), Edge(1, 2)) => 1
-   (Edge(1, 2), Edge(1, 3)) => 1
-   (Edge(1, 3), Edge(1, 3)) => 2
-   (Edge(3, 1), Edge(3, 2)) => 1
-   (Edge(2, 1), Edge(2, 1)) => 2
-   (Edge(1, 2), Edge(1, 2)) => 2
-   (Edge(3, 1), Edge(3, 1)) => 2
-   (Edge(3, 2), Edge(3, 2)) => 2
-   (Edge(3, 2), Edge(3, 1)) => 1
-   (Edge(2, 3), Edge(2, 1)) => 1
-   (Edge(2, 3), Edge(2, 3)) => 2
- ```
+julia> C = get_connection(G)
+GKM connection for GKM graph with 3 nodes and valency 2:
+Connection:
+(Edge(3, 1), Edge(3, 2)) => Edge(1, 2)
+(Edge(3, 1), Edge(3, 1)) => Edge(1, 3)
+(Edge(2, 3), Edge(2, 1)) => Edge(3, 1)
+(Edge(2, 3), Edge(2, 3)) => Edge(3, 2)
+(Edge(2, 1), Edge(2, 3)) => Edge(1, 3)
+(Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+(Edge(3, 2), Edge(3, 1)) => Edge(2, 1)
+(Edge(1, 3), Edge(1, 3)) => Edge(3, 1)
+(Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+(Edge(3, 2), Edge(3, 2)) => Edge(2, 3)
+(Edge(1, 3), Edge(1, 2)) => Edge(3, 2)
+(Edge(1, 2), Edge(1, 3)) => Edge(2, 3)
+a_i's:
+(Edge(3, 1), Edge(3, 2)) => 1
+(Edge(3, 1), Edge(3, 1)) => 2
+(Edge(2, 3), Edge(2, 1)) => 1
+(Edge(2, 3), Edge(2, 3)) => 2
+(Edge(2, 1), Edge(2, 3)) => 1
+(Edge(1, 2), Edge(1, 2)) => 2
+(Edge(3, 2), Edge(3, 1)) => 1
+(Edge(1, 3), Edge(1, 3)) => 2
+(Edge(2, 1), Edge(2, 1)) => 2
+(Edge(3, 2), Edge(3, 2)) => 2
+(Edge(1, 3), Edge(1, 2)) => 1
+(Edge(1, 2), Edge(1, 3)) => 1
+```
 """
 function get_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
   if isnothing(gkm.connection)
@@ -79,13 +77,11 @@ julia> C = build_GKM_connection(G, a);
 julia> set_connection!(G, C)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
-Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
- a_i's:
-Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => 2
-  (Edge(2, 1), Edge(2, 1)) => 2
+(Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+(Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+a_i's:
+(Edge(1, 2), Edge(1, 2)) => 2
+(Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to set the connection manually, since there is a unique one.
@@ -155,7 +151,7 @@ Return the `GKM_connection` object (including information of the integers $a$) d
     1. This function does not check whether the given connection map is valid (use `isvalid(::GKM_connection)` for that).
     2. This does not save the new connection to the gkm object (use `set_connection!(::AbstractGKM_graph, ::GKM_connection)` for that).
 
-Example
+# Example
 ```jldoctest build_GKM_connection_from_a
 julia> G = projective_space(GKM_graph, 1)
 GKM graph with 2 nodes, valency 1 and axial function:
@@ -173,13 +169,11 @@ Edge(1, 2)
 julia> C = build_GKM_connection(G, con)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
-Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
- a_i's:
-Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => 2
-  (Edge(2, 1), Edge(2, 1)) => 2
+(Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+(Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+a_i's:
+(Edge(1, 2), Edge(1, 2)) => 2
+(Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to define the connection manually, since there is a unique one.
@@ -199,7 +193,7 @@ Return the `GKM_connection` object (including the connection map $\nabla$) defin
     1. This function does not check whether the given connection map is valid (use `isvalid(::GKM_connection)` for that).
     2. This does not save the new connection to the gkm object (use `set_connection!(::AbstractGKM_graph, ::GKM_connection)` for that).
 
-Example
+# Example
 ```jldoctest build_GKM_connection_from_a
 julia> G = projective_space(GKM_graph, 1)
 GKM graph with 2 nodes, valency 1 and axial function:
@@ -217,13 +211,11 @@ julia> a[(Edge(2, 1), Edge(2, 1))] = 2
 julia> C = build_GKM_connection(G, a)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
-Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
- a_i's:
-Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => 2
-  (Edge(2, 1), Edge(2, 1)) => 2
+(Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+(Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+a_i's:
+(Edge(1, 2), Edge(1, 2)) => 2
+(Edge(2, 1), Edge(2, 1)) => 2
 ```
 !!! note
     In this example, it is unnecessary to define the connection manually, since there is a unique one.
@@ -314,20 +306,18 @@ Return `true` if the given connection is valid for its GKM graph. This holds if 
   3. a maps every `(e,e)` to `2`
   4. Every pair of edges `(e,ei)` with same source satisfies the relation of the associated a's (see above), i.e. `con.gkm.w[ei'] = con.gkm.w[ei] - con.a[(e,ei)] * con.gkm.w[e]`
 
-Example
+# Example
 ```jldoctest isvalid_con
 julia> G = projective_space(GKM_graph, 1);
 
 julia> C = get_connection(G)
 GKM connection for GKM graph with 2 nodes and valency 1:
 Connection:
-Dict{Tuple{Edge, Edge}, Edge} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
-  (Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
- a_i's:
-Dict{Tuple{Edge, Edge}, ZZRingElem} with 2 entries:
-  (Edge(1, 2), Edge(1, 2)) => 2
-  (Edge(2, 1), Edge(2, 1)) => 2
+(Edge(1, 2), Edge(1, 2)) => Edge(2, 1)
+(Edge(2, 1), Edge(2, 1)) => Edge(1, 2)
+a_i's:
+(Edge(1, 2), Edge(1, 2)) => 2
+(Edge(2, 1), Edge(2, 1)) => 2
 
 julia> C.con[(Edge(1, 2), Edge(1, 2))] = Edge(1, 2) # Should be Edge(2, 1)!
 Edge(1, 2)
@@ -409,10 +399,16 @@ end
 # detailed show
 function Base.show(io::IO, ::MIME"text/plain", con::GKM_connection)
 
-  print(io, "GKM connection for GKM graph with $(n_vertices(con.gkm.g)) nodes and valency $(valency(con.gkm)):\n")
-  print(io, "Connection:\n")
-  show(io, MIME"text/plain"(), con.con)
-  print(io, "\n a_i's:\n")
-  show(io, MIME"text/plain"(), con.a)
+  print(io, "GKM connection for GKM graph with $(n_vertices(con.gkm.g)) nodes and valency $(valency(con.gkm)):")
+  print(io, "\nConnection:")
+  for k in keys(con.con)
+    print(io, "\n$k => $(con.con[k])")
+  end
+  # show(io, MIME"text/plain"(), con.con)
+  print(io, "\na_i's:")
+  for k in keys(con.a)
+    print(io, "\n$k => $(con.a[k])")
+  end
+  # show(io, MIME"text/plain"(), con.a)
   
 end
