@@ -149,7 +149,7 @@ This defines a bijection between the direct summands of $V$ at $\text{src}(e)$ a
 This bijection is recorded in the returned object.
 
 # Example
-```jldoctest get_connection_bdle
+```julia-repl
 julia> G = projective_space(GKM_graph, 2);
 
 julia> M = free_module(ZZ, 4);
@@ -183,6 +183,7 @@ It is visible here that the vector bundle is a direct sum of two line bundles, s
 The output will be more complicated when the vector bundle does not split into line bundles.
 """
 function get_connection(V::GKM_vector_bundle)
+  
   if isnothing(V.con)
     V.con = _build_vector_bundle_connection(V)
   end
