@@ -1,32 +1,32 @@
 export get_bruhat_order_of_generalized_flag, generalized_gkm_schubert
-
+include("bruhatsmoothness.jl")
 struct BruhatOrder
   order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}
   reversed::Bool # true for descending order
   labels::Vector{String}
 end
 
-function _add_to_order(G::AbstractGKM_graph, order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}, elem::Int64, increment::Int64)
+function _add_to_order(G::AbstractGKM_graph, _order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}, elem::Int64, increment::Int64, addall::Bool = false)
 
     ## Create subgraph for elem
     elem_in_dict = (elem, count('s', G.labels[elem]))
-    order[elem_in_dict] = Tuple{Int64, Int64}[]
+    _order[elem_in_dict] = Tuple{Int64, Int64}[]
     
     
     for v in neighbors(G.g, elem)
-      if count('s', G.labels[v]) == count('s', G.labels[elem]) + increment 
-        push!(order[elem_in_dict], (v, count('s', G.labels[v])))
-        _add_to_order(G, order, v, increment)
+      if (count('s', G.labels[v]) == count('s', G.labels[elem]) + increment) || (addall && count('s', G.labels[v]) < count('s', G.labels[elem]))
+        push!(_order[elem_in_dict], (v, count('s', G.labels[v])))
+        _add_to_order(G, _order, v, increment, addall)
       end
     end
   
   end
 
-function _create_order(G::AbstractGKM_graph, starting_elem::Int64, rev::Bool)::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}
+function _create_order(G::AbstractGKM_graph, starting_elem::Int64, rev::Bool, addall::Bool = false)::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}
   
-  _order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}} = Dict{Int64, Tuple{Int64, Int64}}()
+  _order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}} = Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}()
 
-  _add_to_order(G, _order, starting_elem, (rev ? -1 : 1))
+  _add_to_order(G, _order, starting_elem, (rev ? -1 : 1), addall)
 
   return _order
 end
@@ -269,7 +269,7 @@ end
 Return the Poincare dual (as subvariety of the Schubert variety `schubert`) of the Schubert variety given by `label`.
 
 # Arguments
- - `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph object of the corresponding generalized partial flag variety (as returned by `generalized_gkm_schubert`).
+- `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph object of the corresponding generalized partial flag variety (as returned by `generalized_gkm_schubert`).
 - `BO::BruhatOrder`: The Bruhat order on the generalized partial flag variety (as returned by `get_bruhat_order_of_generalized_flag`).
 - `label:String`: The label of the Weyl group element or coset defining the Schubert variety as subvariety of the generalized partial flag variety.
 
@@ -405,8 +405,8 @@ The i-th row in the returned matrix is the Schubert class of the Weyl group elem
 to the i-th vertex of the given Schubert variety.
 
 # Arguments
- - `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph of its generalized partial flag variety (as returned by `generalized_gkm_schubert`).
- - `BO::BruhatOrder`: The Bruhat order for the generalized partial flag variety containing the Schubert variety (as returned by `get_bruhat_order_of_generalized_flag`).
+- `schubert::AbstractGKM_subgraph`: The Schubert variety given as GKM subgraph of its generalized partial flag variety (as returned by `generalized_gkm_schubert`).
+- `BO::BruhatOrder`: The Bruhat order for the generalized partial flag variety containing the Schubert variety (as returned by `get_bruhat_order_of_generalized_flag`).
 
 # Examples
 Schubert classes on the Schubert variety $\overline{X_{s_1s_2s_3}}\subset SL_4/P_1$:

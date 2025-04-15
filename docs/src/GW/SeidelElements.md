@@ -28,7 +28,7 @@ where $\hat{t}$ is the equivariant parameter for the extra $\mathbb{C}^\times$ i
     Let $\Lambda:= \text{Hom}(\mathbb{C}^\times, T)$ be the cocharacter lattice of $T$.
     It is a key property of the equivariant Seidel elements that the map
     ```math
-      \mathcal{S}: \Lambda \rightarrow QH_T^*(X)^\times
+      \mathcal{S}\colon \Lambda \rightarrow QH_T^*(X)^\times
     ```
      is a group homomorphism, where $QH_T^*(X)^\times$ is endowed with the equivariant quantum product.
 
