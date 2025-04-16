@@ -49,6 +49,6 @@ include("obsolate/obsolate.jl")
 
 ## experimental
 include("bruhat.jl")
-
+include("bott_samelson.jl")
 
 end # module GKMtest
