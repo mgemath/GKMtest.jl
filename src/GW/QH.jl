@@ -1,3 +1,5 @@
+export QH_print_structure_constants_in_basis
+
 @doc raw"""
     QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
 
@@ -39,7 +41,7 @@ function QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false, show_
   end
 
   if refresh
-    empty!(G.QH_structure_consts)
+    G.QH_structure_consts = Dict{CurveClass_type, Array{Any, 3}}()
   end
 
   # Max deg of cohomology class (primitive wrt equivariant parameters): 2n
@@ -226,7 +228,7 @@ end
 
 
 @doc raw"""
-    QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
+    QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix; setPreferredBasis::Bool=false)
 
 Return all structure constants of `G` that have been calculated so far with respect to the given basis.
 A smart choice of basis can drastically simplify the presentation of the ring $QH_T^*(X)$.
@@ -242,6 +244,8 @@ The same as that of `QH_structure_constants`, i.e. of type `Dict{CurveClass_type
  - `G::AbstractGKM_graph`: The GKM graph whose quantum cohomology is of interest.
  - `b::Matrix`: A matrix whose rows are the desired $H_T^*(\text{pt};\mathbb{Q})$-linear basis of $H_T^*(X;\mathbb{Q})$.
     The element `b[i,j]` is the localization to the `j`-th fixed point of the `i`-th basis element.
+ - `setPreferredBasis::Bool=false`: Optional argument. If set to `true`, all future quantum cohomology classes of this space
+    will be printed with respect to the given base.
 
 # Examples
 The following example shows that $QH_T(X;\mathbb{Q}) \cong\mathbb{Q}[t_1, t_2, e]/(e^2 - (t_1-t_2)e - q)$ where $e=PD([1:0])$ and $q$
@@ -308,7 +312,7 @@ julia> S[beta][:,:,3]
 ```
 
 """
-function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
+function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix; setPreferredBasis::Bool=false)
   s = size(b)
   @req s[1] == s[2] "Base matrix must be square"
   @req s[1] == n_vertices(G.g) "dimension of basis elements must be number of vertices of GKM graph"
@@ -321,6 +325,9 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
   end
   @req is_invertible(bMatrix) "Base matrix must be invertible over fraction field"
   bMatrixInv = inv(transpose(bMatrix))
+  if setPreferredBasis
+    G.QH_preferred_basis = bMatrixInv
+  end
 
   res = Dict{CurveClass_type, Array{Any, 3}}()
   g = gens(G.equivariantCohomology.cohomRingLocalized)
@@ -337,6 +344,78 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix)
     res[beta] = resBeta
   end
   return res
+end
+
+function QH_print_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix, l::Vector{String})
+  S = QH_structure_constants_in_basis(G, b)
+  betas = keys(S)
+  nv = n_vertices(G.g)
+  for i in 1:nv
+    for j in i:nv
+      printedIJ = false
+      print(l[i] * " * " * l[j] * " &=& ")
+      for b in betas
+        betaTerms = count(x -> !iszero(x), S[b][i, j, :])
+        printedIJ && betaTerms > 0 && print(" + ")
+        betaTerms > 1 && print("(")
+        printedBeta = false
+        for k in 1:nv
+          p = S[b][i, j, k]
+          iszero(p) && continue
+          printedBeta && print(" + ")
+          _print_coefficient(p)
+          print(" " * l[k])
+          printedBeta = true
+          printedIJ = true
+        end
+        if printedBeta
+          betaTerms > 1 && print(")")
+          _print_curve_q(b)
+        end
+      end
+      !printedIJ && print("0")
+      print("\\\\\n")
+    end
+  end
+end
+
+function _print_curve_q(b)
+  #TODO: add custom labels for curve classes
+  if !iszero(b)
+    print(" q^{$(b)}")
+  end
+end
+
+function _print_coefficient(s)
+  if iszero(s)
+    print("0")
+    return
+  elseif s == 1
+    return
+  else
+    if denominator(s) == 1
+      factored = factor(numerator(s))
+      u = unit(factored)
+      if u != 1
+        if u == -1
+          print("-")
+        else
+          print("($u)")
+        end
+      end
+      for f in factored
+        print("(")
+        print(f[1])
+        print(")")
+        if f[2] > 1
+          print("^{$(f[2])}")
+        end
+      end
+    else
+      print(s)
+    end
+    return
+  end
 end
 
 

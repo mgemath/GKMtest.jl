@@ -1,7 +1,7 @@
 # Return the equivariant cohomology ring of the GKM graph. This function is called internally once during
 # construction of the GKM graph.
 function _equivariant_cohomology_ring(G::AbstractGKM_graph)::GKM_cohomology_ring
-  coeffRing, _ = polynomial_ring(QQ, ["t$i" for i in 1:rank_torus(G)])
+  coeffRing, _ = polynomial_ring(QQ, ["t_{$i}" for i in 1:rank_torus(G)])
   coeffRingLocalized = fraction_field(coeffRing)
   cohomRing = free_module(coeffRing, n_vertices(G.g))
   cohomRingLocalized = free_module(coeffRingLocalized, n_vertices(G.g))

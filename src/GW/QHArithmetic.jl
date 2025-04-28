@@ -281,7 +281,27 @@ function Base.show(io::IO, c::QHRingElem)
   # no nested printing
   for b in keys(c.coeffs)
     counter += 1
-    print(io, c.coeffs[b])
+    if isnothing(c.gkm.QH_preferred_basis)
+      print(io, c.coeffs[b])
+    else
+      p = c.gkm.QH_preferred_basis * [c.coeffs[b][i] for i in 1:n_vertices(c.gkm.g)]
+      print(io, "(")
+      for i in 1:length(p)
+        (i > 1) && print(io, ", ")
+        if p[i] == 0
+          print(io, "0")
+        elseif denominator(p[i]) == 1
+          print(io, factor(numerator(p[i])))
+        else
+          print(io, "(")
+          print(io, factor(numerator(p[i])))
+          print(io, ")//(")
+          print(io, factor(denominator(p[i])))
+          print(io, ")")
+        end
+      end
+      print(io, ")")
+    end
     print(io, " q^")
     print(io, b)
     if counter != l
