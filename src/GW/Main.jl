@@ -207,7 +207,7 @@ function gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int
   end
 
   P = [P_input[k].func for k in inputKeys]
-  con = get_connection(G)
+  con = get_any_connection(G)
   @req !isnothing(con) "GKM graph needs a connection!"
 
   ########

@@ -30,6 +30,7 @@ If neither of these two conditions hold and $G$ is not the output of a standard 
 
 ```@docs
 get_connection(::GKMtest.AbstractGKM_graph)
+get_any_connection(::GKMtest.AbstractGKM_graph)
 build_GKM_connection
 set_connection!
 isvalid(::GKMtest.GKM_connection; ::Bool)

@@ -1,9 +1,16 @@
 @doc raw"""
     get_connection(gkm::AbstractGKM_graph) -> Union{Nothing, GKM_connection}
 
-Return the connection of the given GKM graph if it is unique or has been set manually.
-If it is unique and hasn't been calculated, it is saved in the `gkm` object for later use.
-If the connection is not unique and hasn't been defined manually, return `nothing`.
+Return the connection of the given GKM graph if it is 3-independent, or if it is 2-valent and 2-independent,
+ or if it has been set manually.
+If one of the first two cases holds and the connection hasn't been calculated before,
+it is saved in the `gkm` object for later use.
+If none of the three cases hold, return `nothing`.
+
+!!! note
+    For GKM graphs of valency at least 3 that are not 3-independent, a connection may still exist,
+    although uniqueness is not guaranteed.
+    Use `get_any_connection` to get any compatible connection if one exists.
 
 # Example
 The unique connection for $\mathbb{P}^n$ has $\nabla_{(p\rightarrow q)}(p\rightarrow r)=(q\rightarrow r)$ for every triple of distinct vertices $(p, q, r)$, and $\nabla_{(p\rightarrow q)}(p\rightarrow q)=(q\rightarrow p)$ for every distinct vertices $p$ and $q$.
@@ -52,6 +59,24 @@ function get_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
     end
   end
   return gkm.connection
+end
+
+@doc raw"""
+    get_any_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
+
+Return any connection for the given GKM graph, if there exists one, or `nothing` otherwise.
+This connection is not guaranteed to have any special properties.
+In particular, if `gkm` is the GKM graph of a sufficiently nice space, the returned connection
+is not guaranteed to be the one induced by the geometry of the space.
+"""
+function get_any_connection(gkm::AbstractGKM_graph)::Union{Nothing, GKM_connection}
+  con = get_connection(gkm)
+  if !isnothing(con)
+    return con
+  elseif isnothing(gkm.anyConnection)
+    gkm.anyConnection = _build_any_GKM_connection(gkm)
+  end
+  return gkm.anyConnection
 end
 
 
@@ -141,6 +166,55 @@ function _build_GKM_connection(gkm::AbstractGKM_graph) :: GKM_connection
   end
 
   return build_GKM_connection(gkm, con)
+end
+
+function _build_any_GKM_connection(gkm::AbstractGKM_graph) :: Union{Nothing, GKM_connection}
+
+  if !is2_indep(gkm)
+    println("Warning: The given GKM graph is not 2-independent!")
+  end
+
+  # assign to each edges e & e_i with src(e)=src(e_i) an edge e'_i with src(e'_i)=dst(e).
+  con = Dict{Tuple{Edge, Edge}, Edge}()
+
+  # iterate over all unoriented edges
+  for e in edges(gkm.g)
+
+    @req !is_zero(gkm.w[e]) "Weight zero edge found."
+
+    s1 = src(e)
+    s2 = dst(e)
+    eW = gkm.w[e]
+
+    # make sure not to allocate some epi to more than one ei.
+    allocatedEpis = Vector{Edge}()
+
+    # get all edges at src(e)
+    for ei in [Edge(s1,v) for v in all_neighbors(gkm.g, s1)]
+
+      # get all edges at dst(e), where epi stands for "e prime i"
+      for epi in [Edge(s2, w) for w in all_neighbors(gkm.g, s2)]
+
+        wdif = gkm.w[ei] - gkm.w[epi] # this will be a_i * w[e]
+        
+        if rank(matrix([ wdif; eW ])) == 1 && !(epi in allocatedEpis)
+          con[(e, ei)] = epi
+          con[(reverse(e), epi)] = ei
+          push!(allocatedEpis, epi)
+          break
+        end
+      end
+      if !haskey(con, (e, ei))
+        println("No connection image found for ($e, $ei)! The GKM graph does not admit a connection.")
+        return nothing
+      end
+    end
+  end
+  c = build_GKM_connection(gkm, con)
+  # Of the below throws an error:
+  # Is it because (e,e) !-> reverse(e)? This might happen only in the not 2-independent case.
+  @req isvalid(c) "_build_any_GKM_connection build an invalid connection!"
+  return c
 end
 
 @doc raw"""

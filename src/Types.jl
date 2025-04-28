@@ -25,11 +25,14 @@ GKM_weight_type = Union{ZZRingElem, QQFieldElem}
   curveClasses::Union{Nothing, AbstractGKM_H2} # actual type will be Union{Nothing, GKM_H2}
   # Use get_GKM_connection() to access this:
   connection::Union{Nothing, AbstractGKM_connection} # actual type will be Union{Nothing, GKM_connection}
+  anyConnection::Union{Nothing, AbstractGKM_connection}
   # Use QH_structure_constants() to access this.
   QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}}
   # This should be set to true if the GKM graph is strictly NEF and all relevant
   # QH cohomology structure constants are calculated and stored in QH_structure_consts.
   know_all_QH_structure_consts::Bool
+  # Base change matrix for changing to preferred basis for printing quantum products
+  QH_preferred_basis::Union{Nothing, AbstractAlgebra.Generic.MatSpaceElem{AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}}
 
   function AbstractGKM_graph(
     g::Graph,
@@ -42,7 +45,7 @@ GKM_weight_type = Union{ZZRingElem, QQFieldElem}
     QH_structure_consts::Dict{CurveClass_type, Array{Any, 3}},
     know_all_QH_structure_consts::Bool
   ) where R <: GKM_weight_type
-    return new{R}(g, labels, R, M, w, equivariantCohomology, curveClasses, connection, QH_structure_consts, know_all_QH_structure_consts)
+    return new{R}(g, labels, R, M, w, equivariantCohomology, curveClasses, connection, nothing, QH_structure_consts, know_all_QH_structure_consts, nothing)
   end
 end
 

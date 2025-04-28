@@ -15,6 +15,7 @@ export add_edge!
 
 # GKMconnections.jl
 export get_connection
+export get_any_connection
 export set_connection!
 export build_GKM_connection
 
