@@ -13,7 +13,7 @@ QH_print_structure_constants_in_basis(F3_schubert.self, S, schubertClassLabels)
 F3_schubert_small = generalized_gkm_schubert(R, "s1");
 S_small = schubert_classes(F3_schubert_small, BO);
 QH_structure_constants(F3_schubert_small.self);
-SB = QH_structure_constants_in_basis(F3_schubert_small.self, S_smal)
+SB = QH_structure_constants_in_basis(F3_schubert_small.self, S_small)
 schubertClassLabels_small = ["\\sigma_{id}", ""]
 QH_print_structure_constants_in_basis(F3_schubert_small.self, S_small, schubertClassLabels_small)
 
