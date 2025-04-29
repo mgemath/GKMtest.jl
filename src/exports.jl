@@ -14,6 +14,7 @@ export edgeFromLabels
 export add_edge!
 export gkm_2d
 export gkm_3d_positive_non_toric
+export gkm_3d_twisted_flag
 
 # GKMconnections.jl
 export get_connection

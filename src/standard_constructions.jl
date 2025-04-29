@@ -383,3 +383,48 @@ function gkm_3d_positive_non_toric(i::Int64)::AbstractGKM_graph
     @req false "Index must be between 1 and 7."
   end
 end
+
+@doc raw"""
+    gkm_3d_twisted_flag() -> AbstractGKM_graph
+
+Return the 3-valent GKM graph of the twisted flag varieties of Eschenburg, Tolman, and Woodward
+(see [GKZ20; Example 4.8](@cite) and references therein).
+
+# Example
+Note that the resulting GKM graph does not occur in the output of `gkm_3d_positive_non_toric()` since one edge has
+non-positive Chern number.
+
+```jldoctest
+julia> G = gkm_3d_twisted_flag()
+GKM graph with 6 nodes, valency 3 and axial function:
+2 -> 1 => (0, -1)
+3 -> 2 => (1, 0)
+4 -> 1 => (1, -2)
+4 -> 3 => (-1, 1)
+5 -> 2 => (1, -1)
+5 -> 4 => (0, -1)
+6 -> 1 => (1, -1)
+6 -> 3 => (2, -1)
+6 -> 5 => (1, 0)
+
+julia> print_curve_classes(G)
+2 -> 1: (0, 1), Chern number: 4
+3 -> 2: (-1, 1), Chern number: 2
+4 -> 1: (1, 0), Chern number: 2
+4 -> 3: (-2, 1), Chern number: 0
+5 -> 2: (1, 0), Chern number: 2
+5 -> 4: (-1, 1), Chern number: 2
+6 -> 1: (1, 1), Chern number: 6
+6 -> 3: (1, 0), Chern number: 2
+6 -> 5: (0, 1), Chern number: 4
+```
+"""
+function gkm_3d_twisted_flag()::AbstractGKM_graph
+  G = gkm_2d([0 1; -1 0; 1 -1; 0 1; -1 0; 1 -1])
+  add_edge!(G, 1, 4, G.M([-1, 2]))
+  add_edge!(G, 2, 5, G.M([-1, 1]))
+  add_edge!(G, 3, 6, G.M([-2, 1]))
+  return G
+end
+
+#TODO: implement [GKZ20, Prop. 4.5]'s classification of signed 3D GKM fibrations. 

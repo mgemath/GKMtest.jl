@@ -33,4 +33,5 @@ gkm_graph_of_toric
 ```@docs
 gkm_2d
 gkm_3d_positive_non_toric
+gkm_3d_twisted_flag
 ```
