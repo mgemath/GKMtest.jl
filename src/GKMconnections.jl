@@ -198,6 +198,18 @@ function _build_any_GKM_connection(gkm::AbstractGKM_graph) :: Union{Nothing, GKM
         wdif = gkm.w[ei] - gkm.w[epi] # this will be a_i * w[e]
         
         if rank(matrix([ wdif; eW ])) == 1 && !(epi in allocatedEpis)
+          
+          # Epi is only a candidate for ei if the resulting ai is an integer.
+          aiIntegral::Bool = false
+          for j in 1:rank(gkm.M)
+            if eW[j] != 0
+              tmp = wdif[j] // eW[j]
+              aiIntegral = denominator(tmp) == 1
+              break
+            end
+          end
+          !aiIntegral && continue
+
           con[(e, ei)] = epi
           con[(reverse(e), epi)] = ei
           push!(allocatedEpis, epi)
