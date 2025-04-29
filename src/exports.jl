@@ -12,6 +12,8 @@ export is2_indep
 export empty_gkm_graph
 export edgeFromLabels
 export add_edge!
+export gkm_2d
+export gkm_3d_positive_non_toric
 
 # GKMconnections.jl
 export get_connection

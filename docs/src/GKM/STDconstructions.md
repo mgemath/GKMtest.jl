@@ -27,3 +27,10 @@ schubert_classes
 ```@docs
 gkm_graph_of_toric
 ```
+
+## Low-dimensional GKM graphs
+
+```@docs
+gkm_2d
+gkm_3d_positive_non_toric
+```

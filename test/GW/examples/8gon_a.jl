@@ -1,24 +1,21 @@
 # Implementing the left hand GKM graph from [GKZ22, Example 2.44]
 # As unsigned GKM graph, it is realized by the equivariant connected sum of three copies of S^2xS^2
 
-g = Graph{Undirected}(8)
-labels = ["v_$i" for i in 1:8]
-M = free_module(ZZ, 2)
-(t1, t2) = gens(M)
-w = Dict{Edge, AbstractAlgebra.Generic.FreeModuleElem{ZZRingElem}}()
-G = gkm_graph(g, labels, M, w)
-
-weights = [t1, t2, -t1, -t2]
-for i in 1:8
-  GKMadd_edge!(G, i, i%8 + 1, weights[(i-1) % 4 + 1])
-end
+G = gkm_2d([1 0; 0 1; -1 0; 0 -1; 1 0; 0 1; -1 0; 0 -1;])
 
 H2 = GKM_second_homology(G)
 
 S = QH_structure_constants(G)
-pts = [QH_class(G, pointClass(i, G)) for i in 1:8]
-edg = [QH_class(G, PDClass(GKMsubgraph_from_vertices(G, [i, i%8 + 1]))) for i in 1:8]
+pts = [QH_class(G, point_class(i, G)) for i in 1:8]
+edg = [QH_class(G, poincare_dual(gkm_subgraph_from_vertices(G, [i, i%8 + 1]))) for i in 1:8]
 
+# julia> QH_is_polynomial(G)
+# QH is not polynomial for curve class (0, 1, 1, 0, 0, 0) at index CartesianIndex(4, 4, 4).
+# false
+# 
+# julia> QH_is_homogeneous(G)
+# true
+# 
 # julia> QH_is_commutative(G)
 #true
 #
