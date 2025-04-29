@@ -76,6 +76,7 @@ function _finish_GKM_H2(edgeLattice, H2, quotientMap, G, edgeToGenIndex)
   @req all([!iszero(v) for v in ImodElts]) "Some edge is zero in homology, which cannot happen for smooth projective GKM spaces!"
   I = [[v[j] for j in 1:rkH2] for v in ImodElts]
   C = cone_from_inequalities(-I) # this is the dual cone of the T-invariant curve classes
+  @req dim(C) == length(gens(H2)) "Cone of curves in H2 is not of full dimension. So the GKM graph is not smooth projective or Hamiltonian."
   s = sum(rays(C))
   
   # normalize s so that the minimum of edgeCurveClasses evaluated on s is 1.
@@ -151,17 +152,33 @@ function _remove_torsion(M::AbstractAlgebra.FPModule{ZZRingElem})
 
   normalForm, s = snf(M)
   invariantFactors = normalForm.invariant_factors
-  torsionGenerators = Vector{}()
 
+  r = 0
   for i in 1:length(invariantFactors)
-    if invariantFactors[i] != 0
-      push!(torsionGenerators, s(gens(normalForm)[i]))
+    if invariantFactors[i] == 0
+      r += 1
     end
   end
 
-  torsionSub, _ = sub(M, torsionGenerators)
+  H2 = free_module(ZZ, r)
+  imgs = Vector{typeof(zero(H2))}()
+  ctr = 1
+  for i in 1:length(invariantFactors)
+    if invariantFactors[i] == 0
+      push!(imgs, gens(H2)[ctr])
+      ctr += 1
+    else
+      push!(imgs, zero(H2))
+    end
+  end
+  SNFtoH2 = ModuleHomomorphism(normalForm, H2, imgs)
+  f = compose(inv(s), SNFtoH2)
 
-  return quo(M, torsionSub)
+  # println("M with torsion: $M")
+  # println("normal form: $normalForm")
+  # println("matrix of f: $(matrix(f))")
+
+  return H2, f
 end
 
 function Base.show(io::IO, h2::GKM_H2)
