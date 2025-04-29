@@ -1,5 +1,6 @@
 export get_bruhat_order_of_generalized_flag, generalized_gkm_schubert
 include("bruhatsmoothness.jl")
+include("kazhdan_lusztig.jl")
 struct BruhatOrder
   order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}
   reversed::Bool # true for descending order
