@@ -1,6 +1,5 @@
-export get_bruhat_order_of_generalized_flag, generalized_gkm_schubert
-include("bruhatsmoothness.jl")
-include("kazhdan_lusztig.jl")
+export get_bruhat_order_of_generalized_flag, generalized_gkm_schubert, isrationally_smooth
+
 struct BruhatOrder
   order::Dict{Tuple{Int64, Int64}, Vector{Tuple{Int64, Int64}}}
   reversed::Bool # true for descending order
@@ -494,4 +493,29 @@ function _add_all_descendants!(BO::BruhatOrder, v::Int, descendants::Vector{Int6
       end
     end
   end
+end
+
+function isrationally_smooth(base::AbstractGKM_graph, pt::String, rev::Bool=true)
+    
+  starting_elem = findfirst(v -> base.labels[v] == pt, 1:n_vertices(base.g))
+  suborder = _create_order(base, starting_elem, rev, true)
+
+  expected_valency = length(suborder[starting_elem, count('s', base.labels[starting_elem])])
+
+  (expected_valency == count('s', pt)) || return false
+#   println(suborder)
+
+  for lab in keys(suborder)
+
+    # number inbound
+    inbound = count(t -> Base.in(lab, suborder[t]), keys(suborder))
+
+    #number outbound
+    outbound = length(suborder[lab])
+
+    (inbound + outbound) != expected_valency && return false
+    # println("$lab, $inbound $outbound")
+  end
+
+  return true
 end

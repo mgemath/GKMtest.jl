@@ -15,6 +15,7 @@ projective_space
 ```@docs
 get_bruhat_order_of_generalized_flag
 generalized_gkm_schubert
+bott_samelson
 ```
 ## Schubert Classes
 ```@docs
@@ -26,12 +27,4 @@ schubert_classes
 
 ```@docs
 gkm_graph_of_toric
-```
-
-## Low-dimensional GKM graphs
-
-```@docs
-gkm_2d
-gkm_3d_positive_non_toric
-gkm_3d_twisted_flag
 ```

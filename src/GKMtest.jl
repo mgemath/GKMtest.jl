@@ -22,6 +22,9 @@ include("betti.jl")
 include("standard_constructions.jl")
 include("GP.jl")
 
+## Low dimensional Examples
+include("lowdimexamples.jl")
+
 ## Operators
 include("GKMsubgraphs.jl")
 include("product.jl")
@@ -50,5 +53,9 @@ include("obsolate/obsolate.jl")
 ## experimental
 include("bruhat.jl")
 include("bott_samelson.jl")
+
+## Miscellaneous
+include("misc/bruhatsmoothness.jl")
+include("misc/kazhdan_lusztig.jl")
 
 end # module GKMtest

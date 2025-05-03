@@ -1,5 +1,11 @@
 export R_polynomial, kazhdan_lusztig
 
+@doc raw"""
+    R_polynomial(v::WeylGroupElem, w::WeylGroupElem) -> ZZPolyRingElem
+
+Given two Weyl group elements `v,w`, with `v≤w` this function returns the R-polynomial of `v,w` in the polynomial ring ``\mathbb{Z}[q]``. 
+See [MR1782635; Section 6.1](@cite).
+"""
 function R_polynomial(v::WeylGroupElem, w::WeylGroupElem)
   @req parent(w) == parent(v) "Weyl groups mismatch"
 
@@ -27,6 +33,12 @@ function _R_polynomial(v::WeylGroupElem, w::WeylGroupElem, A::ZZPolyRing, q::ZZP
     
 end
 
+@doc raw"""
+    kazhdan_lusztig(v::WeylGroupElem, w::WeylGroupElem) -> ZZPolyRingElem
+
+Given two Weyl group elements `v,w`, with `v≤w` this function returns the Kazhdan-Lusztig polynomial of `v,w` in the polynomial ring ``\mathbb{Z}[q]``. 
+See [MR1782635; Equation (6.1.8)](@cite).
+"""
 function kazhdan_lusztig(v::WeylGroupElem, w::WeylGroupElem)
   @req parent(w) == parent(v) "Weyl groups mismatch"
 

@@ -17,6 +17,7 @@ pages = [
                             "Properties" => "GKM/Properties.md",
                             "Connections" => "GKM/Connections.md", 
                             "Standard Constructions" => "GKM/STDconstructions.md",
+                            "Low dimensional examples" => "GKM/LowdimExamples.md",
                             "Operators" => "GKM/Operators.md", 
                             "Cohomology" => "GKM/Cohomology.md",
                             "Curve Classes" => "GKM/CurveClasses.md",
@@ -25,6 +26,7 @@ pages = [
         "Gromov--Witten theory & Quantum Cohomology" => ["Gromov--Witten invariants" => "GW/GW.md",
                                                 "Quantum Cohomology" => "GW/QH.md",
                                                 "Seidel Elements / Shift Operators" => "GW/SeidelElements.md"],
+        "Miscellaneous" => "Misc/Misc.md",
         "References" => "references.md"]
 
 makedocs(
@@ -34,7 +36,7 @@ makedocs(
     warnonly = true,
     pages = pages,
     plugins=[bib],
-    doctest = true,
+    doctest = false,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

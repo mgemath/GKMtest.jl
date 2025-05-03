@@ -1,5 +1,10 @@
 export bott_samelson
 
+@doc raw"""
+    bott_samelson(S::Vector{RootSpaceElem}; printEdges::Bool = true)
+
+We construct the Bott-Samelson desingularization of a Schubert variety given by `S`.
+"""
 function bott_samelson(S::Vector{RootSpaceElem}; printEdges::Bool = true)
   @req all(s -> is_simple_root(s), S) "Roots for Bott-Samelson variety must be simple."
   @req length(S) > 0 "Neet at least one root for Bott-Samelson variety."

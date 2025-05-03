@@ -1,7 +1,7 @@
 @doc raw"""
     Seidel_element(G::AbstractGKM_graph, w::AbstractAlgebra.Generic.FreeModuleElem{R}, cMax::Int64) where R<:GKM_weight_type
 
-Return the Seidel element on `G` associated to the homomorphism $\iota:\mathbb{C}^\times\rightarrow T$ defined by `w`.
+Return the Seidel element on `G` associated to the homomorphism $\iota\colon \mathbb{C}^\times\rightarrow T$ defined by `w`.
 This calculates the contribution of curve classes with Chern number at most `cMax`.
 
 !!! warning

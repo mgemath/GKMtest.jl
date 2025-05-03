@@ -1,30 +1,12 @@
-export isrationally_smooth, isregular_word, issmooth_schubert_at_v, issmooth_schubert
-function isrationally_smooth(base::AbstractGKM_graph, pt::String, rev::Bool=true)
-    
-  starting_elem = findfirst(v -> base.labels[v] == pt, 1:n_vertices(base.g))
-  suborder = _create_order(base, starting_elem, rev, true)
+export isregular_word, issmooth_schubert_at_v, issmooth_schubert
 
-  expected_valency = length(suborder[starting_elem, count('s', base.labels[starting_elem])])
+@doc raw"""
+    isregular_word(w::WeylGroupElem) -> Bool
 
-  (expected_valency == count('s', pt)) || return false
-#   println(suborder)
-
-  for lab in keys(suborder)
-
-    # number inbound
-    inbound = count(t -> Base.in(lab, suborder[t]), keys(suborder))
-
-    #number outbound
-    outbound = length(suborder[lab])
-
-    (inbound + outbound) != expected_valency && return false
-    # println("$lab, $inbound $outbound")
-  end
-
-  return true
-end
-
-# Lemma 5.7
+Given a Weyl group element `w`, this function returns `true` if and only if the Bruhat graph of `w` is regular. That is, all vertices 
+have the same number of incident edges. We implemented [MR2123545; Lemma 5.7](@cite). 
+Note that the Schubert variety given by `w` is rationally smooth if and only if the Bruhat graph of `w` is regular. 
+"""
 function isregular_word(w::WeylGroupElem)
     pos_roots = positive_roots(root_system(parent(w)))
 
@@ -41,12 +23,24 @@ function isregular_word(w::WeylGroupElem)
     return true
 end
 
+
+"""
+    issmooth_schubert(w::WeylGroupElem) -> Bool
+
+Check if the Schubert variety given by `w` is smooth at the point given by the identity element. This is equivalent to the Schubert variety be smooth.
+"""
 function issmooth_schubert(w::WeylGroupElem)
 
-  return issmooth_schubert_at_v(w, one(parent(w)))
+  return issmooth_schubert_at_v(one(parent(w)), w)
 end
-# 7.2.1 Theorem in Singular Loci of Schubert Varieties, Sara Billey and V. Lakshmibai
-function issmooth_schubert_at_v(w::WeylGroupElem, v::WeylGroupElem)
+
+@doc raw"""
+    issmooth_schubert_at_v(v::WeylGroupElem, w::WeylGroupElem) -> Bool
+
+Given a Weyl group element `w`, this function returns `true` if and only if the Schubert variety given by `w` is smooth at the point given by `v`. 
+We implemented [MR1383959; Theorem 5.5](@cite), see also [MR1782635; 7.2.1 Theorem](@cite).
+"""
+function issmooth_schubert_at_v(v::WeylGroupElem, w::WeylGroupElem)
   
   @req parent(w) == parent(v) "Weyl groups mismatch"
 
