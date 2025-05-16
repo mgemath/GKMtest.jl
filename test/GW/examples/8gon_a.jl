@@ -26,3 +26,6 @@ edg = [QH_class(G, poincare_dual(gkm_subgraph_from_vertices(G, [i, i%8 + 1]))) f
 # (Q:) is this just because we didn't check high enough q coefficients?
 # (A:) I guess calculating higher chern number stuff won't cancel out the non-associativity in the chern class 2 part!
 # So this is actually NOT associative!
+
+# Note: In any case a valid conclusion is that it is not Hamiltonian. But it could be that only the calculation of curve
+# classes fails and associativity only fails because of a wrong assumption on relations in H_2.
