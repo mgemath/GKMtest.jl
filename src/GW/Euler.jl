@@ -51,6 +51,27 @@ function Euler_inv(dt::GW_decorated_tree; check_degree::Bool=false)::AbstractAlg
   return res
 end
 
+# This returns the extra factor for Euler_inv in the fiber direction.
+function _Euler_inv_VB(dt::GW_decorated_tree, V::GKM_vector_bundle)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+
+  C = dt.gkm.equivariantCohomology.coeffRing
+  res = C(1)//C(1)
+
+  for v in 1:n_vertices(dt.tree)
+
+    valv = degree(dt.tree, v)
+    e = _fiber_normal_weight(imageOf(v, dt), V)
+    #println("e = $e, val = $valv")
+    if valv >= 1
+      res = res * e^(valv - 1)
+    else
+      res = res // e
+    end
+  end
+
+  return res
+end
+
 # Calculate h(epsilon, d) as in [Liu--Sheshmani, Lemma 4.5, p. 16].
 function _h(e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check::Bool=true, check_degrees::Bool=false)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
 
@@ -133,6 +154,35 @@ function GWTreeContribution(
 
   #multiply by input class
   res *= Base.invokelatest(P_input.func, dt)
+
+  return res
+end
+
+# Return the total h factor from the fiber direction.
+function _h_VB(V::GKM_vector_bundle, e::Edge, d::Int, con::GKM_connection, R::GKM_cohomology_ring; check::Bool=true, check_degrees::Bool=false)::AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}
+
+  gkm = con.gkm
+  C = R.coeffRing
+
+  if check
+    @req con.gkm == R.gkm "GKM connection and cohomology ring don't belong to the same GKM graph"
+    @req has_edge(gkm.g, e) "edge not found in GKM graph"
+    @req d>0 "d is non-positive"
+  end
+
+  we = weight_class(e, R) # weight of the edge e
+
+  # Start with the h factor from the base space.
+  res = _h(e, d, con, R; check=check, check_degrees=check_degrees)
+
+  # Apply h factors in fiber direction
+  for i in 1:rank(V)
+
+    wei = _fiber_summand_weight(src(e), i, V)
+    ai = _fiber_connection_a(e, i, V)
+    bFactor = _b(1//d * we, wei, d*ai, C)
+    res = res * bFactor
+  end
 
   return res
 end

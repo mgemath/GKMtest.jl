@@ -511,3 +511,89 @@ function Oscar.projectivization(V::GKM_vector_bundle)::AbstractGKM_graph
 
   return res
 end
+
+function _calculate_connection_a(V::GKM_vector_bundle; check::Bool=true)
+  has_attribute(V, :connectionA) && return
+
+  rV = rank(V)
+  connectionA = Dict{Tuple{Edge, Int64}, ZZRingElem}()
+  con = get_connection(V)
+  @req !isnothing(con) "V needs a connection to calculate connection a's!"
+
+  for e in edges(V.gkm.g)
+    eW = V.gkm.w[e]
+    for i in 1:rV
+      wei = V.w[src(e), i]
+      k = con[(e, i)]
+      wepi = V.w[dst(e), k]
+      wdif = wei - wepi
+
+      if check
+        @req rank(matrix([ wdif; eW ])) == 1 "connection of vector bundle is incompatible with GKM graph"
+      end
+
+      ai::ZZRingElem = ZZ(0)
+
+      for j in 1:rank(V.gkm.M)
+        if eW[j] != 0
+          tmp = wdif[j] // eW[j]
+          @req denominator(tmp) == 1 "GKM connection's a_i's must be integers!" # Assumption: x//y is integer if and only if denominator(x//y) == 1 in Oscar.
+          ai = ZZ(tmp)
+          break
+        end
+      end
+
+      connectionA[(e, i)] = ai
+      connectionA[(reverse(e), k)] = ai
+    end
+  end
+  set_attribute!(V, :connectionA, connectionA)
+end
+
+function _calculate_weight_classes(V::GKM_vector_bundle)
+  G = V.gkm
+  has_attribute(V, :normalClasses) && has_attribute(V, :weightClasses) && return
+
+  # This here needs revision later.
+  @req G.M == V.M "Weight classes are currently only supported for G.M == V.M and GMtoM = identity."
+
+  nv = n_vertices(G.g)
+  rV = rank(V)
+  rT = rank_torus(G)
+  R = G.equivariantCohomology.coeffRing
+  t = gens(R)
+  weightClasses = Matrix{QQMPolyRingElem}(undef, nv, rV)
+  normalClasses = Vector{QQMPolyRingElem}(undef, nv)
+  
+  # normal and weight classes:
+  for v in 1:nv
+    nc = one(R)
+    for i in 1:rV
+      w = zero(R)
+      for j in 1:rT
+        w += V.w[v, i][j] * t[j]
+      end
+      weightClasses[v, i] = w
+      nc = nc * w
+    end
+    normalClasses[v] = nc
+  end
+
+  set_attribute!(V, :normalClasses, normalClasses)
+  set_attribute!(V, :weightClasses, weightClasses)
+end
+
+# This only works if _calculate_weight_classes(V) was called before!
+function _fiber_normal_weight(v::Int64, V::GKM_vector_bundle)
+  return get_attribute(V, :normalClasses)[v]
+end
+
+# This only works if _calculate_weight_classes(V) was called before!
+function _fiber_summand_weight(v::Int64, i::Int64, V::GKM_vector_bundle)
+  return get_attribute(V, :weightClasses)[v,i]
+end
+
+# This only works if _calculate_connection_a(V) was called before!
+function _fiber_connection_a(e::Edge, i::Int64, V::GKM_vector_bundle)
+  return get_attribute(V, :connectionA)[(e, i)]
+end

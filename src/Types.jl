@@ -126,7 +126,7 @@ mutable struct GKM_H2 <: AbstractGKM_H2
   end
 end
 
-mutable struct GKM_vector_bundle{R <: GKM_weight_type}
+@attributes mutable struct GKM_vector_bundle{R <: GKM_weight_type}
   gkm::AbstractGKM_graph{R}
   # Character group of the torus acting on the vector bundle.
   # This could be larger than the torus acting on the gkm space, for example by scaling fibres.
