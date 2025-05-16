@@ -42,7 +42,7 @@ function edgeMult(e::Edge, dt::GW_decorated_tree)::Int
   if e in keys(dt.edgeMult)
     return dt.edgeMult[e]
   elseif reverse(e) in keys(dt.edgeMult)
-    return dt.edgeMukt[reverse(e)]
+    return dt.edgeMult[reverse(e)]
   end
   @req false "edge has no multiplicity assigned in decorated tree"
 end

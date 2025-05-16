@@ -70,10 +70,11 @@ function Seidel_element(G::AbstractGKM_graph, # TODO: calculate maximum chern nu
 
   for c in cMin:cMax
     for b in _effectiveSectionClassesWithChernNumber(SG, c)
-      #println("Chern number $c, curve class $b:")
+      # println("Chern number $c, curve class $b -> $(GH2proj(b))")
       GW = gromov_witten(SG, b, 1, P; check_degrees=true, show_bar=false) #TODO: remove this and have global flag for checking
-      @req !haskey(res, b) "Cannot have two distinct section classes restricting to the same vertical curve class!"
-      res[GH2proj(b)] = [evaluate(GW[i], vcat([g[j] for j in 1:nv], [zero(coeffRing)])) for i in 1:nv]
+      @req !haskey(res, GH2proj(b)) "Cannot have two distinct section classes restricting to the same vertical curve class!"
+      res[GH2proj(b)] = [evaluate(GW[i], vcat(g, [zero(coeffRing)])) for i in 1:nv]
+      # println("$(GH2proj(b)) -> $(res[GH2proj(b)])")
     end
   end
 

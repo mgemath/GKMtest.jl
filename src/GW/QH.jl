@@ -1,4 +1,4 @@
-export QH_print_structure_constants_in_basis
+export QH_print_structure_constants_in_basis, QH_print_structure_constants
 
 @doc raw"""
     QH_structure_constants(G::AbstractGKM_graph; refresh::Bool=false)
@@ -346,6 +346,17 @@ function QH_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix; setPre
   return res
 end
 
+function QH_print_structure_constants(G::AbstractGKM_graph)
+  nv = n_vertices(G.g)
+  l = ["e_{$i}" for i in 1:nv]
+  b = Matrix{Any}(undef, nv, nv)
+  for i in 1:nv
+    b[i, :] = repeat([0], nv)
+    b[i, i] = euler_class(i, G)
+  end
+  QH_print_structure_constants_in_basis(G, b, l)
+end
+
 function QH_print_structure_constants_in_basis(G::AbstractGKM_graph, b::Matrix, l::Vector{String})
   S = QH_structure_constants_in_basis(G, b)
   betas = keys(S)
@@ -394,30 +405,41 @@ function _print_coefficient(s)
     return
   else
     if denominator(s) == 1
-      factored = factor(numerator(s))
-      u = unit(factored)
-      if u != 1
-        if u == -1
-          print("-")
-        else
-          print("($u)")
-        end
-      end
-      for f in factored
-        print("(")
-        print(f[1])
-        print(")")
-        if f[2] > 1
-          print("^{$(f[2])}")
-        end
-      end
+      _factor_and_print_nonzero_poly(numerator(s))
     else
-      print(s)
+      print("\\frac{")
+      _factor_and_print_nonzero_poly(numerator(s))
+      print("}{")
+      _factor_and_print_nonzero_poly(denominator(s))
+      print("}")
     end
     return
   end
 end
 
+function _factor_and_print_nonzero_poly(p)
+  factored = factor(p)
+  u = unit(factored)
+  if u != 1
+    if u == -1
+      print("-")
+    else
+      print("($u)")
+    end
+  end
+  for f in factored
+    print("(")
+    print(_format_polynomial("$(f[1])"))
+    print(")")
+    if f[2] > 1
+      print("^{$(f[2])}")
+    end
+  end
+end
+
+function _format_polynomial(poly::String)
+  return replace(poly, r"\bt(\d+)\b" => s"t_{\1}")
+end
 
 @doc raw"""
     quantum_product_at_q1(G::AbstractGKM_graph, class)

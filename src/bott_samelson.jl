@@ -128,6 +128,7 @@ function bott_samelson(S::Vector{RootSpaceElem}; printEdges::Bool = true)
 
 end
 
+# This is always used with x < y
 function _bs_edge_index(x::UInt16, y::UInt16, nr::Int64)::UInt32
   return (UInt32(x) << nr) + y
 end

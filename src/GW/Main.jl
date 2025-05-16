@@ -301,7 +301,7 @@ end
   return res
 end
 
-@doc """
+@doc raw"""
     gromov_witten(V::GKM_vector_bundle, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = false, check_degrees::Bool = false)
 
 Same as before, but taking the total space of a GKM vector bundle as input.
@@ -310,7 +310,7 @@ function gromov_witten(V::GKM_vector_bundle, beta::CurveClass_type, n_marks::Int
   return gromov_witten(V, beta, n_marks, [P_input]; show_bar=show_bar, check_degrees=check_degrees)[1]
 end
 
-@doc """
+@doc raw"""
     gromov_witten(V::GKM_vector_bundle, beta::CurveClass_type, n_marks::Int64, P_input::EquivariantClass; show_bar::Bool = false, check_degrees::Bool = false)
 
 Same as before, but taking the total space of a GKM vector bundle as input.
