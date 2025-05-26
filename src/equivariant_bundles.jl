@@ -133,6 +133,107 @@ function Oscar.rank(V::GKM_vector_bundle)::Int64
 end
 
 @doc raw"""
+    Oscar.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+
+Return the tangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
+The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
+
+# Example
+```jldoctest
+julia> G = projective_space(GKM_graph, 2)
+GKM graph with 3 nodes, valency 2 and axial function:
+2 -> 1 => (-1, 1, 0)
+3 -> 1 => (-1, 0, 1)
+3 -> 2 => (0, -1, 1)
+
+julia> T = tangent_bundle(G)
+GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
+1: (1, -1, 0, 1), (1, 0, -1, 1)
+2: (-1, 1, 0, 1), (0, 1, -1, 1)
+3: (-1, 0, 1, 1), (0, -1, 1, 1)
+
+julia> P = projectivization(T)
+GKM graph is valid but not 3-independent, so connections may not be unique.
+GKM graph with 6 nodes, valency 3 and axial function:
+[1]_2 -> [1]_1 => (0, -1, 1, 0)
+[2]_1 -> [1]_1 => (-1, 1, 0, 0)
+[2]_2 -> [1]_2 => (-1, 1, 0, 0)
+[2]_2 -> [2]_1 => (-1, 0, 1, 0)
+[3]_1 -> [1]_2 => (-1, 0, 1, 0)
+[3]_1 -> [2]_1 => (0, -1, 1, 0)
+[3]_2 -> [1]_1 => (-1, 0, 1, 0)
+[3]_2 -> [2]_2 => (0, -1, 1, 0)
+[3]_2 -> [3]_1 => (-1, 1, 0, 0)
+
+julia> betti_numbers(P)
+4-element Vector{Int64}:
+ 1
+ 2
+ 2
+ 1
+```
+"""
+function Oscar.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+  R = base_ring(G.M)
+  nv = n_vertices(G.g)
+  r = rank_torus(G)
+  M = free_module(R, r+1)
+  g = gens(M)
+  GMtoM = ModuleHomomorphism(G.M, M, [g[i] for i in 1:r])
+  weightMatrix = Matrix{AbstractAlgebra.Generic.FreeModuleElem{typeof(zero(R))}}(undef, nv, valency(G))
+  for v in 1:nv
+    ct = 0
+    for w in all_neighbors(G.g, v)
+      ct += 1
+      weightMatrix[v, ct] = GMtoM(G.w[Edge(v, w)]) + scaling_weight * g[r+1]
+    end
+  end
+  return vector_bundle(G, M, GMtoM, weightMatrix)
+end
+
+@doc raw"""
+    Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+
+Return the cotangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
+The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
+
+# Example
+```jldoctest
+julia> G = projective_space(GKM_graph, 3)
+GKM graph with 4 nodes, valency 3 and axial function:
+2 -> 1 => (-1, 1, 0, 0)
+3 -> 1 => (-1, 0, 1, 0)
+3 -> 2 => (0, -1, 1, 0)
+4 -> 1 => (-1, 0, 0, 1)
+4 -> 2 => (0, -1, 0, 1)
+4 -> 3 => (0, 0, -1, 1)
+
+julia> T = cotangent_bundle(G)
+GKM vector bundle of rank 3 over GKM graph with 4 nodes and valency 3 with weights:
+1: (-1, 1, 0, 0, 1), (-1, 0, 1, 0, 1), (-1, 0, 0, 1, 1)
+2: (1, -1, 0, 0, 1), (0, -1, 1, 0, 1), (0, -1, 0, 1, 1)
+3: (1, 0, -1, 0, 1), (0, 1, -1, 0, 1), (0, 0, -1, 1, 1)
+4: (1, 0, 0, -1, 1), (0, 1, 0, -1, 1), (0, 0, 1, -1, 1)
+"""
+function Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+  R = base_ring(G.M)
+  nv = n_vertices(G.g)
+  r = rank_torus(G)
+  M = free_module(R, r+1)
+  g = gens(M)
+  GMtoM = ModuleHomomorphism(G.M, M, [g[i] for i in 1:r])
+  weightMatrix = Matrix{AbstractAlgebra.Generic.FreeModuleElem{typeof(zero(R))}}(undef, nv, valency(G))
+  for v in 1:nv
+    ct = 0
+    for w in all_neighbors(G.g, v)
+      ct += 1
+      weightMatrix[v, ct] = - GMtoM(G.w[Edge(v, w)]) + scaling_weight * g[r+1]
+    end
+  end
+  return vector_bundle(G, M, GMtoM, weightMatrix)
+end
+
+@doc raw"""
     get_connection(V::GKM_vector_bundle)
 
 Return the connection of the given vector bundle, if it is unique or has been set manually.
