@@ -160,4 +160,44 @@ function gkm_3d_twisted_flag()::AbstractGKM_graph
   return G
 end
 
-#TODO: implement [GKZ20, Prop. 4.5]'s classification of signed 3D GKM fibrations. 
+#TODO: document this, referring to [GKZ20, Prop. 4.5]'s classification of signed 3D GKM fibrations. 
+function gkm_3d_fibration(w::Matrix{Int64}, k::Vector{Int64}, twisted::Bool)::AbstractGKM_graph
+  s = size(w)
+  n = s[1]
+  @req n >= 3 "Base 2D GKM graph needs at least 3 vertices"
+  r = s[2]
+  labels = ["$i" for i in 1:2*n]
+  G = empty_gkm_graph(2*n, r, labels)
+
+  # add most horizontal edges
+  for i in 1:(n-1)
+    a = i
+    b = i % n + 1
+    add_edge!(G, a, b, G.M(w[i,:]))
+    add_edge!(G, a + n, b + n, G.M(w[i,:]))
+  end
+  
+  # add most vertical edges
+  for i in 2:n
+    gi = k[i]*G.M(w[i-1,:]) - k[i-1]*G.M(w[i,:])
+    add_edge!(G, i, i+n, gi)
+  end
+
+  if twisted
+    # Horizontal edges are 1-2-3-...-n-(n+1)-...-(2n)-1
+    add_edge!(G, n, n + 1, G.M(w[n,:]))
+    add_edge!(G, 2*n, 1, G.M(w[n,:]))
+
+    gi = k[1]*G.M(w[n,:]) + k[n]*G.M(w[1,:])
+    add_edge!(G, 1, n+1, gi)
+  else
+    # Horizontal edges are 1-2-3-...-n-1 & (n+1)-(n+2)-...-(2n)-(n+1)
+    add_edge!(G, n, 1, G.M(w[n,:]))
+    add_edge!(G, 2*n, n+1, G.M(w[n,:]))
+
+    gi = k[1]*G.M(w[n,:]) - k[n]*G.M(w[1,:])
+    add_edge!(G, 1, n+1, gi)
+  end
+
+  return G
+end
