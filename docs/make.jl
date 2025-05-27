@@ -35,8 +35,8 @@ makedocs(
     modules = [GKMtest],
     warnonly = true,
     pages = pages,
-    plugins=[bib],
-    doctest = false,
+    plugins = [bib],
+    doctest = true,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

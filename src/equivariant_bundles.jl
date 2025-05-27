@@ -174,21 +174,8 @@ julia> betti_numbers(P)
 ```
 """
 function Oscar.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
-  R = base_ring(G.M)
-  nv = n_vertices(G.g)
-  r = rank_torus(G)
-  M = free_module(R, r+1)
-  g = gens(M)
-  GMtoM = ModuleHomomorphism(G.M, M, [g[i] for i in 1:r])
-  weightMatrix = Matrix{AbstractAlgebra.Generic.FreeModuleElem{typeof(zero(R))}}(undef, nv, valency(G))
-  for v in 1:nv
-    ct = 0
-    for w in all_neighbors(G.g, v)
-      ct += 1
-      weightMatrix[v, ct] = GMtoM(G.w[Edge(v, w)]) + scaling_weight * g[r+1]
-    end
-  end
-  return vector_bundle(G, M, GMtoM, weightMatrix)
+
+  return _co_tangent_bundle(G, scaling_weight, 1)
 end
 
 @doc raw"""
@@ -214,8 +201,14 @@ GKM vector bundle of rank 3 over GKM graph with 4 nodes and valency 3 with weigh
 2: (1, -1, 0, 0, 1), (0, -1, 1, 0, 1), (0, -1, 0, 1, 1)
 3: (1, 0, -1, 0, 1), (0, 1, -1, 0, 1), (0, 0, -1, 1, 1)
 4: (1, 0, 0, -1, 1), (0, 1, 0, -1, 1), (0, 0, 1, -1, 1)
+```
 """
 function Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+
+  return _co_tangent_bundle(G, scaling_weight, -1)
+end
+
+function _co_tangent_bundle(G::AbstractGKM_graph, scaling_weight::Int64, duality::Int64)::GKM_vector_bundle
   R = base_ring(G.M)
   nv = n_vertices(G.g)
   r = rank_torus(G)
@@ -227,7 +220,7 @@ function Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)
     ct = 0
     for w in all_neighbors(G.g, v)
       ct += 1
-      weightMatrix[v, ct] = - GMtoM(G.w[Edge(v, w)]) + scaling_weight * g[r+1]
+      weightMatrix[v, ct] = duality * GMtoM(G.w[Edge(v, w)]) + scaling_weight * g[r+1]
     end
   end
   return vector_bundle(G, M, GMtoM, weightMatrix)
