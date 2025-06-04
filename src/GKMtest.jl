@@ -58,4 +58,6 @@ include("bott_samelson.jl")
 include("misc/bruhatsmoothness.jl")
 include("misc/kazhdan_lusztig.jl")
 
+include("PlanarCurves/PlanarCurves.jl")
+
 end # module GKMtest
