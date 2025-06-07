@@ -6,7 +6,7 @@ import Oscar.has_vertex
 
 Return the GKM subgraph induced by the given vertices.
 !!! note
-    1. This does not check if the result is a valid GKM graph (use may use `isvalid` for that).
+    1. This does not check if the result is a valid GKM graph (use `isvalid` for that).
     2. If possible, the subgraph will be endowed with the connection induced from the supergraph.
 
 # Example

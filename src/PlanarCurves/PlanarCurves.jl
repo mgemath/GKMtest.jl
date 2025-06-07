@@ -1,13 +1,33 @@
 export planarcurves
 
 function planarcurves(n::Int64, d::Int64, P::EquivariantClass)
-  
-  P_input = [P]
-  G = projective_space(AbstractGKM_graph, n)
+  return planarcurves(n, d, [P])
+end
+
+function planarcurves(n::Int64, d::Int64, P_input::Array{EquivariantClass})
+
+  G::AbstractGKM_graph = projective_space(AbstractGKM_graph, n)
+  beta::CurveClass_type = d*curve_class(G, Edge(1, 2));
+  show_bar::Bool = true
+  check_degrees::Bool = false
+
   inputLength = length(P_input)
   inputSize = size(P_input)
   inputKeys = keys(P_input)
-  beta = d*curve_class(G, Edge(1, 2))
+  @req inputLength > 0 "gromov_witten needs at least one input for P_input..."
+
+  @req beta != zero(parent(beta)) "Beta must be non-zero"
+
+  H2 = GKM_second_homology(G)
+  R = G.equivariantCohomology
+  res = zeros(R.coeffRingLocalized, inputSize...)
+  if !is_effective(H2, beta)
+    return res
+  end
+
+  P = [P_input[k].func for k in inputKeys]
+  con = get_any_connection(G)
+  @req !isnothing(con) "GKM graph needs a connection!"
 
   ########
   # this part is needed for the generation of colorings
@@ -17,17 +37,10 @@ function planarcurves(n::Int64, d::Int64, P::EquivariantClass)
   end
   #########
 
+  #########
+  # Dict in order to store H
   h_dict::Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}} = Dict{Tuple{Int64, Int64, Int64}, AbstractAlgebra.Generic.FracFieldElem{QQMPolyRingElem}}() # Lambda_gamma_e_dict
-
-  H2 = GKM_second_homology(G)
-  R = G.equivariantCohomology
-  res = zeros(R.coeffRingLocalized, inputSize...)
-  show_bar = false
-  check_degrees = false
-
-  
-# gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int64, P_input::Array{EquivariantClass}; show_bar::Bool = true, check_degrees::Bool = false)
-
+  ########
 
   max_n_vert::Int64 = _max_n_edges(H2, beta) + 1
 
@@ -89,9 +102,10 @@ function planarcurves(n::Int64, d::Int64, P::EquivariantClass)
                 euler *= h_dict[triple]
               end
             end
-            # println("ls = $(ls), col = $(col), aut = $(aut), PRODW = $(PROD), m=$(m), E = $(euler)")
-            #@req _is_homogeneous(euler) "Euler not homogeneous"
-            #@req _is_homogeneous(Class[1]) "Class not homogeneous"
+            
+            ## Planar Curves part
+            
+            ##
             res += Class.*euler
           end
         end
@@ -106,3 +120,5 @@ function planarcurves(n::Int64, d::Int64, P::EquivariantClass)
   end
   return res
 end
+
+# function 
