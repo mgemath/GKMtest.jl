@@ -233,7 +233,7 @@ function gromov_witten(G::AbstractGKM_graph, beta::CurveClass_type, n_marks::Int
     threshold = sum(vert -> number_trees[vert] * n_vertices(G.g) * ((length(nc[1]))^(vert - 1)) * binomial(vert+n_marks-1, n_marks), 2:max_n_vert)
     progress_bar::Progress = Progress(threshold, barglyphs=BarGlyphs("[=> ]"), color=:green)
     current_graph = 0
-end
+ end
 
   # n_marks = length(classes)
   # iterate undecorated trees:
