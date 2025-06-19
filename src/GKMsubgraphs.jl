@@ -115,7 +115,7 @@ As before, but the vertices are given by their labels.
 """
 function gkm_subgraph_from_vertices(gkm::AbstractGKM_graph, vertexLabels::Vector{String}) :: AbstractGKM_subgraph
 
-  @req all(l -> l in gkm.labels, vertexLabels) "Label $l not found"
+  @req all(l -> l in gkm.labels, vertexLabels) "Label not found"
 
   vertices::Vector{Int64} = indexin(vertexLabels, gkm.labels) # need to specify Vector{Int64} as indexin returns vector of Union{Nothing, Int64}.
   res = gkm_subgraph_from_vertices(gkm, vertices)

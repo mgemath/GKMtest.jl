@@ -44,7 +44,6 @@ t1^2*e[1] + t2*e[2]
 
 julia> is_gkm_class(c, G)
 false
-
 ```
 
 """

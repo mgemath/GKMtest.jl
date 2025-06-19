@@ -5,12 +5,10 @@
 #
 # written by Csaba Schneider, contribution from Giosuè Muratore
 struct TreeIt
-    n_vert::Int64
+  n_vert::Int64
 end
 
-function Base.eltype(::Type{TreeIt})
-    Vector{Int64}
-end
+Base.eltype(::Type{TreeIt}) = Vector{Int64}
 
 # in order to have an iterator that produces SimpleGraph, use: Base.Generator(LStoGraph, TreeIt(2))
 

@@ -494,21 +494,30 @@ function _multiplicities(
   mk = transpose(matrix(k)) # columns are images of generators
 
   P = polyhedron(-mk, [e0[i] for i in 1:nTreeEdges])
-  lpts = interior_lattice_points(P)
+  # lpts = interior_lattice_points(P)
 
-  intPtsIterator = (e0 + k(K([v[i] for i in 1:rk])) for v in lpts)
+  # intPtsIterator = (e0 + k(K([v[i] for i in 1:rk])) for v in lpts)
 
   # Make sure all multiplicity-sets have positive entries.
   # The reason for potentially zero entries here is that Oscar's "interior_lattice_points()" works intrinsically 
   # with respect to the polytope and not with respect to the defining inequalities.
   # For example, the polytope in R^2 defined by 0 <= x <= 0 and -2 <= y <= 2 has interior lattice points
   # (0,-1), (0, 0), (0, 1), even though the first defining inequality is not strict at these points.
-  noZerosIterator = Iterators.filter(m -> all(i -> m[i] > 0, 1:nTreeEdges), intPtsIterator)
+
+  # noZerosIterator = Iterators.filter(m -> all(i -> m[i] > 0, 1:nTreeEdges), intPtsIterator)
 
   # Convert to Vect{Int64}:
   # If we get an InexactError here, it means that m[i] is too large to be converted ti Int64.
   # This is extremely unlikely in the context of this package.
-  return Iterators.map(m -> [Int64(m[i]) for i in 1:nTreeEdges], noZerosIterator)
+  # return Iterators.map(m -> [Int64(m[i]) for i in 1:nTreeEdges], noZerosIterator)
+  ans = Set{Vector{Int64}}()
+  for v in interior_lattice_points(P)
+    m = e0 + k(K([v[i] for i in 1:rk]))
+    all(i -> m[i] > 0, 1:nTreeEdges) || continue
+
+    push!(ans, [Int64(m[i]) for i in 1:nTreeEdges])
+  end
+  return ans
 end
 
 function all_classes(G::AbstractGKM_graph)
