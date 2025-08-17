@@ -31,12 +31,15 @@ pages = [
 
 makedocs(
     sitename = "GKMtest",
-    format = Documenter.HTML(),
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true",
+        collapselevel = 1
+    ),
     modules = [GKMtest],
     warnonly = true,
     pages = pages,
     plugins = [bib],
-    doctest = true,
+    doctest = false,
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
@@ -44,5 +47,10 @@ makedocs(
 # for more information.
 deploydocs(
     repo = "github.com/mgemath/GKMtest.jl.git",
-    versions = nothing
+    devbranch = "master",
+    versions = [
+        "stable" => "v^",  # "stable" = the most recent tagged release
+        "v#.#"   => "v#",  # keep docs for each minor version (v0.1, v0.2, …)
+        "dev"    => "master", # "dev" = docs from your main branch
+    ]
 )
