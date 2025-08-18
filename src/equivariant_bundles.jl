@@ -133,7 +133,7 @@ function Oscar.rank(V::GKM_vector_bundle)::Int64
 end
 
 @doc raw"""
-    Oscar.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+    tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
 
 Return the tangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
 The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
@@ -173,13 +173,13 @@ julia> betti_numbers(P)
  1
 ```
 """
-function Oscar.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+function Oscar.IntersectionTheory.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
 
   return _co_tangent_bundle(G, scaling_weight, 1)
 end
 
 @doc raw"""
-    Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+    cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
 
 Return the cotangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
 The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
@@ -203,7 +203,7 @@ GKM vector bundle of rank 3 over GKM graph with 4 nodes and valency 3 with weigh
 4: (1, 0, 0, -1, 1), (0, 1, 0, -1, 1), (0, 0, 1, -1, 1)
 ```
 """
-function Oscar.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+function Oscar.IntersectionTheory.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
 
   return _co_tangent_bundle(G, scaling_weight, -1)
 end

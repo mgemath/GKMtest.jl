@@ -10,6 +10,6 @@ direct_sum
 dual(::GKMtest.GKM_vector_bundle)
 get_connection(::GKMtest.GKM_vector_bundle)
 projectivization
-tangent_bundle
-cotangent_bundle
+tangent_bundle(::GKMtest.AbstractGKM_graph; ::Int64)
+cotangent_bundle(::GKMtest.AbstractGKM_graph; ::Int64)
 ```
