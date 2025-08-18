@@ -47,10 +47,7 @@ makedocs(
 # for more information.
 deploydocs(
     repo = "github.com/mgemath/GKMtest.jl.git",
-    devbranch = "master",
-    versions = [
-        "stable" => "v^",  # "stable" = the most recent tagged release
-        "v#.#"   => "v#",  # keep docs for each minor version (v0.1, v0.2, …)
-        "dev"    => "master", # "dev" = docs from your main branch
-    ]
+    # devbranch = "master",
+    devurl = "dev",      # the URL for the development branch
+    versions = ["stable" => "v^", "v#.#", "dev" => "dev"]
 )
