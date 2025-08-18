@@ -1,7 +1,7 @@
 name = "GKMtest"
 uuid = "f0a7beec-ce01-462c-9058-91af0b9134dc"
 authors = ["Giosuè Muratore <muratore.g.e@gmail.com >", "Daniel Holmes <daniel.holmes@ist.ac.at>"]
-version = "0.6.0"
+version = "0.7.0"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
