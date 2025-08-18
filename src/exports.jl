@@ -59,6 +59,8 @@ export direct_sum
 export rank
 export dual
 export projectivization
+export tangent_bd
+export cotangent_bd
 
 # blowup.jl
 export blow_up

@@ -15,7 +15,7 @@ julia> gromov_witten(P2, beta, 2, ev(1, point_class(P2, 1)) * ev(2, point_class(
 julia> gromov_witten(P2, beta, 2, ev(1, point_class(P2, 1)) * ev(2, point_class(P2, 2)) * class_one(); show_bar=false)
 1
 
-julia> gromov_witten(P2, beta, 0, class_one())
+julia> gromov_witten(P2, beta, 0, class_one(); show_bar=false)
 0
 ```
 """

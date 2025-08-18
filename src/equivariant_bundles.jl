@@ -133,7 +133,7 @@ function Oscar.rank(V::GKM_vector_bundle)::Int64
 end
 
 @doc raw"""
-    tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+    tangent_bd(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
 
 Return the tangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
 The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
@@ -146,7 +146,7 @@ GKM graph with 3 nodes, valency 2 and axial function:
 3 -> 1 => (-1, 0, 1)
 3 -> 2 => (0, -1, 1)
 
-julia> T = tangent_bundle(G)
+julia> T = tangent_bd(G)
 GKM vector bundle of rank 2 over GKM graph with 3 nodes and valency 2 with weights:
 1: (1, -1, 0, 1), (1, 0, -1, 1)
 2: (-1, 1, 0, 1), (0, 1, -1, 1)
@@ -173,13 +173,13 @@ julia> betti_numbers(P)
  1
 ```
 """
-function Oscar.IntersectionTheory.tangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+function tangent_bd(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
 
   return _co_tangent_bundle(G, scaling_weight, 1)
 end
 
 @doc raw"""
-    cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
+    cotangent_bd(G::AbstractGKM_graph; scaling_weight::Int64 = 1) -> GKM_vector_bundle
 
 Return the cotangent bundle of `G`. The torus is enlarged by one dimension where the extra factor scales the fibers of the tangent bundle.
 The default weight is 1, but can be changed using the optional argument `scaling_weight` if desired.
@@ -195,7 +195,7 @@ GKM graph with 4 nodes, valency 3 and axial function:
 4 -> 2 => (0, -1, 0, 1)
 4 -> 3 => (0, 0, -1, 1)
 
-julia> T = cotangent_bundle(G)
+julia> T = cotangent_bd(G)
 GKM vector bundle of rank 3 over GKM graph with 4 nodes and valency 3 with weights:
 1: (-1, 1, 0, 0, 1), (-1, 0, 1, 0, 1), (-1, 0, 0, 1, 1)
 2: (1, -1, 0, 0, 1), (0, -1, 1, 0, 1), (0, -1, 0, 1, 1)
@@ -203,7 +203,7 @@ GKM vector bundle of rank 3 over GKM graph with 4 nodes and valency 3 with weigh
 4: (1, 0, 0, -1, 1), (0, 1, 0, -1, 1), (0, 0, 1, -1, 1)
 ```
 """
-function Oscar.IntersectionTheory.cotangent_bundle(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
+function cotangent_bd(G::AbstractGKM_graph; scaling_weight::Int64 = 1)::GKM_vector_bundle
 
   return _co_tangent_bundle(G, scaling_weight, -1)
 end
