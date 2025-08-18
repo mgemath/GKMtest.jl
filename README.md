@@ -1,4 +1,4 @@
-# ToricAtiyahBott.jl
+# GKMtest.jl
 [![Doc](https://img.shields.io/badge/docs-stable-blue.svg)](https://mgemath.github.io/GKMtest.jl/)
 
 
